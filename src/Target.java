@@ -8,40 +8,12 @@ enum Type {
     independent
 }
 
-enum Result {
-    Failure,
-    Warning,
-    Success
-}
-
 enum Status {
     WAITING,
     FROZEN,
     SKIPPED,
     IN_PROCESS,
-    FINISHED(null) {
-        @Override
-        public boolean isFinished() {
-            return true;
-        }
-    };
-    private Result result;
-
-    public boolean isFinished() {
-        return false;
-    }
-
-    public Result getFinishedResult() {
-        return result;
-    }
-
-    Status() {
-        this.result = null;
-    }
-
-    Status(Result result) {
-        this.result = result;
-    }
+    FINISHED
 }
 
 public class Target {
@@ -86,21 +58,6 @@ public class Target {
 //        return RequiredForSet.size() > 0;
 //    }
 
-//    public Type MyType() {
-//        boolean depends = hasDependencies();
-//        boolean required = hasRequiredOn();
-//        if (depends && required) {
-//            return Type.middle;
-//        }
-//        if (depends) {
-//            return Type.root;
-//        }
-//        if (required) {
-//            return Type.leaf;
-//        }
-//        return Type.independent;
-//    }
-
 
     public String getUserData() {
         return userData;
@@ -108,5 +65,21 @@ public class Target {
 
     public void setUserData(String userData) {
         this.userData = userData;
+    }
+
+    @Override
+    public String toString() {
+        return
+                "\nname= '" + name + '\'' +
+                        "\nid= " + id +
+                        "\nstatus= " + status +
+                        "\nuserData= '" + userData + '\'';
+    }
+
+    public String run(Task task) throws InterruptedException {
+        status = Status.IN_PROCESS;
+        task.run();
+        status = Status.FINISHED;
+        return "done";
     }
 }

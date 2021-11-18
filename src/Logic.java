@@ -57,6 +57,9 @@ public class Logic {
                     NodeList dependencies = eElement.getElementsByTagName("GPUG-Dependency");
                     for (int jtr = 0; jtr < dependencies.getLength(); jtr++) {
                         String type = dependencies.item(jtr).getAttributes().getNamedItem("type").getTextContent();
+                        Edge newEdge = new Edge(target.name, dependencies.item(jtr).getTextContent(), type.equals("dependsOn"));
+                        if (targetsEdges.stream().parallel().filter(e -> e.in == newEdge.in && e.out == newEdge.out).findFirst().isPresent())
+                            throw new Exception("duplicate edge");
                         targetsEdges.add(new Edge(target.name, dependencies.item(jtr).getTextContent(), type.equals("dependsOn")));
 //                        System.out.println(dependencies.item(jtr).getAttributes().getNamedItem("type"));
 //                        System.out.println("name : " + dependencies.item(jtr).getTextContent());
@@ -66,7 +69,7 @@ public class Logic {
             }
             targetGraph = new TargetGraph(GraphsName, WorkingDir, allTargets);
             targetGraph.connect(targetsEdges);
-            System.out.println("xmlPath = " + xmlPath);
+            System.out.println(targetGraph);
         } catch (IOException e) {
             System.out.println("error with loading file : " + e.getMessage());
         } catch (ParserConfigurationException e) {
@@ -76,6 +79,11 @@ public class Logic {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+
+    public void runTaskOnTargets(Task task) {
+        targetGraph.runTask(task);
     }
 }
 

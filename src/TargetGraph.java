@@ -1,7 +1,6 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 class Edge {
     String in, out;
@@ -20,28 +19,80 @@ public class TargetGraph {
     String GraphsName;
     String WorkingDir;
     Map<String, Map<String, Boolean>> targetsAdj;
-    Map<String, Target> AllTargets;
+    Map<String, Target> allTargets;
 
     public TargetGraph() {
-
     }
 
     public TargetGraph(String GraphsName, String WorkingDir, List<Target> Targets) throws Exception {
         this.GraphsName = GraphsName;
         this.WorkingDir = WorkingDir;
-        AllTargets = new HashMap();
+        allTargets = new HashMap();
         targetsAdj = new HashMap();
         for (Target t : Targets) {
-            this.AllTargets.put(t.name, t);
+            this.allTargets.put(t.name, t);
+            this.targetsAdj.put(t.name, new HashMap());
         }
     }
 
     public void connect(List<Edge> targetsEdges) {
         for (Edge e : targetsEdges) {
-            if (targetsAdj.get(e.out) == null)
-                targetsAdj.put(e.out, new HashMap());
             targetsAdj.get(e.out).put(e.in, true);
+            allTargets.get(e.out);
         }
+    }
+
+    public void runTask(Task task) {
+        Queue<Target> queue = new LinkedList<Target>();
+        allTargets.values().stream().forEach(t -> {
+            Type type = getType(t.name);
+            if (type == Type.leaf || type == Type.independent)
+                queue.add(t);
+
+        });
+        while (!queue.isEmpty()) {
+            runRec(queue.poll(), task);
+        }
+    }
+
+    public void runRec(Target target, Task task) {
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                target.run(task);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }).join();
+        requiredFor(target.name).forEach(t -> {
+            if (targetsAdj.get(t).keySet().stream().allMatch(tc -> allTargets.get(tc).status == Status.FINISHED))
+                runRec(t, task);
+        });
+
+    }
+
+    public ArrayList<Target> requiredFor(String name) {
+        ArrayList<Target> requiredFor = new ArrayList<>();
+        targetsAdj.forEach((k, v) -> {
+            if (v.getOrDefault(name, false))
+                requiredFor.add(allTargets.get(k));
+        });
+        return requiredFor;
+    }
+
+    public Type getType(String name) {
+        boolean depends = !targetsAdj.get(name).isEmpty();
+        boolean required = requiredFor(name).size() > 0;
+        if (depends && required) {
+            return Type.middle;
+        }
+        if (depends) {
+            return Type.root;
+        }
+        if (required) {
+            return Type.leaf;
+        }
+        return Type.independent;
     }
 
     public boolean DoesDependsOn(String tName1, String tName2) {
@@ -53,36 +104,39 @@ public class TargetGraph {
     }
 
     public boolean containsName(String name) {
-        return AllTargets.containsKey(name);
+        return allTargets.containsKey(name);
     }
-//
-//    public String stringMatrix() {
-//        String res = "";
-//        for (int i = 0; i < AllTargets.size(); i++) {
-//            for (int j = 0; j < AllTargets.size(); j++) {
-//                if (targetsAdj.get(AllTargets.get(i).name).get((AllTargets.get(j).name)) == null)
-//                    res.concat(String.format("%10s", 0));
-//                else
-//                    res.concat(String.format("%10s", 1));
-//            }
-//            res.concat("");
-//        }
-//        return res;
-//    }
 
-//    public String stringMap() {
-//        String res = "";
-//        AllTargets.forEach((key, value) -> res.concat(key + ":" + value));
-//        return res;
-//    }
+    public String stringMatrix() {
+        StringBuilder res = new StringBuilder("\n  ");
+        allTargets.forEach((k, v) -> res.append("   " + k));
+        res.append('\n');
+        targetsAdj.forEach((k, v) -> {
+            res.append(k + ":");
+            allTargets.forEach((name, target) -> {
+                if (v.getOrDefault(name, false))
+                    res.append(String.format("%4s", 1));
+                else
+                    res.append(String.format("%4s", 0));
+            });
+            res.append("\n");
+        });
+        return res.toString();
+    }
 
-//    @Override
-//    public String toString() {
-//        return "TargetGraph{" +
-//                "GraphsName='" + GraphsName + '\'' +
-//                ", WorkingDir='" + WorkingDir + '\'' +
-//                ", targetsAdj=" + stringMatrix() +
-//                ", AllTargets=" + stringMap() +
-//                '}';
-//    }
+    public String stringMap() {
+        StringBuilder res = new StringBuilder("\n\n");
+        allTargets.forEach((key, value) -> res.append(key + ": " + value + "\ntype= " + getType(key) + "\n\n"));
+        return res.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "TargetGraph \n{" +
+                "\nGraphsName='" + GraphsName + '\'' +
+                ",\nWorkingDir='" + WorkingDir + '\'' +
+                ",\ntargetsAdj=" + stringMatrix() +
+                ",\nAllTargets=" + stringMap() +
+                '}';
+    }
 }
