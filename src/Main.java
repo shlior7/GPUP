@@ -6,26 +6,39 @@ public class Main {
     public static void main(String[] args) throws InterruptedException {
 //        Logic logic = new Logic();
 //        logic.Load("ex1-cycle.xml");
-        AtomicInteger counter = new AtomicInteger();
+        int counter = 0;
         Target t1 = new Target("a", 1);
         Simulation simulation = new Simulation();
-        String completableFuture = CompletableFuture.supplyAsync(() -> {
-            String s = "fail";
-            try {
-                System.out.println("start");
-                s = t1.run(simulation);
+        try {
+            System.out.println("start");
+//                s = t1.run(simulation);
+            while (counter < 10) {
+                counter++;
+                System.out.println("counter = " + counter);
+                Thread.sleep(500);
+
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+//        String completableFuture = CompletableFuture.supplyAsync(() -> {
+//            String s = "fail";
+//            try {
+//                System.out.println("start");
+////                s = t1.run(simulation);
 //                while (counter.get() < 10) {
 //                    counter.getAndIncrement();
 //                    System.out.println("counter = " + counter);
 //                    Thread.sleep(500);
 //
 //                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            return s;
-        }).join();
-        System.out.println("a: " + completableFuture);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            return s;
+//        }).join();
+
+        System.out.println("a: ");
 
 //        while (!completableFuture.isDone()) {
 //        }

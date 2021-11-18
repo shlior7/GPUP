@@ -81,7 +81,7 @@ public class Logic {
         }
     }
 
-
+    //5
     public void runTaskOnTargets(Task task) {
         targetGraph.runTask(task);
     }

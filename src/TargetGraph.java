@@ -1,3 +1,6 @@
+import java.io.File;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -42,33 +45,49 @@ public class TargetGraph {
         }
     }
 
+    public String createLogLibrary(String taskName) {
+        String currentTime = DateTimeFormatter.ofPattern("dd.MM,yyyy HH:mm:ss").format(LocalDateTime.now());
+        String path = String.format(WorkingDir, '/', taskName, " - ", currentTime);
+        new File(path).mkdirs();
+        return path;
+    }
+
     public void runTask(Task task) {
+        String libPath = createLogLibrary(task.getName()); //location of lib
         Queue<Target> queue = new LinkedList<Target>();
         allTargets.values().stream().forEach(t -> {
             Type type = getType(t.name);
             if (type == Type.leaf || type == Type.independent)
                 queue.add(t);
-
         });
+        /////// L , I , G , C
+        ////
         while (!queue.isEmpty()) {
-            runRec(queue.poll(), task);
+            Target target = queue.poll();
+            try {
+                target.run(task);
+//                log(dir, target);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            requiredFor(target.name).forEach(t -> {
+                if (targetsAdj.get(t).keySet().stream().allMatch(tc -> allTargets.get(tc).status.isFinished() && !allTargets.get(tc).status.DidFailed()))
+                    queue.add(t);
+            });
+//            runRec(queue.poll(), task);
         }
     }
 
     public void runRec(Target target, Task task) {
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                target.run(task);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }).join();
+        try {
+            target.run(task);// I
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         requiredFor(target.name).forEach(t -> {
             if (targetsAdj.get(t).keySet().stream().allMatch(tc -> allTargets.get(tc).status == Status.FINISHED))
                 runRec(t, task);
         });
-
     }
 
     public ArrayList<Target> requiredFor(String name) {

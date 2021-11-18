@@ -6,5 +6,7 @@ enum Result {
 }
 
 public interface Task {
-    public void run() throws InterruptedException;
+    public String getName();
+
+    public Result run() throws InterruptedException;
 }

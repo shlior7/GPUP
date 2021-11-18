@@ -25,14 +25,24 @@ public class Simulation implements Task {
     }
 
     @Override
-    public void run() throws InterruptedException {
+    public String getName() {
+        return "Simulation";
+    }
+
+    @Override
+    public Result run() throws InterruptedException {
         Random rand = new Random();
         UI.print(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()));
         UI.print("Before Sleep");
         sleep(isRandom ? rand.nextInt(timeToProcess) : timeToProcess);
         UI.print("After Sleep");
-        boolean success = rand.nextFloat() <= successProbability;
-        boolean warning = rand.nextFloat() <= successWithWarningProbability;
+
+        if (rand.nextFloat() <= successProbability) {
+            if (rand.nextFloat() <= successWithWarningProbability)
+                return Result.Warning;
+            return Result.Success;
+        }
+        return Result.Failure;
     }
 
     public int getTimeToProcess() {

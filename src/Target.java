@@ -1,3 +1,5 @@
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,14 +15,34 @@ enum Status {
     FROZEN,
     SKIPPED,
     IN_PROCESS,
-    FINISHED
+    FINISHED() {
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    };
+    private Result result;
+
+    public boolean isFinished() {
+        return false;
+    }
+
+    public boolean DidFailed() {
+        return result == Result.Failure;
+    }
+
+    public Result getFinishedResult() {
+        return result;
+    }
+
+    public void setFinishedResult(Result result) {
+        this.result = result;
+    }
 }
 
 public class Target {
     public String name;
     public int id;
-    //    public Set<Target> RequiredForSet;
-//    public Set<Target> DependsOnSet;
     public Status status;
     private String userData;
 
@@ -28,36 +50,8 @@ public class Target {
         this.name = name;
         this.id = id;
         this.status = Status.WAITING;
-//        this.DependsOnSet = new HashSet<>();
-//        this.RequiredForSet = new HashSet<>();
 
     }
-
-//    public Target DependsOn(Target t) {
-//        this.DependsOnSet.add(t);
-//        t.RequiredFor(this);
-//        return t;
-//    }
-//
-//    private void RequiredFor(Target t) {
-//        this.RequiredForSet.add(t);
-//    }
-//
-//    public boolean DoDependsOn(Target t) {
-//        if (!hasDependencies()) {
-//            return false;
-//        }
-//        return DependsOnSet.contains(t) | DependsOnSet.stream().map(this::DoDependsOn).reduce(false, (a, b) -> a | b);
-//    }
-
-//    public boolean hasDependencies() {
-//        return DependsOnSet.size() > 0;
-//    }
-//
-//    public boolean hasRequiredOn() {
-//        return RequiredForSet.size() > 0;
-//    }
-
 
     public String getUserData() {
         return userData;
@@ -78,8 +72,17 @@ public class Target {
 
     public String run(Task task) throws InterruptedException {
         status = Status.IN_PROCESS;
-        task.run();
+        Result result = task.run();
+        String executionTime = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now());
+        UI.print(executionTime);
+        log(executionTime);
+
         status = Status.FINISHED;
+        status.setFinishedResult(result);
         return "done";
+    }
+
+    private void log(String executionTime) {
+
     }
 }
