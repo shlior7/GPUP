@@ -35,5 +35,18 @@ public class UI {
         return arrayOptions;
     }
 
+    public TargetGraph loadXmlFile(){
+        if(!validXML()){
+            return null;
+        }
+        TargetGraph targetGraph = new TargetGraph();
+        Logic logic = new Logic();
+        logic.Load("ex1-cycle.xml");
+        System.out.println(logic.targetGraph);
+        return targetGraph;
+    }
 
+    public boolean validXML(){
+        return true;
+    }
 }
