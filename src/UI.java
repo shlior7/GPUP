@@ -1,3 +1,4 @@
+import java.util.InputMismatchException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
@@ -12,14 +13,32 @@ public class UI {
     public void mainOptions(){
         System.out.println("Hello user! This is the Generic Platform for Utilizing Processes!");
         System.out.println("Please select one of the following options:");
-        List<String> arrayOptions =mainOptionsStrings();
+        List<String> arrayOptions = mainOptionsStrings();
         int numOfOption = 1;
         for (String option:arrayOptions) {
             System.out.println(numOfOption + ".) " + option);
             numOfOption++;
         }
+
     }
 
+    public int GetNumInRange(int lim) {
+        Scanner s = new Scanner(System.in);
+        try {
+            int choose = s.nextInt();
+            if(choose>=1&&choose<=lim){
+                return choose;
+            }
+            else{
+                System.out.println("Please enter a number in the range of options!");
+                return GetNumInRange(lim);
+            }
+        }
+        catch (InputMismatchException e){
+            System.out.println("Please enter a number!");
+            return GetNumInRange(lim);
+        }
+    }
 
     public List<String> mainOptionsStrings(){
         List<String> arrayOptions = new LinkedList<>();
