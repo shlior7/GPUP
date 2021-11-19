@@ -8,5 +8,5 @@ enum Result {
 public interface Task {
     public String getName();
 
-    public Result run() throws InterruptedException;
+    public Result run(Target target) throws InterruptedException;
 }

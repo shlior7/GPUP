@@ -1,9 +1,11 @@
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 class Edge {
     String in, out;
@@ -46,48 +48,59 @@ public class TargetGraph {
     }
 
     public String createLogLibrary(String taskName) {
-        String currentTime = DateTimeFormatter.ofPattern("dd.MM,yyyy HH:mm:ss").format(LocalDateTime.now());
-        String path = String.format(WorkingDir, '/', taskName, " - ", currentTime);
-        new File(path).mkdirs();
+        String currentTime = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss").format(LocalDateTime.now());
+        String path = taskName + " - " + currentTime;
+        CompletableFuture.supplyAsync(() -> new File(path).mkdir()).join();
         return path;
     }
 
+    public void log(String LibraryPath, String targetName, String loggedData) throws IOException {
+        File log = new File(LibraryPath + "/" + targetName + ".log");
+        log.createNewFile();
+        FileWriter myWriter = new FileWriter(log.getPath());
+        myWriter.write(loggedData);
+        myWriter.close();
+    }
+
     public void runTask(Task task) {
-        String libPath = createLogLibrary(task.getName()); //location of lib
+        Logger.libPath = createLogLibrary(task.getName());
         Queue<Target> queue = new LinkedList<Target>();
         allTargets.values().stream().forEach(t -> {
             Type type = getType(t.name);
             if (type == Type.leaf || type == Type.independent)
                 queue.add(t);
         });
-        /////// L , I , G , C
         ////
         while (!queue.isEmpty()) {
             Target target = queue.poll();
             try {
                 target.run(task);
-//                log(dir, target);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            requiredFor(target.name).forEach(t -> {
-                if (targetsAdj.get(t).keySet().stream().allMatch(tc -> allTargets.get(tc).status.isFinished() && !allTargets.get(tc).status.DidFailed()))
-                    queue.add(t);
-            });
-//            runRec(queue.poll(), task);
-        }
-    }
 
-    public void runRec(Target target, Task task) {
-        try {
-            target.run(task);// I
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            requiredFor(target.name).forEach(tDad -> { // all dads
+                if (tDad.status == Status.FROZEN) {
+                    AtomicBoolean AllSonsFinishedSuccessfully = new AtomicBoolean(true);
+                    targetsAdj.get(tDad.name).keySet().stream().forEach(tBrotherName -> {
+                        Target tBrother = allTargets.get(tBrotherName);
+                        if (tBrother.status.DidFailed() || tBrother.status == Status.SKIPPED) {
+                            tDad.status = Status.SKIPPED;
+                            AllSonsFinishedSuccessfully.set(false);
+                        }
+                        if (!tBrother.status.isFinished()) {
+                            AllSonsFinishedSuccessfully.set(false);
+                        }
+                    });
+                    if (AllSonsFinishedSuccessfully.get())
+                        queue.add(tDad);
+                }
+                ///if all of the sons of t's dad finished succsefully add to queue if any of them failed t's dad is skipped
+                //
+//                if (targetsAdj.get(tDad.name).keySet().stream().allMatch(tc -> allTargets.get(tc).status.isFinished() && !allTargets.get(tc).status.DidFailed()))
+//                    queue.add(tDad);
+            });
         }
-        requiredFor(target.name).forEach(t -> {
-            if (targetsAdj.get(t).keySet().stream().allMatch(tc -> allTargets.get(tc).status == Status.FINISHED))
-                runRec(t, task);
-        });
     }
 
     public ArrayList<Target> requiredFor(String name) {

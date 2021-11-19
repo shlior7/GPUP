@@ -15,13 +15,22 @@ enum Status {
     FROZEN,
     SKIPPED,
     IN_PROCESS,
-    FINISHED() {
+    FINISHED(null) {
         @Override
         public boolean isFinished() {
             return true;
         }
     };
     private Result result;
+
+    Status() {
+
+    }
+
+    Status(Result result) {
+        this.result = result;
+    }
+
 
     public boolean isFinished() {
         return false;
@@ -38,6 +47,7 @@ enum Status {
     public void setFinishedResult(Result result) {
         this.result = result;
     }
+
 }
 
 public class Target {
@@ -72,17 +82,11 @@ public class Target {
 
     public String run(Task task) throws InterruptedException {
         status = Status.IN_PROCESS;
-        Result result = task.run();
+        Result result = task.run(this);
         String executionTime = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now());
         UI.print(executionTime);
-        log(executionTime);
-
         status = Status.FINISHED;
         status.setFinishedResult(result);
         return "done";
-    }
-
-    private void log(String executionTime) {
-
     }
 }
