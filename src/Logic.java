@@ -13,8 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Logic {
-    TargetGraph targetGraph;
-
+    private TargetGraph targetGraph = null;
+    public TargetGraph getLastTargetGraph(){
+        return targetGraph;
+    }
     private Document loadFile(String xmlPath) throws ParserConfigurationException, IOException, SAXException {
         File file = new File(xmlPath);
         Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file);
