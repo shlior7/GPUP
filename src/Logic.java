@@ -8,9 +8,13 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class Logic {
     TargetGraph targetGraph;
@@ -58,8 +62,8 @@ public class Logic {
                     for (int jtr = 0; jtr < dependencies.getLength(); jtr++) {
                         String type = dependencies.item(jtr).getAttributes().getNamedItem("type").getTextContent();
                         Edge newEdge = new Edge(target.name, dependencies.item(jtr).getTextContent(), type.equals("dependsOn"));
-                        if (targetsEdges.stream().parallel().filter(e -> e.in == newEdge.in && e.out == newEdge.out).findFirst().isPresent())
-                            throw new Exception("duplicate edge");
+//                        if (targetsEdges.stream().anyMatch(e -> e.in.equals(newEdge.in) && e.out.equals(newEdge.out)))
+//                            throw new Exception("duplicate edge: " + e.in);
                         targetsEdges.add(new Edge(target.name, dependencies.item(jtr).getTextContent(), type.equals("dependsOn")));
 //                        System.out.println(dependencies.item(jtr).getAttributes().getNamedItem("type"));
 //                        System.out.println("name : " + dependencies.item(jtr).getTextContent());
@@ -69,7 +73,7 @@ public class Logic {
             }
             targetGraph = new TargetGraph(GraphsName, WorkingDir, allTargets);
             targetGraph.connect(targetsEdges);
-            System.out.println(targetGraph);
+//            System.out.println(targetGraph);
         } catch (IOException e) {
             System.out.println("error with loading file : " + e.getMessage());
         } catch (ParserConfigurationException e) {
@@ -81,9 +85,33 @@ public class Logic {
         }
     }
 
+
+    public void loadGraphFromLastPoint(String pathName) {
+        File f = new File(pathName);
+        File[] match = f.listFiles(((dir, name) -> {
+            return name.startsWith("Simulation");
+        }));
+        findLastRunnedTaskFolder(match);
+//        DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss").parse(currentTime).toString()
+    }
+
+    public String findLastRunnedTaskFolder(File[] folders) {
+        if (folders.length == 0) {
+            UI.print("no runned tasks");
+        }
+        String s = folders[0].getName().substring(folders[0].getName().lastIndexOf(" "));
+        UI.print(s);
+//        Arrays.stream(folders).reduce()
+        return s;
+    }
+
     //5
     public void runTaskOnTargets(Task task) {
-        targetGraph.runTask(task);
+        targetGraph.runTaskFromScratch(task);
+    }
+
+    public void runTaskOnTargetsLeft(Task task) {
+        targetGraph.runTaskFromLastTime(task);
     }
 }
 

@@ -1,4 +1,4 @@
-import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
@@ -14,7 +14,7 @@ public class Simulation implements Task {
     public Simulation() {
         this.timeToProcess = 2000;
         this.isRandom = true;
-        this.successProbability = 1f;
+        this.successProbability = 0f;
         this.successWithWarningProbability = 0f;
     }
 
@@ -31,12 +31,22 @@ public class Simulation implements Task {
     }
 
     @Override
-    public Result run(Target target) throws InterruptedException {
+    public Result run(Target target) throws InterruptedException, IOException {
         Random rand = new Random();
-        UI.print(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()));
-        UI.print("Before Sleep");
+        UI.log("Start Time: " + DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()), target.name);
+        UI.log("Start Task On " + target.name, target.name);
+        UI.log("Targets Data: " + target.getUserData(), target.name);
         sleep(isRandom ? rand.nextInt(timeToProcess) : timeToProcess);
-        UI.print("After Sleep");
+        Result result = getResult(rand);
+        if (target.name.equals("L") || target.name.equals("M") || target.name.equals("K"))
+            result = Result.Success;
+        UI.log("Finished Time: " + DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()), target.name);
+        UI.log("Task Finished with " + result.toString(), target.name);
+        UI.print("--------------------------------\n");
+        return result;
+    }
+
+    public Result getResult(Random rand) {
         if (rand.nextFloat() <= successProbability) {
             if (rand.nextFloat() <= successWithWarningProbability)
                 return Result.Warning;

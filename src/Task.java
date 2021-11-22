@@ -1,3 +1,4 @@
+import java.io.IOException;
 
 enum Result {
     Failure,
@@ -8,5 +9,5 @@ enum Result {
 public interface Task {
     public String getName();
 
-    public Result run(Target target) throws InterruptedException;
+    public Result run(Target target) throws InterruptedException, IOException;
 }
