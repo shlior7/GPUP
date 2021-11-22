@@ -7,7 +7,6 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -21,12 +20,18 @@ import java.util.Map;
 
 public class FileHandler {
     private Document document;
-    private Element root;
     private Element config;
     private Element targetsElement;
-    private Element edges;
 
-    private void loadFile(String xmlPath) throws ParserConfigurationException, IOException, SAXException {
+    public TargetGraph loadGPUPXMLFile(String xmlPath) throws Exception {
+        createDocument(xmlPath);
+        Map<String, String> config = readConfigurations();
+        Map<String, List> targets = readTargets();
+
+        return new TargetGraph(config.get("name"), config.get("directory"), targets.get("targets"), targets.get("edges"));
+    }
+
+    private void createDocument(String xmlPath) throws ParserConfigurationException, IOException, SAXException {
         File file = new File(xmlPath);
         document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file);
         document.getDocumentElement().normalize();
@@ -59,13 +64,13 @@ public class FileHandler {
     private HashMap<String, List> readTargets() throws Exception {
         List<Edge> targetsEdges = new ArrayList<>();
         List<Target> allTargets = new ArrayList<>();
+
         NodeList targetsNodes = document.getElementsByTagName("GPUP-Targets");
         if (targetsNodes.getLength() == 0 || targetsNodes.item(0).getNodeType() != Node.ELEMENT_NODE)
             throw new Exception("no Targets");
 
         targetsElement = (Element) targetsNodes.item(0);
         List<Element> targets = nodeListToElements(targetsElement.getElementsByTagName("GPUP-Target"));
-
         targets.forEach(targetNode -> {
             Target target = new Target(targetNode.getAttributes().getNamedItem("name").getTextContent());
             Element eElement = (Element) targetNode;
@@ -79,7 +84,7 @@ public class FileHandler {
                 String type = edge.getAttributes().getNamedItem("type").getTextContent();
                 Edge newEdge = new Edge(target.name, edge.getTextContent(), type.equals("dependsOn"));
                 if (targetsEdges.stream().allMatch(e -> !e.in.equals(newEdge.in) || !e.out.equals(newEdge.out)))
-                    targetsEdges.add(new Edge(target.name, edge.getTextContent(), type.equals("dependsOn")));
+                    targetsEdges.add(newEdge);
             });
         });
 
@@ -89,13 +94,6 @@ public class FileHandler {
         }};
     }
 
-    public TargetGraph loadGPUPXMLFile(String xmlPath) throws Exception {
-        loadFile(xmlPath);
-        Map<String, String> config = readConfigurations();
-        Map<String, List> targets = readTargets();
-
-        return new TargetGraph(config.get("name"), config.get("directory"), targets.get("targets"), targets.get("edges"));
-    }
 
     public void saveToXML(TargetGraph tg, String xmlFilePath) throws TransformerException {
 
@@ -105,7 +103,7 @@ public class FileHandler {
             Element status = document.createElement("Status");
             status.appendChild(document.createTextNode(target.getStatus().toString()));
             Element result = document.createElement("Result");
-            status.appendChild(document.createTextNode(target.getResult().toString()));
+            result.appendChild(document.createTextNode(target.getResult().toString()));
             targetNode.appendChild(status);
         });
 

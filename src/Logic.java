@@ -112,12 +112,11 @@ public class Logic {
         return s;
     }
 
-    //5
     public void runTaskOnTargets(Task task) {
         targetGraph.runTaskFromScratch(task);
     }
 
-    public void runTaskOnTargetsLeft(Task task) {
+    public void runTaskOnTargetsAgain(Task task) {
         targetGraph.runTaskFromLastTime(task);
     }
 

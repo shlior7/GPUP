@@ -150,6 +150,7 @@ public class TargetGraph {
 //                    queue.add(tDad);
             });
         }
+
         setFrozensToSkipped();
         UI.print(getPostTaskRunInfo());
         getStatusesStatistics().forEach((k, v) -> UI.print(k + ": " + v + "\n"));
@@ -175,10 +176,6 @@ public class TargetGraph {
     }
 
     public Type getType(String name, AdjMap targetAdj) {
-        UI.print(name);
-        if (targetAdj == null)
-            UI.print("WTF");
-        assert targetAdj != null;
         boolean depends = !targetAdj.get(name).isEmpty();
         boolean required = requiredFor(name, targetAdj).size() > 0;
         if (depends && required) {

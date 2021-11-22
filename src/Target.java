@@ -22,8 +22,6 @@ enum Status {
     FINISHED
 }
 
-
-@XmlRootElement(name = "GPUP-Target")
 public class Target {
     public String name;
     private Status status;

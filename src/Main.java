@@ -11,6 +11,7 @@ public class Main {
     public static void main(String[] args) throws InterruptedException, IOException, TransformerException {
         Logic logic = new Logic();
         logic.load("ex1-big.xml");
+
         Simulation simulation = new Simulation();
         logic.runTaskOnTargets(simulation);
         UI.print("wanna try again fucker?");
