@@ -12,4 +12,5 @@ public class Logger {
         out.println(Data + "\n");
         out.close();
     }
+
 }

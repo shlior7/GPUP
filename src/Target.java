@@ -1,3 +1,4 @@
+import javax.xml.bind.annotation.XmlRootElement;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -21,23 +22,32 @@ enum Status {
     FINISHED
 }
 
+
+@XmlRootElement(name = "GPUP-Target")
 public class Target {
     public String name;
-    public int id;
-    public Status status;
-    public Result result;
+    private Status status;
+    private Result result;
     private String userData;
     private Duration processTime;
 
-    public Target(String name, int id) {
+    public Target(String name) {
         this.name = name;
-        this.id = id;
         this.status = Status.FROZEN;
         this.processTime = Duration.ZERO;
     }
 
     public String getUserData() {
+
         return userData;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public Result getResult() {
+        return result;
     }
 
     public void setUserData(String userData) {
@@ -48,7 +58,6 @@ public class Target {
     public String toString() {
         return
                 "\nname= '" + name + '\'' +
-                        "\nid= " + id +
                         "\nstatus= " + status +
                         "\nuserData= '" + userData + '\'';
     }
@@ -64,5 +73,9 @@ public class Target {
 
     public Duration getProcessTime() {
         return processTime;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 }

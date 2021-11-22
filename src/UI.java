@@ -15,12 +15,12 @@ public class UI {
         String path = scanner.nextLine();
     }
 
-    public void mainOptions(){
+    public void mainOptions() {
         System.out.println("Hello user! This is the Generic Platform for Utilizing Processes!");
         System.out.println("Please select one of the following options:");
         List<String> arrayOptions = mainOptionsStrings();
         int numOfOption = 1;
-        for (String option:arrayOptions) {
+        for (String option : arrayOptions) {
             System.out.println(numOfOption + ".) " + option);
             numOfOption++;
         }
@@ -31,21 +31,19 @@ public class UI {
         Scanner s = new Scanner(System.in);
         try {
             int choose = s.nextInt();
-            if(choose>=1&&choose<=lim){
+            if (choose >= 1 && choose <= lim) {
                 return choose;
-            }
-            else{
+            } else {
                 System.out.println("Please enter a number in the range of options!");
                 return GetNumInRange(lim);
             }
-        }
-        catch (InputMismatchException e){
+        } catch (InputMismatchException e) {
             System.out.println("Please enter a number!");
             return GetNumInRange(lim);
         }
     }
 
-    public List<String> mainOptionsStrings(){
+    public List<String> mainOptionsStrings() {
         List<String> arrayOptions = new LinkedList<>();
         arrayOptions.add("Please enter the XML full path that you want to load");
         arrayOptions.add("Displays general information on the target graph");
@@ -59,8 +57,8 @@ public class UI {
         return arrayOptions;
     }
 
-    public TargetGraph loadXmlFile(){
-        if(!validXML()){
+    public TargetGraph loadXmlFile() {
+        if (!validXML()) {
             return null;
         }
         TargetGraph targetGraph = new TargetGraph();
@@ -70,13 +68,12 @@ public class UI {
         return targetGraph;
     }
 
-    public boolean validXML(){
+    public boolean validXML() {
         return true;
     }
-  
+
     public static void log(String Data, String targetName) throws IOException {
         print(Data);
         Logger.log(Data, targetName);
-
     }
 }

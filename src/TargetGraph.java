@@ -12,11 +12,11 @@ class AdjMap extends HashMap<String, Map<String, Boolean>> {
 }
 
 class Edge {
-    String in, out;
+    String out, in;
 
     Edge(String depends, String required) {
-        this.in = required;
         this.out = depends;
+        this.in = required;
     }
 
     Edge(String in, String out, boolean dependsOrRequired) {
@@ -34,7 +34,12 @@ public class TargetGraph {
     public TargetGraph() {
     }
 
-    public TargetGraph(String GraphsName, String WorkingDir, List<Target> Targets) throws Exception {
+    public Target getTarget(String name) {
+        return allTargets.get(name);
+
+    }
+
+    public TargetGraph(String GraphsName, String WorkingDir, List<Target> Targets, List<Edge> edges) throws Exception {
         this.GraphsName = GraphsName;
         this.WorkingDir = WorkingDir;
         allTargets = new HashMap<>();
@@ -43,6 +48,7 @@ public class TargetGraph {
             this.allTargets.put(t.name, t);
             this.targetsAdjacentOG.put(t.name, new HashMap<>());
         }
+        connect(edges);
     }
 
     public void connect(List<Edge> targetsEdges) {
@@ -75,7 +81,6 @@ public class TargetGraph {
     public void runTaskFromLastTime(Task task) {
         AdjMap targetAdj = createNewGraphFromWhatsLeft();
         runTask(task, targetAdj);
-
     }
 
 
@@ -85,10 +90,10 @@ public class TargetGraph {
     public AdjMap createNewGraphFromWhatsLeft() {
         AdjMap newTargetsAdj = new AdjMap();
         allTargets.forEach((k, v) -> {
-            if (v.result != Result.Success) {
+            if (v.getResult() != Result.Success) {
                 newTargetsAdj.put(k, new HashMap<>());
                 targetsAdjacentOG.get(k).forEach((k2, v2) -> {
-                    if (allTargets.get(k2).result != Result.Success) {
+                    if (allTargets.get(k2).getResult() != Result.Success) {
                         newTargetsAdj.get(k).put(k2, true);
                     }
                 });
@@ -121,20 +126,20 @@ public class TargetGraph {
             }
 
             requiredFor(target.name, targetAdj).forEach(tDad -> { // all dads
-                if (tDad.status == Status.FROZEN) {
+                if (tDad.getStatus() == Status.FROZEN) {
                     AtomicBoolean AllSonsFinishedSuccessfully = new AtomicBoolean(true);
                     targetsAdjacentOG.get(tDad.name).keySet().stream().forEach(tBrotherName -> {
                         Target tBrother = allTargets.get(tBrotherName);
-                        if (tBrother.result == Result.Failure || tBrother.status == Status.SKIPPED) {
-                            tDad.status = Status.SKIPPED;
+                        if (tBrother.getResult() == Result.Failure || tBrother.getStatus() == Status.SKIPPED) {
+                            tDad.setStatus(Status.SKIPPED);
                             AllSonsFinishedSuccessfully.set(false);
                         }
-                        if (tBrother.status != Status.FINISHED) {
+                        if (tBrother.getStatus() != Status.FINISHED) {
                             AllSonsFinishedSuccessfully.set(false);
                         }
                     });
                     if (AllSonsFinishedSuccessfully.get()) {
-                        tDad.status = Status.WAITING;
+                        tDad.setStatus(Status.WAITING);
                         queue.add(tDad);
                     }
                 }
@@ -152,8 +157,8 @@ public class TargetGraph {
 
     public void setFrozensToSkipped() {
         allTargets.values().forEach(target -> {
-            if (target.status.equals(Status.FROZEN))
-                target.status = Status.SKIPPED;
+            if (target.getStatus().equals(Status.FROZEN))
+                target.setStatus(Status.SKIPPED);
         });
     }
 
@@ -225,7 +230,7 @@ public class TargetGraph {
 
     public Map getStatusesStatistics() {
         Map<String, Integer> statuses = new HashMap<>();
-        allTargets.values().forEach(target -> statuses.put(target.result != null ? target.result.toString() : "Skipped", statuses.getOrDefault(target.result != null ? target.result.toString() : "Skipped", 0) + 1));
+        allTargets.values().forEach(target -> statuses.put(target.getResult() != null ? target.getResult().toString() : "Skipped", statuses.getOrDefault(target.getResult() != null ? target.getResult().toString() : "Skipped", 0) + 1));
 
         return statuses;
     }
@@ -240,16 +245,16 @@ public class TargetGraph {
         StringBuilder res = new StringBuilder();
         allTargets.values().forEach(target -> {
             res.append("Targets Name: ").append(target.name).append("\n");
-            res.append("    Tasks Result: ").append(target.result).append("\n");
-            res.append("    Targets Status: ").append(target.status).append("\n");
+            res.append("    Tasks Result: ").append(target.getResult()).append("\n");
+            res.append("    Targets Status: ").append(target.getStatus()).append("\n");
             res.append("        ");
             targetsAdjacentOG.get(target.name).keySet().forEach(k -> {
-                res.append(k).append(": ").append(allTargets.get(k).status).append(" , ");
+                res.append(k).append(": ").append(allTargets.get(k).getStatus()).append(" , ");
             });
             res.append("\n");
             res.append("        ");
             targetsAdjacentOG.get(target.name).keySet().forEach(k -> {
-                res.append(k).append(": ").append(allTargets.get(k).result).append(" , ");
+                res.append(k).append(": ").append(allTargets.get(k).getResult()).append(" , ");
             });
             res.append("\n");
 
