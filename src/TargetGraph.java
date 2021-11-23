@@ -39,6 +39,40 @@ public class TargetGraph {
 
     }
 
+    public void printAllPaths(String source, String destination)
+    {
+        Map<String,Boolean> isVisited = new HashMap<>();
+        for (String target:allTargets.keySet()) {
+            isVisited.put(target,false);
+        }
+        ArrayList<String> pathList = new ArrayList<>();
+        pathList.add(source);
+        printAllPathsRec(source, destination, isVisited, pathList);
+    }
+
+    private void printPath(List<String> PathList){
+        for (String u:PathList) {
+            UI.print(u+ "->");
+        }
+    }
+
+    private void printAllPathsRec(String u, String d, Map<String,Boolean> isVisited, List<String> localPathList)
+    {
+        if (u.equals(d)) {
+            printPath(localPathList);
+            return;
+        }
+        isVisited.replace(u,true);
+        for (String i : targetsAdjacentOG.get(u).keySet()) {
+            if (!isVisited.get(i)) {
+                localPathList.add(i);
+                printAllPathsRec(i, d, isVisited, localPathList);
+                localPathList.remove(i);
+            }
+        }
+        isVisited.replace(u,false);
+    }
+
     public TargetGraph(String GraphsName, String WorkingDir, List<Target> Targets, List<Edge> edges) throws Exception {
         this.GraphsName = GraphsName;
         this.WorkingDir = WorkingDir;
@@ -85,6 +119,7 @@ public class TargetGraph {
 
 
     private void reset() {
+
     }
 
     public AdjMap createNewGraphFromWhatsLeft() {

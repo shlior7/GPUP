@@ -67,7 +67,47 @@ public class UI {
         System.out.println(logic.targetGraph);
         return targetGraph;
     }
+    public void mainOptions2(){
+        System.out.println("Hello user! This is the Generic Platform for Utilizing Processes!");
+        System.out.println("Please select one of the following options:");
+        List<String> arrayOptions = mainOptionsStrings();
+        int numOfOption = 1;
+        for (String option:arrayOptions) {
+            System.out.println(numOfOption + ".) " + option);
+            numOfOption++;
+        }
+        int choose = GetNumInRange(arrayOptions.size());
+        while (choose!=8)
+            switch (choose){
+                case 1:
+                    loadXmlFile();
+                    break;
+                case 2:
 
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    break;
+                case 5:
+                    break;
+                case 6:
+                    break;
+                case 7:
+                    break;
+                case 8:
+                    break;
+                case 9:
+                    break;
+                default:
+                    /////////////????
+                    break;
+            }
+
+    }
+    public boolean checkIfGraphNull(){
+        return false;
+    }
     public boolean validXML() {
         return true;
     }
