@@ -1,119 +1,119 @@
-import java.util.InputMismatchException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.io.IOException;
-import java.util.Scanner;
 
 public class UI {
-    public static void print(String text) {
+    public static void printDivider() {
+        System.out.println("------------------");
+    }
+
+    public static void printDivide(String text) {
+        printDivider();
         System.out.println(text);
     }
 
-    public void load() {
-        System.out.println("Please Enter the xml path");
-        Scanner scanner = new Scanner(System.in);
-        String path = scanner.nextLine();
+    public static void println(String text) {
+        System.out.println(text);
     }
 
-    public void mainOptions() {
-        System.out.println("Hello user! This is the Generic Platform for Utilizing Processes!");
-        System.out.println("Please select one of the following options:");
-        List<String> arrayOptions = mainOptionsStrings();
-        int numOfOption = 1;
-        for (String option : arrayOptions) {
-            System.out.println(numOfOption + ".) " + option);
-            numOfOption++;
-        }
-
+    public static void print(String text) {
+        System.out.print(text);
     }
 
-    public int GetNumInRange(int lim) {
-        Scanner s = new Scanner(System.in);
-        try {
-            int choose = s.nextInt();
-            if (choose >= 1 && choose <= lim) {
-                return choose;
-            } else {
-                System.out.println("Please enter a number in the range of options!");
-                return GetNumInRange(lim);
-            }
-        } catch (InputMismatchException e) {
-            System.out.println("Please enter a number!");
-            return GetNumInRange(lim);
-        }
+    public static void error(String err) {
+        printDivide("Error: " + err);
+        printDivider();
     }
 
-    public List<String> mainOptionsStrings() {
-        List<String> arrayOptions = new LinkedList<>();
-        arrayOptions.add("Please enter the XML full path that you want to load");
-        arrayOptions.add("Displays general information on the target graph");
-        arrayOptions.add("Displays target information");
-        arrayOptions.add("Finding a route between 2 targets");
-        arrayOptions.add("Run a task");
-        arrayOptions.add("Check if a particular target is included in the circuit or not");
-        arrayOptions.add("Saving the system status to a file");
-        arrayOptions.add("Loading the system status from a file");
-        arrayOptions.add("Exit");
-        return arrayOptions;
-    }
-
-    public TargetGraph loadXmlFile() {
-        if (!validXML()) {
-            return null;
-        }
-        TargetGraph targetGraph = new TargetGraph();
-        Logic logic = new Logic();
-        logic.Load("ex1-cycle.xml");
-        System.out.println(logic.targetGraph);
-        return targetGraph;
-    }
-    public void mainOptions2(){
-        System.out.println("Hello user! This is the Generic Platform for Utilizing Processes!");
-        System.out.println("Please select one of the following options:");
-        List<String> arrayOptions = mainOptionsStrings();
-        int numOfOption = 1;
-        for (String option:arrayOptions) {
-            System.out.println(numOfOption + ".) " + option);
-            numOfOption++;
-        }
-        int choose = GetNumInRange(arrayOptions.size());
-        while (choose!=8)
-            switch (choose){
-                case 1:
-                    loadXmlFile();
-                    break;
-                case 2:
-
-                    break;
-                case 3:
-                    break;
-                case 4:
-                    break;
-                case 5:
-                    break;
-                case 6:
-                    break;
-                case 7:
-                    break;
-                case 8:
-                    break;
-                case 9:
-                    break;
-                default:
-                    /////////////????
-                    break;
-            }
-
-    }
-    public boolean checkIfGraphNull(){
-        return false;
-    }
-    public boolean validXML() {
-        return true;
+    public static void warning(String warn) {
+        printDivide("Warning: " + warn);
+        printDivider();
     }
 
     public static void log(String Data, String targetName) throws IOException {
-        print(Data);
-        Logger.log(Data, targetName);
+        println(Data);
+        FileHandler.log(Data, targetName);
     }
+
+
+    public static String prompt(String question, String... options) {
+        String input;
+        Scanner scanner = new Scanner(System.in);
+        boolean inOptions = true;
+
+        do {
+            printDivide(question);
+            input = scanner.nextLine();
+            String finalInput = input;
+            inOptions = Arrays.stream(options).anyMatch(option -> option.equalsIgnoreCase(finalInput)) || options.length == 0;
+        } while (!inOptions);
+
+        return input;
+    }
+
+    public static void printPath(List<String> PathList) {
+        for (String u : PathList) {
+            UI.print(u + "->");
+        }
+    }
+
+    public static int promptInt(String question, int min, int max) {
+        int input = 0;
+        Scanner scanner = new Scanner(System.in);
+
+        do {
+            printDivide(question);
+            if (scanner.hasNextInt())
+                input = scanner.nextInt();
+        } while (input < min || input > max);
+        return input;
+    }
+
+    public static float promptFloat(String question, double min, double max) {
+        float input = 0;
+        Scanner scanner = new Scanner(System.in);
+
+        do {
+            printDivide(question);
+            if (scanner.hasNextFloat())
+                input = scanner.nextFloat();
+
+        } while (input < min || input > max);
+
+        return input;
+    }
+
+    public static float promptFloat(String question) {
+        float input = 0;
+        Scanner scanner = new Scanner(System.in);
+
+        do {
+            printDivide(question);
+
+            if (scanner.hasNextFloat())
+                input = scanner.nextFloat();
+
+
+        } while (input < 0 || input > 1);
+
+        return input;
+    }
+
+    public static boolean promptBoolean(String question) {
+        String input = "";
+        Scanner scanner = new Scanner(System.in);
+        boolean no;
+        boolean yes;
+
+        do {
+            printDivide(question + "(Y/N)");
+            if (scanner.hasNext()) {
+                input = scanner.nextLine();
+            }
+            yes = input.equalsIgnoreCase("y");
+            no = input.equalsIgnoreCase("n");
+        } while (!yes && !no);
+
+        return yes;
+    }
+
 }

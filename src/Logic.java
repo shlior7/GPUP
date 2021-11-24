@@ -1,127 +1,84 @@
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.io.*;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class Logic {
-    TargetGraph targetGraph;
-    FileHandler fileHandler = new FileHandler();
+    private static TargetGraph targetGraph;
+    private static final FileHandler fileHandler = new FileHandler();
 
-    public void load(String xmlPath) {
+
+    public static void showMenu() {
+        Menu menu = new Menu("GPUP",
+                Arrays.asList(
+                        new Load_Option(),
+                        new GraphInfo_Option(),
+                        new TargetInfo_Option(),
+                        new FindPath_Option(),
+                        new RunTask_Option(),
+                        new FindCircle_Option())
+        );
+        menu.spawnMenu();
+    }
+
+    public static void load(String xmlPath) {
         try {
             targetGraph = fileHandler.loadGPUPXMLFile(xmlPath);
         } catch (IOException e) {
-            System.out.println("error with loading file : " + e.getMessage());
+            UI.error("with loading file : " + e.getMessage());
         } catch (ParserConfigurationException e) {
-            System.out.println("error with parsing file : " + e.getMessage());
+            UI.error("with parsing file : " + e.getMessage());
         } catch (SAXException e) {
-            System.out.println("error with xml file : " + e.getMessage());
+            UI.error("with xml file : " + e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
+            UI.error(e.toString());
         }
     }
 
-    private Document loadFile(String xmlPath) throws ParserConfigurationException, IOException, SAXException {
-        File file = new File(xmlPath);
-        Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file);
-        doc.getDocumentElement().normalize();
-        return doc;
+    public static boolean validateGraph() {
+        if (targetGraph == null) {
+            UI.error("no target graph found");
+            return false;
+        }
+        return true;
     }
 
-    public void Load(String xmlPath) {
-        List<Edge> targetsEdges = new ArrayList<>();
-        List<Target> allTargets = new ArrayList<>();
-        try {
-            Document doc = loadFile(xmlPath);
-            NodeList configurations = doc.getElementsByTagName("GPUP-Configuration");
-            if (configurations.getLength() == 0 || configurations.item(0).getNodeType() != Node.ELEMENT_NODE)
-                throw new Exception("no configurations");
+    public static void graphInfo() {
+        if (validateGraph())
+            UI.printDivide(targetGraph.toString());
+    }
 
-            Element Configuration = (Element) configurations.item(0);
-            String GraphsName = Configuration.getElementsByTagName("GPUP-Graph-Name").item(0).getTextContent();
-            String WorkingDir = Configuration.getElementsByTagName("GPUP-Working-Directory").item(0).getTextContent();
-
-            NodeList targetsNodes = doc.getElementsByTagName("GPUP-Targets");
-            if (targetsNodes.getLength() == 0 || targetsNodes.item(0).getNodeType() != Node.ELEMENT_NODE)
-                throw new Exception("no Targets");
-
-            NodeList targets = ((Element) targetsNodes.item(0)).getElementsByTagName("GPUP-Target");
-            for (int itr = 0; itr < targets.getLength(); itr++) {
-                Node targetNode = targets.item(itr);
-                Target target = new Target(targetNode.getAttributes().getNamedItem("name").getTextContent());
-                if (targetNode.getNodeType() == Node.ELEMENT_NODE) {
-                    Element eElement = (Element) targetNode;
-                    NodeList userData = eElement.getElementsByTagName("GPUP-User-Data");
-                    if (userData.getLength() > 0)
-                        target.setUserData(userData.item(0).getTextContent());
-                    allTargets.add(target);
-                    NodeList dependencies = eElement.getElementsByTagName("GPUG-Dependency");
-                    for (int jtr = 0; jtr < dependencies.getLength(); jtr++) {
-                        String type = dependencies.item(jtr).getAttributes().getNamedItem("type").getTextContent();
-                        Edge newEdge = new Edge(target.name, dependencies.item(jtr).getTextContent(), type.equals("dependsOn"));
-                        if (targetsEdges.stream().allMatch(e -> !e.in.equals(newEdge.in) || !e.out.equals(newEdge.out)))
-                            targetsEdges.add(new Edge(target.name, dependencies.item(jtr).getTextContent(), type.equals("dependsOn")));
-                    }
-                }
+    public static void targetInfo(String name) {
+        if (validateGraph()) {
+            Optional<Target> target = targetGraph.getTarget(name);
+            if (target.isPresent())
+                UI.printDivide(targetGraph.getTargetInfo(name));
+            else {
+                UI.error("No target by this name: " + name);
             }
-            targetGraph = new TargetGraph(GraphsName, WorkingDir, allTargets, targetsEdges);
-        } catch (IOException e) {
-            System.out.println("error with loading file : " + e.getMessage());
-        } catch (ParserConfigurationException e) {
-            System.out.println("error with parsing file : " + e.getMessage());
-        } catch (SAXException e) {
-            System.out.println("error with xml file : " + e.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
-
-    public void loadGraphFromLastPoint(String pathName) {
-        File f = new File(pathName);
-        File[] match = f.listFiles(((dir, name) -> {
-            return name.startsWith("Simulation");
-        }));
-        findLastRunnedTaskFolder(match);
-//        DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss").parse(currentTime).toString()
-    }
-
-    public String findLastRunnedTaskFolder(File[] folders) {
-        if (folders.length == 0) {
-            UI.print("no runned tasks");
+    public static void runTaskOnTargets(Task task, boolean startFromLastPoint) {
+        if (startFromLastPoint) {
+            targetGraph.runTaskFromLastTime(task);
+        } else {
+            targetGraph.runTaskFromScratch(task);
         }
-        String s = folders[0].getName().substring(folders[0].getName().lastIndexOf(" "));
-        UI.print(s);
-//        Arrays.stream(folders).reduce()
-        return s;
     }
 
-    public void runTaskOnTargets(Task task) {
-        targetGraph.runTaskFromScratch(task);
-    }
-
-    public void runTaskOnTargetsAgain(Task task) {
-        targetGraph.runTaskFromLastTime(task);
-    }
-
-    public void save(String xmlPath) throws TransformerException {
+    public static void save(String xmlPath) throws TransformerException {
         fileHandler.saveToXML(targetGraph, xmlPath);
+    }
+
+    public static void findCircle(String targetName) {
+        UI.printPath(targetGraph.findCircuit(targetName));
+    }
+
+    public static void findPath(String targetName1, String targetName2, boolean dependsOn) {
+        targetGraph.printAllPaths(dependsOn ? targetName1 : targetName2, dependsOn ? targetName2 : targetName1);
     }
 }
 

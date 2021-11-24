@@ -11,17 +11,29 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 public class FileHandler {
     private Document document;
     private Element config;
     private Element targetsElement;
+    public static String logLibPath;
+
+    public static boolean log(String Data, String targetName) throws IOException {
+        if (logLibPath.equals("")) {
+            UI.error("no library path provided");
+            return false;
+        }
+        String filePath = logLibPath + "/" + targetName + ".log";
+        new File(filePath).createNewFile();
+        FileWriter fw = new FileWriter(filePath, true);
+        BufferedWriter bw = new BufferedWriter(fw);
+        PrintWriter out = new PrintWriter(bw);
+        out.println(Data + "\n");
+        out.close();
+        return true;
+    }
 
     public TargetGraph loadGPUPXMLFile(String xmlPath) throws Exception {
         createDocument(xmlPath);
@@ -99,12 +111,20 @@ public class FileHandler {
 
         nodeListToElements(targetsElement.getChildNodes()).forEach(targetNode ->
         {
-            Target target = tg.getTarget(targetNode.getAttributes().getNamedItem("name").getTextContent());
-            Element status = document.createElement("Status");
-            status.appendChild(document.createTextNode(target.getStatus().toString()));
-            Element result = document.createElement("Result");
-            result.appendChild(document.createTextNode(target.getResult().toString()));
-            targetNode.appendChild(status);
+            try {
+                String targetName = targetNode.getAttributes().getNamedItem("name").getTextContent();
+                Optional<Target> OptionalTarget = tg.getTarget(targetName);
+                if (!OptionalTarget.isPresent())
+                    throw new Exception("no target in the name of " + targetName);
+                Target target = OptionalTarget.get();
+                Element status = document.createElement("Status");
+                status.appendChild(document.createTextNode(tg.getStatus(targetName).toString()));
+                Element result = document.createElement("Result");
+                result.appendChild(document.createTextNode(target.getResult().toString()));
+                targetNode.appendChild(status);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         });
 
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -112,6 +132,6 @@ public class FileHandler {
         DOMSource domSource = new DOMSource(document);
         StreamResult streamResult = new StreamResult(new File(xmlFilePath));
         transformer.transform(domSource, streamResult);
-        UI.print("done");
+        UI.printDivide("done");
     }
 }
