@@ -1,3 +1,4 @@
+import javax.xml.transform.TransformerException;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
@@ -94,5 +95,37 @@ class FindCircle_Option implements Option {
         String targetName = UI.prompt("Please enter the targets name");
 
         Logic.findCircle(targetName);
+    }
+}
+
+class SaveFile_Option implements Option {
+    @Override
+    public String getText() {
+        return "Save current graph";
+    }
+
+    @Override
+    public void actOption() {
+        String xmlPath = UI.prompt("Please enter the the path which to save the graph file");
+        try{
+        Logic.save(xmlPath);
+        }
+        catch (TransformerException e){
+            UI.error(e.getMessage());
+        }
+    }
+}
+
+class LoadFile_Option implements Option {
+    @Override
+    public String getText() {
+        return "Load a graph that a task was already ran on";
+    }
+
+    @Override
+    public void actOption() {
+        String xmlPath = UI.prompt("Please enter the graphs file path");
+
+        Logic.load(xmlPath);
     }
 }

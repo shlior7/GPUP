@@ -85,13 +85,19 @@ public class FileHandler {
         List<Element> targets = nodeListToElements(targetsElement.getElementsByTagName("GPUP-Target"));
         targets.forEach(targetNode -> {
             Target target = new Target(targetNode.getAttributes().getNamedItem("name").getTextContent());
-            Element eElement = (Element) targetNode;
-            NodeList userData = eElement.getElementsByTagName("GPUP-User-Data");
+
+
+            NodeList result = targetNode.getElementsByTagName("Result");
+            if( result.getLength() != 0){
+                target.setResult(result.item(0).getTextContent());
+            }
+
+            NodeList userData = targetNode.getElementsByTagName("GPUP-User-Data");
             if (userData.getLength() != 0)
                 target.setUserData(userData.item(0).getTextContent());
             allTargets.add(target);
 
-            List<Element> dependencies = nodeListToElements(eElement.getElementsByTagName("GPUG-Dependency"));
+            List<Element> dependencies = nodeListToElements(targetNode.getElementsByTagName("GPUG-Dependency"));
             dependencies.forEach(edge -> {
                 String type = edge.getAttributes().getNamedItem("type").getTextContent();
                 Edge newEdge = new Edge(target.name, edge.getTextContent(), type.equals("dependsOn"));
@@ -116,12 +122,11 @@ public class FileHandler {
                 Optional<Target> OptionalTarget = tg.getTarget(targetName);
                 if (!OptionalTarget.isPresent())
                     throw new Exception("no target in the name of " + targetName);
+
                 Target target = OptionalTarget.get();
-                Element status = document.createElement("Status");
-                status.appendChild(document.createTextNode(tg.getStatus(targetName).toString()));
                 Element result = document.createElement("Result");
                 result.appendChild(document.createTextNode(target.getResult().toString()));
-                targetNode.appendChild(status);
+                targetNode.appendChild(result);
             } catch (Exception e) {
                 e.printStackTrace();
             }

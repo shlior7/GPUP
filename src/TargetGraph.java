@@ -31,8 +31,7 @@ public class TargetGraph {
     Map<String, Target> allTargets;
     Map<String, Status> targetsStatuses;
 
-    public TargetGraph() {
-    }
+    public TargetGraph() {}
 
 
     public TargetGraph(String GraphsName, String WorkingDir, List<Target> Targets, List<Edge> edges) throws Exception {
@@ -41,10 +40,14 @@ public class TargetGraph {
         allTargets = new HashMap<>();
         targetsAdjacentOG = new AdjMap();
         targetsStatuses = new HashMap<>();
+
         for (Target t : Targets) {
             this.allTargets.put(t.name, t);
             this.targetsAdjacentOG.put(t.name, new HashMap<>());
-            this.targetsStatuses.put(t.name, Status.FROZEN);
+
+            if(t.getResult() != null)  this.targetsStatuses.put(t.name, Status.FINISHED);
+            else this.targetsStatuses.put(t.name, Status.FROZEN);
+
         }
         connect(edges);
     }
@@ -135,6 +138,7 @@ public class TargetGraph {
         AdjMap newTargetsAdj = new AdjMap();
         allTargets.forEach((k, v) -> {
             if (v.getResult() != Result.Success) {
+                setStatus(k,Status.FROZEN);
                 newTargetsAdj.put(k, new HashMap<>());
                 targetsAdjacentOG.get(k).forEach((k2, v2) -> {
                     if (allTargets.get(k2).getResult() != Result.Success) {

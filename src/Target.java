@@ -48,6 +48,14 @@ public class Target {
         return result;
     }
 
+    public void setResult(String result) {
+        try {
+            this.result = Result.valueOf(result);
+        }
+        catch (IllegalArgumentException ignored){
+        }
+    }
+
     public void setUserData(String userData) {
         this.userData = userData;
     }
