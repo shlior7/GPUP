@@ -42,7 +42,7 @@ public class Simulation implements Task {
             result = Result.Success;
         UI.log("Finished Time: " + DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()), target.name);
         UI.log("Task Finished with " + result.toString(), target.name);
-        UI.print("--------------------------------\n");
+        UI.printDivide("--------------------------------\n");
         return result;
     }
 
