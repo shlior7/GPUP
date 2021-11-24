@@ -39,7 +39,6 @@ public class UI {
         String input;
         Scanner scanner = new Scanner(System.in);
         boolean inOptions = true;
-
         do {
             printDivide(question);
             input = scanner.nextLine();
@@ -54,6 +53,7 @@ public class UI {
         for (String u : PathList) {
             UI.print(u + "->");
         }
+        UI.println("");
     }
 
     public static int promptInt(String question, int min, int max) {
@@ -62,8 +62,11 @@ public class UI {
 
         do {
             printDivide(question);
-            if (scanner.hasNextInt())
-                input = scanner.nextInt();
+            while (!scanner.hasNextInt()) {
+                System.out.println("That's not a number!");
+                scanner.next(); // this is important!
+            }
+            input = scanner.nextInt();
         } while (input < min || input > max);
         return input;
     }
@@ -74,7 +77,10 @@ public class UI {
 
         do {
             printDivide(question);
-            if (scanner.hasNextFloat())
+            while (!scanner.hasNextFloat()) {
+                System.out.println("That's not a number!");
+                scanner.next();
+            }
                 input = scanner.nextFloat();
 
         } while (input < min || input > max);
@@ -88,10 +94,11 @@ public class UI {
 
         do {
             printDivide(question);
-
-            if (scanner.hasNextFloat())
-                input = scanner.nextFloat();
-
+            while (!scanner.hasNextFloat()) {
+                System.out.println("That's not a number!");
+                scanner.next();
+            }
+            input = scanner.nextFloat();
 
         } while (input < 0 || input > 1);
 
@@ -99,21 +106,14 @@ public class UI {
     }
 
     public static boolean promptBoolean(String question) {
-        String input = "";
         Scanner scanner = new Scanner(System.in);
-        boolean no;
-        boolean yes;
-
-        do {
-            printDivide(question + "(Y/N)");
-            if (scanner.hasNext()) {
-                input = scanner.nextLine();
-            }
-            yes = input.equalsIgnoreCase("y");
-            no = input.equalsIgnoreCase("n");
-        } while (!yes && !no);
-
-        return yes;
+        printDivide(question + "(Y/N)");
+        while (!scanner.hasNext("[ynYN]")) {
+            UI.error("only Y/N is acceptable");
+            scanner.next();
+        }
+        String input = scanner.next();
+        return input.equalsIgnoreCase("y");
     }
 
 }

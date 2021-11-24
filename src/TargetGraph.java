@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 class AdjMap extends HashMap<String, Map<String, Boolean>> {
 }
@@ -61,10 +63,21 @@ public class TargetGraph {
     }
 
     public Optional<Target> getTarget(String name) {
-        return Optional.of(allTargets.get(name));
+        return Optional.of(allTargets.getOrDefault(name,null));
+    }
+
+    public boolean validateTarget(String targetName){
+        if(!getTarget(targetName).isPresent()){
+            UI.error(targetName+" is not a target");
+            return false;
+        }
+        return true;
     }
 
     public void printAllPaths(String source, String destination) {
+        if(!validateTarget(source) || !validateTarget(destination))
+            return;
+
         Map<String, Boolean> isVisited = new HashMap<>();
         for (String target : allTargets.keySet()) {
             isVisited.put(target, false);
@@ -74,20 +87,21 @@ public class TargetGraph {
         printAllPathsRec(source, destination, isVisited, pathList);
     }
 
-    private void printAllPathsRec(String u, String d, Map<String, Boolean> isVisited, List<String> localPathList) {
-        if (u.equals(d)) {
+    private void printAllPathsRec(String source, String destination, Map<String, Boolean> isVisited, List<String> localPathList) {
+        if (source.equals(destination)) {
             UI.printPath(localPathList);
             return;
         }
-        isVisited.replace(u, true);
-        for (String i : targetsAdjacentOG.get(u).keySet()) {
+
+        isVisited.replace(source, true);
+        for (String i : targetsAdjacentOG.get(source).keySet()) {
             if (!isVisited.get(i)) {
                 localPathList.add(i);
-                printAllPathsRec(i, d, isVisited, localPathList);
+                 printAllPathsRec(i, destination, isVisited, localPathList);
                 localPathList.remove(i);
             }
         }
-        isVisited.replace(u, false);
+        isVisited.replace(source, false);
     }
 
     public void connect(List<Edge> targetsEdges) {
@@ -131,7 +145,9 @@ public class TargetGraph {
 
 
     private void reset() {
-
+        allTargets.values().forEach(target -> {
+            target.setResult(null);
+        });
     }
 
     public AdjMap createNewGraphFromWhatsLeft() {
@@ -236,11 +252,14 @@ public class TargetGraph {
     }
 
     public LinkedList<String> findCircuit(String vertex) {
+        LinkedList<String> path = new LinkedList<String>();
+        if(!validateTarget(vertex))
+            return path;
+
         AdjMap temp = new AdjMap();
         for (String v : targetsAdjacentOG.keySet()) {
             temp.put(v, new HashMap<>());
         }
-        LinkedList<String> path = new LinkedList<String>();
         path.add(vertex);
         if (findCircuitByDfs(vertex, vertex, path, temp)) {
             return path;
@@ -298,6 +317,8 @@ public class TargetGraph {
     }
 
     public String getTargetInfo(String targetName) {
+        if(!validateTarget(targetName))
+            return "";
         return allTargets.get(targetName).toString() + "\nStatus=" + getStatus(targetName);
     }
 }

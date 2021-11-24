@@ -19,7 +19,7 @@ class Load_Option implements Option {
 
     @Override
     public void actOption() {
-        Logic.load(UI.prompt("Please enter the graphs XML full path that you want to load"));
+        Logic.load(UI.prompt("Please enter the graphs XML full path that you want to load\n(A graph that was saved is acceptable as well)"));
     }
 }
 
@@ -74,7 +74,7 @@ class RunTask_Option implements Option {
     @Override
     public void actOption() {
         int timeToProcess = UI.promptInt("Please enter the time to process the simulation (milliseconds) ", 0, Integer.MAX_VALUE);
-        boolean isRandom = UI.promptBoolean("Please enter if the process time should be random or not(the process time enter before is the maximum)");
+        boolean isRandom = UI.promptBoolean("Please enter if the process time should be random or not\n(the process time enter before is the maximum)");
         float successProbability = UI.promptFloat("Please enter the probability of success");
         float successWithWarningProbability = UI.promptFloat("Please enter the probability of warning given it was successful");
         boolean startFromLastPoint = Logic.validateGraph() && UI.promptBoolean("Do you want to start the task on the graph from the last point");

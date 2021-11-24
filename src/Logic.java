@@ -18,7 +18,9 @@ public class Logic {
                         new TargetInfo_Option(),
                         new FindPath_Option(),
                         new RunTask_Option(),
-                        new FindCircle_Option())
+                        new FindCircle_Option(),
+                        new SaveFile_Option()
+                        )
         );
         menu.spawnMenu();
     }
