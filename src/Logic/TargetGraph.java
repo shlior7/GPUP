@@ -1,29 +1,29 @@
+package Logic;
 
-import java.io.File;
-import java.io.FileWriter;
+import UI.UI;
+
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-class AdjMap extends HashMap<String, Map<String, Boolean>> {
+enum Type {
+    leaf,
+    root,
+    middle,
+    independent
 }
 
-class Edge {
-    String out, in;
-
-    Edge(String depends, String required) {
-        this.out = depends;
-        this.in = required;
-    }
-
-    Edge(String in, String out, boolean dependsOrRequired) {
-        this(dependsOrRequired ? in : out, dependsOrRequired ? out : in);
-    }
+enum Status {
+    WAITING,
+    FROZEN,
+    SKIPPED,
+    IN_PROCESS,
+    FINISHED
 }
+
+class AdjMap extends HashMap<String, Map<String, Boolean>>{}
 
 public class TargetGraph {
 
@@ -36,7 +36,7 @@ public class TargetGraph {
     public TargetGraph() {}
 
 
-    public TargetGraph(String GraphsName, String WorkingDir, List<Target> Targets, List<Edge> edges) throws Exception {
+    public TargetGraph(String GraphsName, String WorkingDir, List<Target> Targets, List<Edge> edges)  {
         this.GraphsName = GraphsName;
         this.WorkingDir = WorkingDir;
         allTargets = new HashMap<>();
@@ -58,50 +58,50 @@ public class TargetGraph {
         return targetsStatuses.get(targetName);
     }
 
-    public Status setStatus(String targetName, Status status) {
-        return targetsStatuses.put(targetName, status);
+    public void setStatus(String targetName, Status status) {
+        targetsStatuses.put(targetName, status);
     }
 
     public Optional<Target> getTarget(String name) {
-        return Optional.of(allTargets.getOrDefault(name,null));
+        return Optional.ofNullable(allTargets.getOrDefault(name,null));
     }
 
-    public boolean validateTarget(String targetName){
-        if(!getTarget(targetName).isPresent()){
-            UI.error(targetName+" is not a target");
-            return false;
-        }
-        return true;
+    public boolean NoSuchTarget(String targetName){
+        return !getTarget(targetName).isPresent();
     }
 
-    public void printAllPaths(String source, String destination) {
-        if(!validateTarget(source) || !validateTarget(destination))
-            return;
+    public LinkedList<List<String>> printAllPaths(String source, String destination) {
+        if( NoSuchTarget(source)|| NoSuchTarget(destination))
+            return null;
 
         Map<String, Boolean> isVisited = new HashMap<>();
         for (String target : allTargets.keySet()) {
             isVisited.put(target, false);
         }
         ArrayList<String> pathList = new ArrayList<>();
+        LinkedList<List<String>> allPaths = new LinkedList<>();
         pathList.add(source);
-        printAllPathsRec(source, destination, isVisited, pathList);
-    }
+        return printAllPathsRec(source, destination, isVisited, pathList,allPaths)? allPaths : null;
 
-    private void printAllPathsRec(String source, String destination, Map<String, Boolean> isVisited, List<String> localPathList) {
+    }
+    private boolean printAllPathsRec(String source, String destination, Map<String, Boolean> isVisited, List<String> localPathList,LinkedList<List<String>> allPaths) {
+        boolean flag = false;
         if (source.equals(destination)) {
-            UI.printPath(localPathList);
-            return;
+            List<String> temp = new LinkedList<>(localPathList);
+            allPaths.addLast(temp);
+            return true;
         }
 
         isVisited.replace(source, true);
         for (String i : targetsAdjacentOG.get(source).keySet()) {
             if (!isVisited.get(i)) {
                 localPathList.add(i);
-                 printAllPathsRec(i, destination, isVisited, localPathList);
+                flag = flag || printAllPathsRec(i, destination, isVisited, localPathList,allPaths);
                 localPathList.remove(i);
             }
         }
         isVisited.replace(source, false);
+        return flag;
     }
 
     public void connect(List<Edge> targetsEdges) {
@@ -111,34 +111,18 @@ public class TargetGraph {
         }
     }
 
-    public String createLogLibrary(String taskName) {
-        String currentTime = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss").format(LocalDateTime.now());
-        String path = taskName + " - " + currentTime;
-        new File(path).mkdir();
-        return path;
-    }
-
-    public void log(String LibraryPath, String targetName, String loggedData) throws IOException {
-        File log = new File(LibraryPath + "/" + targetName + ".log");
-        log.createNewFile();
-        FileWriter myWriter = new FileWriter(log.getPath());
-        myWriter.write(loggedData);
-        myWriter.close();
-    }
-
-    public void runTaskFromScratch(Task task) {
+    public void runTaskFromScratch(Task task) throws IOException, InterruptedException {
         reset();
         runTask(task, targetsAdjacentOG);
     }
 
-    public void runTaskFromLastTime(Task task) {
+    public void runTaskFromLastTime(Task task) throws IOException, InterruptedException {
         AdjMap targetAdj;
 
-        if (allTargets.values().stream().anyMatch(target -> target.getResult() != null)) {
+        if (taskAlreadyRan()) {
             targetAdj = createNewGraphFromWhatsLeft();
         } else {
             targetAdj = targetsAdjacentOG;
-            UI.warning("target did not run yet");
         }
         runTask(task, targetAdj);
     }
@@ -147,6 +131,7 @@ public class TargetGraph {
     private void reset() {
         allTargets.values().forEach(target -> {
             target.setResult(null);
+            setStatus(target.name,Status.FROZEN);
         });
     }
 
@@ -155,6 +140,7 @@ public class TargetGraph {
         allTargets.forEach((k, v) -> {
             if (v.getResult() != Result.Success) {
                 setStatus(k,Status.FROZEN);
+                v.setResult(null);
                 newTargetsAdj.put(k, new HashMap<>());
                 targetsAdjacentOG.get(k).forEach((k2, v2) -> {
                     if (allTargets.get(k2).getResult() != Result.Success) {
@@ -177,20 +163,16 @@ public class TargetGraph {
         return queue;
     }
 
-    public void runTask(Task task, AdjMap targetAdj) {
-        FileHandler.logLibPath = createLogLibrary(task.getName());
+    public void runTask(Task task, AdjMap targetAdj) throws IOException, InterruptedException {
         Queue<Target> queue = initQueue(targetAdj);
 
         while (!queue.isEmpty()) {
             Target target = queue.poll();
-            try {
                 setStatus(target.name, Status.IN_PROCESS);
                 target.run(task);
                 setStatus(target.name, Status.FINISHED);
-            } catch (InterruptedException | IOException e) {
-                e.printStackTrace();
-            }
-
+            if(target.name.equals("O"))
+                UI.print("J");
             requiredFor(target.name, targetAdj).forEach(tDadName -> { // all dads
                 if (getStatus(tDadName) == Status.FROZEN) {
                     AtomicBoolean AllSonsFinishedSuccessfully = new AtomicBoolean(true);
@@ -211,13 +193,10 @@ public class TargetGraph {
                 }
             });
         }
-
-        setFrozensToSkipped();
-        UI.printDivide(getPostTaskRunInfo());
-        getStatusesStatistics().forEach((k, v) -> UI.printDivide(k + ": " + v + "\n"));
+        setFrozenToSkipped();
     }
 
-    public void setFrozensToSkipped() {
+    public void setFrozenToSkipped() {
         allTargets.keySet().forEach(targetName -> {
             if (getStatus(targetName).equals(Status.FROZEN))
                 setStatus(targetName, Status.SKIPPED);
@@ -252,8 +231,8 @@ public class TargetGraph {
     }
 
     public LinkedList<String> findCircuit(String vertex) {
-        LinkedList<String> path = new LinkedList<String>();
-        if(!validateTarget(vertex))
+        LinkedList<String> path = new LinkedList<>();
+        if(NoSuchTarget(vertex))
             return path;
 
         AdjMap temp = new AdjMap();
@@ -264,7 +243,8 @@ public class TargetGraph {
         if (findCircuitByDfs(vertex, vertex, path, temp)) {
             return path;
         }
-        return null;
+        path.pop();
+        return path;
     }
 
     private boolean findCircuitByDfs(String vertex, String source, LinkedList<String> path, AdjMap adjMapMark) {
@@ -284,9 +264,10 @@ public class TargetGraph {
         return false;
     }
 
-    public Map<String, Integer> getStatusesStatistics() {
-        Map<String, Integer> statuses = new HashMap<>();
-        allTargets.values().forEach(target -> statuses.put(target.getResult() != null ? target.getResult().toString() : "Skipped", statuses.getOrDefault(target.getResult() != null ? target.getResult().toString() : "Skipped", 0) + 1));
+
+    public Map<String, List<String>> getStatusesStatistics() {
+        Map<String, List<String>> statuses = new HashMap<>();
+        allTargets.values().forEach(target -> statuses.put(Logic.ifNullThenString(target.getResult(),"Skipped"), Stream.concat(statuses.getOrDefault(Logic.ifNullThenString(target.getResult(),"Skipped"), new ArrayList<>()).stream(),Stream.of(target.name)).collect(Collectors.toList())));
 
         return statuses;
     }
@@ -302,7 +283,7 @@ public class TargetGraph {
         allTargets.values().forEach(target -> {
             res.append("Targets Name: ").append(target.name).append("\n");
             res.append("    Tasks Result: ").append(target.getResult()).append("\n");
-            res.append("    Targets Status: ").append(getStatus(target.name)).append("\n");
+            res.append("    Targets Logic.Status: ").append(getStatus(target.name)).append("\n");
             res.append("    Process Time: ").append(target.getProcessTime().toString()).append("\n");
             res.append("--------------------\n");
         });
@@ -311,14 +292,16 @@ public class TargetGraph {
 
     @Override
     public String toString() {
-        String res = "Number of targets: " + allTargets.size() + '\n' +
+        return "Number of targets: " + allTargets.size() + '\n' +
                 "Types: " + getTypesStatistics(targetsAdjacentOG);
-        return res;
     }
 
     public String getTargetInfo(String targetName) {
-        if(!validateTarget(targetName))
-            return "";
-        return allTargets.get(targetName).toString() + "\nStatus=" + getStatus(targetName);
+        Optional<Target> target = getTarget(targetName);
+        return target.map(value -> value + "\nLogic.Status=" + getStatus(targetName)).orElseGet(() -> targetName + " is not a target!");
+    }
+
+    public boolean taskAlreadyRan() {
+        return allTargets.values().stream().anyMatch(target -> target.getResult() != null);
     }
 }

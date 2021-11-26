@@ -1,3 +1,8 @@
+package UI;
+
+import Logic.Target;
+import Logic.TargetGraph;
+import Logic.Edge;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -20,11 +25,7 @@ public class FileHandler {
     private Element targetsElement;
     public static String logLibPath;
 
-    public static boolean log(String Data, String targetName) throws IOException {
-        if (logLibPath.equals("")) {
-            UI.error("no library path provided");
-            return false;
-        }
+    public static void log(String Data, String targetName) throws IOException {
         String filePath = logLibPath + "/" + targetName + ".log";
         new File(filePath).createNewFile();
         FileWriter fw = new FileWriter(filePath, true);
@@ -32,7 +33,6 @@ public class FileHandler {
         PrintWriter out = new PrintWriter(bw);
         out.println(Data + "\n");
         out.close();
-        return true;
     }
 
     public TargetGraph loadGPUPXMLFile(String xmlPath) throws Exception {
@@ -82,7 +82,7 @@ public class FileHandler {
             throw new Exception("no Targets");
 
         targetsElement = (Element) targetsNodes.item(0);
-        List<Element> targets = nodeListToElements(targetsElement.getElementsByTagName("GPUP-Target"));
+        List<Element> targets = nodeListToElements(targetsElement.getElementsByTagName("GPUP-Logic.Target"));
         targets.forEach(targetNode -> {
             Target target = new Target(targetNode.getAttributes().getNamedItem("name").getTextContent());
 
@@ -101,7 +101,7 @@ public class FileHandler {
             dependencies.forEach(edge -> {
                 String type = edge.getAttributes().getNamedItem("type").getTextContent();
                 Edge newEdge = new Edge(target.name, edge.getTextContent(), type.equals("dependsOn"));
-                if (targetsEdges.stream().allMatch(e -> !e.in.equals(newEdge.in) || !e.out.equals(newEdge.out)))
+                if (targetsEdges.stream().allMatch(e -> !e.getIn().equals(newEdge.getIn()) || !e.getOut().equals(newEdge.getOut())))
                     targetsEdges.add(newEdge);
             });
         });
@@ -114,29 +114,30 @@ public class FileHandler {
 
 
     public void saveToXML(TargetGraph tg, String xmlFilePath) throws TransformerException {
-
         nodeListToElements(targetsElement.getChildNodes()).forEach(targetNode ->
         {
-            try {
-                String targetName = targetNode.getAttributes().getNamedItem("name").getTextContent();
-                Optional<Target> OptionalTarget = tg.getTarget(targetName);
-                if (!OptionalTarget.isPresent())
-                    throw new Exception("no target in the name of " + targetName);
-
+            String targetName = targetNode.getAttributes().getNamedItem("name").getTextContent();
+            Optional<Target> OptionalTarget = tg.getTarget(targetName);
+            if (OptionalTarget.isPresent()) {
                 Target target = OptionalTarget.get();
-                Element result = document.createElement("Result");
-                result.appendChild(document.createTextNode(target.getResult().toString()));
-                targetNode.appendChild(result);
-            } catch (Exception e) {
-                e.printStackTrace();
+                if (target.getResult() != null) {
+                    Node resultNode = targetNode.getElementsByTagName("Result").item(0);
+                    if(resultNode != null){
+                        resultNode.setTextContent(target.getResult().toString());
+                    }
+                    else {
+                        Element result = document.createElement("Result");
+                        result.appendChild(document.createTextNode(target.getResult().toString()));
+                        targetNode.appendChild(result);
+                    }
+                }
             }
         });
 
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource domSource = new DOMSource(document);
-        StreamResult streamResult = new StreamResult(new File(xmlFilePath));
+        StreamResult streamResult = new StreamResult(new File(xmlFilePath + ".xml"));
         transformer.transform(domSource, streamResult);
-        UI.printDivide("done");
     }
 }

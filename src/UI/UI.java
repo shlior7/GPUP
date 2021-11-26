@@ -1,14 +1,44 @@
+package UI;
+
 import java.util.*;
 import java.io.IOException;
+import java.util.function.Predicate;
 
 public class UI {
+    public static void main(String[] args){
+        showMenu();
+    }
+    public static void showMenu() {
+        Menu menu = new Menu("GPUP",
+                Arrays.asList(
+                        new Load_Option(),
+                        new GraphInfo_Option(),
+                        new TargetInfo_Option(),
+                        new FindPath_Option(),
+                        new RunTask_Option(),
+                        new FindCircuit_Option(),
+                        new SaveFile_Option()
+                )
+        );
+        menu.spawnMenu();
+    }
+
+
     public static void printDivider() {
-        System.out.println("------------------");
+        printDivider('-');
+    }
+    public static void printDivider(char divider) {
+        for (int i = 0; i < 20; i++) {
+            System.out.print(divider);
+        }
+        System.out.println();
     }
 
     public static void printDivide(String text) {
-        printDivider();
-        System.out.println(text);
+        if(!text.equals("")) {
+            printDivider();
+            System.out.println(text);
+        }
     }
 
     public static void println(String text) {
@@ -20,20 +50,44 @@ public class UI {
     }
 
     public static void error(String err) {
-        printDivide("Error: " + err);
-        printDivider();
+        printDivider('*');
+        println("Error: " + err);
+        printDivider('*');
+
     }
 
     public static void warning(String warn) {
-        printDivide("Warning: " + warn);
-        printDivider();
+        printDivider('#');
+        println("Warning: " + warn);
+        printDivider('#');
     }
 
     public static void log(String Data, String targetName) throws IOException {
         println(Data);
+        try{
         FileHandler.log(Data, targetName);
+        }
+        catch (IOException e){
+            UI.error(e.getMessage());
+        }
+        catch (Exception ignored){
+        }
     }
 
+    public static String prompt(String question, Predicate<String> notRight,String errorMessage) {
+        Scanner scanner = new Scanner(System.in);
+        String input;
+        boolean notOk;
+        do {
+            printDivide(question);
+            input = scanner.nextLine();
+            notOk = notRight.test(input);
+            if(notOk)
+                UI.error(input +" - "+errorMessage);
+        } while (notOk);
+
+        return input;
+    }
 
     public static String prompt(String question, String... options) {
         String input;
