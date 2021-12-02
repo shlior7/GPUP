@@ -1,8 +1,3 @@
-package UI;
-
-import Logic.Target;
-import Logic.TargetGraph;
-import Logic.Edge;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -17,16 +12,24 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class FileHandler {
-    private Document document;
-    private Element config;
-    private Element targetsElement;
-    public static String logLibPath;
+    private static Document document;
+    private static Element targetsElement;
+    public static String logLibraryPath;
+
+    public static void createLogLibrary(String taskName) {
+        String currentTime = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss").format(LocalDateTime.now());
+        String path = taskName + " - " + currentTime;
+        new File(path).mkdir();
+        logLibraryPath = path;
+    }
 
     public static void log(String Data, String targetName) throws IOException {
-        String filePath = logLibPath + "/" + targetName + ".log";
+        String filePath = logLibraryPath + "/" + targetName + ".log";
         new File(filePath).createNewFile();
         FileWriter fw = new FileWriter(filePath, true);
         BufferedWriter bw = new BufferedWriter(fw);
@@ -35,7 +38,7 @@ public class FileHandler {
         out.close();
     }
 
-    public TargetGraph loadGPUPXMLFile(String xmlPath) throws Exception {
+    public static TargetGraph loadGPUPXMLFile(String xmlPath) throws Exception {
         createDocument(xmlPath);
         Map<String, String> config = readConfigurations();
         Map<String, List> targets = readTargets();
@@ -43,18 +46,20 @@ public class FileHandler {
         return new TargetGraph(config.get("name"), config.get("directory"), targets.get("targets"), targets.get("edges"));
     }
 
-    private void createDocument(String xmlPath) throws ParserConfigurationException, IOException, SAXException {
+    private static void createDocument(String xmlPath) throws ParserConfigurationException, IOException, SAXException {
+        if(!xmlPath.endsWith("xml"))
+            xmlPath = xmlPath +".xml";
         File file = new File(xmlPath);
         document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file);
         document.getDocumentElement().normalize();
     }
 
-    private Map<String, String> readConfigurations() throws Exception {
+    private static Map<String, String> readConfigurations() throws Exception {
         NodeList configurations = document.getElementsByTagName("GPUP-Configuration");
         if (configurations.getLength() == 0 || configurations.item(0).getNodeType() != Node.ELEMENT_NODE)
             throw new Exception("no configurations");
 
-        config = (Element) configurations.item(0);
+        Element config = (Element) configurations.item(0);
         String GraphsName = config.getElementsByTagName("GPUP-Graph-Name").item(0).getTextContent();
         String WorkingDir = config.getElementsByTagName("GPUP-Working-Directory").item(0).getTextContent();
         return new HashMap<String, String>() {{
@@ -63,7 +68,7 @@ public class FileHandler {
         }};
     }
 
-    private List<Element> nodeListToElements(NodeList nl) {
+    private static List<Element> nodeListToElements(NodeList nl) {
         List<Element> elements = new ArrayList<>();
         for (int i = 0; i < nl.getLength(); i++) {
             Node node = nl.item(i);
@@ -73,7 +78,7 @@ public class FileHandler {
         return elements;
     }
 
-    private HashMap<String, List> readTargets() throws Exception {
+    private static HashMap<String, List> readTargets() throws Exception {
         List<Edge> targetsEdges = new ArrayList<>();
         List<Target> allTargets = new ArrayList<>();
 
@@ -82,13 +87,13 @@ public class FileHandler {
             throw new Exception("no Targets");
 
         targetsElement = (Element) targetsNodes.item(0);
-        List<Element> targets = nodeListToElements(targetsElement.getElementsByTagName("GPUP-Logic.Target"));
+        List<Element> targets = nodeListToElements(targetsElement.getElementsByTagName("GPUP-Target"));
         targets.forEach(targetNode -> {
             Target target = new Target(targetNode.getAttributes().getNamedItem("name").getTextContent());
 
 
             NodeList result = targetNode.getElementsByTagName("Result");
-            if( result.getLength() != 0){
+            if(result.getLength() != 0){
                 target.setResult(result.item(0).getTextContent());
             }
 
@@ -113,11 +118,11 @@ public class FileHandler {
     }
 
 
-    public void saveToXML(TargetGraph tg, String xmlFilePath) throws TransformerException {
+    public static void saveToXML(TargetGraph targetGraph, String xmlFilePath) throws TransformerException {
         nodeListToElements(targetsElement.getChildNodes()).forEach(targetNode ->
         {
             String targetName = targetNode.getAttributes().getNamedItem("name").getTextContent();
-            Optional<Target> OptionalTarget = tg.getTarget(targetName);
+            Optional<Target> OptionalTarget = targetGraph.getTarget(targetName);
             if (OptionalTarget.isPresent()) {
                 Target target = OptionalTarget.get();
                 if (target.getResult() != null) {

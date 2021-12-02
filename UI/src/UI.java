@@ -1,13 +1,18 @@
-package UI;
-
+import javax.xml.transform.TransformerException;
 import java.util.*;
 import java.io.IOException;
 import java.util.function.Predicate;
 
 public class UI {
     public static void main(String[] args){
-        showMenu();
+        try {
+            showMenu();
+        }
+        catch (NoClassDefFoundError e){
+            UI.error("No Engine Found!\n Make sure the `Engine.jar` is in the same folder :)");
+        }
     }
+
     public static void showMenu() {
         Menu menu = new Menu("GPUP",
                 Arrays.asList(
@@ -23,10 +28,10 @@ public class UI {
         menu.spawnMenu();
     }
 
-
     public static void printDivider() {
         printDivider('-');
     }
+
     public static void printDivider(char divider) {
         for (int i = 0; i < 20; i++) {
             System.out.print(divider);
@@ -102,7 +107,13 @@ public class UI {
 
         return input;
     }
-
+    public static void printAllPaths(LinkedList<List<String>> allPaths) {
+        if(allPaths.size() == 0) {
+            UI.error("No directed path was found between the targets");
+            return;
+        }
+        allPaths.forEach(UI::printPath);
+    }
     public static void printPath(List<String> PathList) {
         for (String u : PathList) {
             UI.print(u + "->");
@@ -169,5 +180,4 @@ public class UI {
         String input = scanner.next();
         return input.equalsIgnoreCase("y");
     }
-
 }

@@ -1,5 +1,3 @@
-package Logic;
-
 public class Edge {
     String out, in;
 

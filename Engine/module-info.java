@@ -1,0 +1,3 @@
+module Engine {
+    exports Engine;
+}

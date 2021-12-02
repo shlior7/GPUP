@@ -1,11 +1,7 @@
-package UI;
-
-import UI.UI;
-
 import java.util.List;
 import java.util.Scanner;
 
-public class Menu {
+class Menu {
     private final String title;
     private final List<Option> options;
 
@@ -38,7 +34,6 @@ public class Menu {
                 UI.println("finito la comedia, adios!");
                 return;
             }
-
         } while (true);
     }
 }

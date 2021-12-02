@@ -1,11 +1,5 @@
-package Logic;
-
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-
-
-
 
 public class Target {
     public String name;
@@ -50,7 +44,7 @@ public class Target {
                         "\nUser Data= '" + userData + '\'';
     }
 
-    public void run(Task task) throws InterruptedException, IOException {
+    public void run(Task task) throws InterruptedException {
         Instant before = Instant.now();
         result = task.run(this);
         Instant after = Instant.now();
