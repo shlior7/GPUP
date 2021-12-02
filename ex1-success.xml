@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><GPUP-Descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="G.P.U.P-V1.xsd">
+	<GPUP-Configuration>
+		<GPUP-Graph-Name>Womans Gradle</GPUP-Graph-Name>
+		<GPUP-Working-Directory>c:\temp</GPUP-Working-Directory>
+	</GPUP-Configuration>
+	<GPUP-Targets>
+		<GPUP-Target name="A">
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="dependsOn">L</GPUG-Dependency>																
+			</GPUP-Target-Dependencies>		
+		<Engine.Result>Success</Engine.Result></GPUP-Target>
+		<GPUP-Target name="B"><Engine.Result>Success</Engine.Result></GPUP-Target>
+		<GPUP-Target name="C"><Engine.Result>Success</Engine.Result></GPUP-Target>
+		<GPUP-Target name="D"><Engine.Result>Success</Engine.Result></GPUP-Target>
+		<GPUP-Target name="E"><Engine.Result>Success</Engine.Result></GPUP-Target>
+		<GPUP-Target name="K"><Engine.Result>Success</Engine.Result></GPUP-Target>
+		<GPUP-Target name="L"><Engine.Result>Success</Engine.Result></GPUP-Target>
+		<GPUP-Target name="M"><Engine.Result>Success</Engine.Result></GPUP-Target>
+		<GPUP-Target name="N"><Engine.Result>Success</Engine.Result></GPUP-Target>
+		<GPUP-Target name="O"><Engine.Result>Success</Engine.Result></GPUP-Target>
+		<GPUP-Target name="P"><Engine.Result>Success</Engine.Result></GPUP-Target>
+		<GPUP-Target name="Q"><Engine.Result>Success</Engine.Result></GPUP-Target>
+		<GPUP-Target name="R"><Engine.Result>Success</Engine.Result></GPUP-Target>
+		<GPUP-Target name="F">
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="requiredFor">A</GPUG-Dependency>
+				<GPUG-Dependency type="requiredFor">B</GPUG-Dependency>				
+				<GPUG-Dependency type="requiredFor">C</GPUG-Dependency>				
+				<GPUG-Dependency type="dependsOn">H</GPUG-Dependency>																
+			</GPUP-Target-Dependencies>
+		<Engine.Result>Success</Engine.Result></GPUP-Target>
+		<GPUP-Target name="G">
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="requiredFor">C</GPUG-Dependency>
+				<GPUG-Dependency type="requiredFor">D</GPUG-Dependency>
+			</GPUP-Target-Dependencies>
+		<Engine.Result>Success</Engine.Result></GPUP-Target>
+		<GPUP-Target name="H">
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="requiredFor">B</GPUG-Dependency>
+				<GPUG-Dependency type="requiredFor">F</GPUG-Dependency>				
+				<GPUG-Dependency type="dependsOn">K</GPUG-Dependency>												
+				<GPUG-Dependency type="dependsOn">L</GPUG-Dependency>												
+				<GPUG-Dependency type="dependsOn">M</GPUG-Dependency>																				
+			</GPUP-Target-Dependencies>
+		<Engine.Result>Success</Engine.Result></GPUP-Target>
+		<GPUP-Target name="I">
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="requiredFor">C</GPUG-Dependency>
+				<GPUG-Dependency type="requiredFor">E</GPUG-Dependency>				
+				<GPUG-Dependency type="dependsOn">L</GPUG-Dependency>												
+				<GPUG-Dependency type="dependsOn">M</GPUG-Dependency>												
+				<GPUG-Dependency type="dependsOn">N</GPUG-Dependency>																				
+			</GPUP-Target-Dependencies>
+		<Engine.Result>Success</Engine.Result></GPUP-Target>
+		<GPUP-Target name="J">
+			<GPUP-Target-Dependencies>
+				<GPUG-Dependency type="requiredFor">D</GPUG-Dependency>
+				<GPUG-Dependency type="requiredFor">E</GPUG-Dependency>				
+				<GPUG-Dependency type="dependsOn">N</GPUG-Dependency>								
+				<GPUG-Dependency type="dependsOn">O</GPUG-Dependency>								
+				<GPUG-Dependency type="dependsOn">P</GPUG-Dependency>																
+			</GPUP-Target-Dependencies>
+		<Engine.Result>Success</Engine.Result></GPUP-Target>
+	</GPUP-Targets>
+</GPUP-Descriptor>
