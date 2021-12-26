@@ -22,14 +22,13 @@ public class Target {
     }
 
     public void setResult(String result) {
-        if(result == null) {
+        if (result == null) {
             this.result = null;
             return;
         }
         try {
             this.result = Result.valueOf(result);
-        }
-        catch (IllegalArgumentException ignored){
+        } catch (IllegalArgumentException ignored) {
         }
     }
 
@@ -37,11 +36,15 @@ public class Target {
         this.userData = userData;
     }
 
-    @Override
-    public String toString() {
+    public String geStringInfo() {
         return
                 "\nName= '" + name + '\'' +
                         "\nUser Data= '" + userData + '\'';
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 
     public void run(Task task) throws InterruptedException {
