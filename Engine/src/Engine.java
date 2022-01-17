@@ -1,15 +1,22 @@
 
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Engine {
     private static TargetGraph targetGraph;
+    private TaskRunner taskRunner;
 
-    public static void setTargetGraph(TargetGraph targetGraph){
-
+    public void toggleTaskRunning() {
+        if (taskRunner != null)
+            taskRunner.togglePause();
     }
+
     public static void load(TargetGraph _targetGraph) {
         targetGraph = _targetGraph;
+//        threadExecutor = _targetGraph.threadExecutor;
     }
 
     public static TargetGraph getTargetGraph() {
@@ -21,33 +28,28 @@ public class Engine {
     }
 
     public static String graphInfo() {
-        if(!validateGraph())
+        if (!validateGraph())
             return "no target graph found";
         return targetGraph.toString();
     }
 
     public static String targetInfo(String name) {
-        if(!validateGraph())
+        if (!validateGraph())
             return "no target graph found";
         return targetGraph.getTargetInfo(name);
     }
 
-    public static Queue<Target> InitTaskAndGetRunningQueue(boolean startFromLastPoint)  {
+    public static Queue<Target> InitTaskAndGetRunningQueue(boolean startFromLastPoint) {
         if (startFromLastPoint) {
-             return targetGraph.getQueueFromLastTime();
+            return targetGraph.getQueueFromLastTime();
         } else {
-             return targetGraph.getQueueFromScratch();
+            return targetGraph.getQueueFromScratch();
         }
     }
-    public static void runTaskOnTarget(Target target,Task task) throws InterruptedException {
-         targetGraph.runTaskOnTarget(target,task);
+
+    public static String ifNullThenString(Object obj, String instead) {
+        return obj == null ? instead : obj.toString();
     }
-
-    public static String ifNullThenString(Object obj,String instead){
-        return obj == null ? instead: obj.toString();
-    }
-
-
 
     public static LinkedList<String> findCircuit(String targetName) {
         return targetGraph.findCircuit(targetName);
@@ -61,7 +63,7 @@ public class Engine {
         return targetGraph.getPostTaskRunInfo();
     }
 
-    public static Map<String,List<String>> getStatusesStatistics() {
+    public static Map<String, List<String>> getStatusesStatistics() {
         return targetGraph.getStatusesStatistics();
     }
 
@@ -70,9 +72,6 @@ public class Engine {
     }
 
 
-    public static void  addTheDadsThatAllTheirSonsFinishedSuccessfullyToQueue(Queue<Target> queue,Target target){
-        targetGraph.addTheDadsThatAllTheirSonsFinishedSuccessfullyToQueue(queue,target);
-    }
     public static boolean NoSuchTarget(String targetName) {
         return targetGraph.NoSuchTarget(targetName);
     }
@@ -81,5 +80,11 @@ public class Engine {
         targetGraph.setFrozensToSkipped();
     }
 
+    public void runTask(Task task, int maxParallel) {
+        taskRunner = new TaskRunner(targetGraph, task, maxParallel);
+        taskRunner.run();
+    }
 }
+
+
 
