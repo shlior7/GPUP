@@ -15,6 +15,7 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class FileHandler {
     private static Document document;
@@ -38,13 +39,6 @@ public class FileHandler {
         out.close();
     }
 
-    public static TargetGraph loadGPUPXMLFile(File file) throws Exception {
-        createDocument(file);
-        Map<String, String> config = readConfigurations();
-        Map<String, List> targets = readTargets();
-
-        return new TargetGraph(config.get("name"), config.get("directory"), targets.get("targets"), targets.get("edges"));
-    }
 
     private static void createDocument(File file) throws ParserConfigurationException, IOException, SAXException {
         document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file);
@@ -57,12 +51,25 @@ public class FileHandler {
             throw new Exception("no configurations");
 
         Element config = (Element) configurations.item(0);
-        String GraphsName = config.getElementsByTagName("GPUP-Graph-Name").item(0).getTextContent();
-        String WorkingDir = config.getElementsByTagName("GPUP-Working-Directory").item(0).getTextContent();
+        String GraphsName = validateTextContent(config, "GPUP-Graph-Name");
+        String WorkingDir = validateTextContent(config, "GPUP-Working-Directory");
+        String maxParallelism = validateTextContent(config, "GPUP-Max-Parallelism");
+//        config.getElementsByTagName("GPUP-Graph-Name").item(0).getTextContent();
+//        String WorkingDir = config.getElementsByTagName("GPUP-Working-Directory").item(0).getTextContent();
+//        String maxParallelism = config.getElementsByTagName("GPUP-Max-Parallelism").item(0).getTextContent();
         return new HashMap<String, String>() {{
             put("name", GraphsName);
             put("directory", WorkingDir);
+            put("parallelism", maxParallelism);
         }};
+    }
+
+    public static String validateTextContent(Element elem, String tagName) throws Exception {
+        NodeList nl = elem.getElementsByTagName(tagName);
+        if (nl.getLength() == 1)
+            return nl.item(0).getTextContent();
+
+        throw new Exception("Wrong xml input, Expected the tag name:" + tagName);
     }
 
     private static List<Element> nodeListToElements(NodeList nl) {
@@ -74,6 +81,7 @@ public class FileHandler {
         }
         return elements;
     }
+
 
     private static HashMap<String, List> readTargets() throws Exception {
         List<Edge> targetsEdges = new ArrayList<>();
@@ -91,7 +99,7 @@ public class FileHandler {
 
             NodeList result = targetNode.getElementsByTagName("Result");
             if (result.getLength() != 0) {
-                target.setResult(result.item(0).getTextContent());
+                target.setResultFromStr(result.item(0).getTextContent());
             }
 
             NodeList userData = targetNode.getElementsByTagName("GPUP-User-Data");
@@ -114,6 +122,34 @@ public class FileHandler {
         }};
     }
 
+    private static List<SerialSet> readSerialSets() throws Exception {
+        List<SerialSet> serialSetsList = new ArrayList<>();
+
+        NodeList serialSets = document.getElementsByTagName("GPUP-Serial-Sets");
+        if (serialSets.getLength() == 0 || serialSets.item(0).getNodeType() != Node.ELEMENT_NODE)
+            throw new Exception("no serial sets");
+
+        Element serialSetsElement = (Element) serialSets.item(0);
+        List<Element> allSerialSets = nodeListToElements(serialSetsElement.getElementsByTagName("GPUP-Serial-set"));
+        allSerialSets.forEach(setNode -> {
+            String name = setNode.getAttributes().getNamedItem("name").getTextContent();
+            HashSet<String> targets = Arrays.stream(setNode.getAttributes().getNamedItem("targets").getTextContent().split(",")).collect(Collectors.toCollection(HashSet::new));
+
+            serialSetsList.add(new SerialSet(name, targets));
+        });
+
+        return serialSetsList;
+    }
+
+    public static TargetGraph loadGPUPXMLFile(File file) throws Exception {
+        createDocument(file);
+        Map<String, String> config = readConfigurations();
+        Map<String, List> targets = readTargets();
+        List<SerialSet> serialSets = readSerialSets();
+
+        int parallelism = Integer.parseInt(config.get("parallelism"));
+        return new TargetGraph(config.get("name"), config.get("directory"), parallelism, targets.get("targets"), targets.get("edges"), serialSets);
+    }
 
     public static void saveToXML(TargetGraph targetGraph, String xmlFilePath) throws TransformerException {
         nodeListToElements(targetsElement.getChildNodes()).forEach(targetNode ->

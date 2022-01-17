@@ -47,8 +47,8 @@ public class FileHandler {
     }
 
     private static void createDocument(String xmlPath) throws ParserConfigurationException, IOException, SAXException {
-        if(!xmlPath.endsWith("xml"))
-            xmlPath = xmlPath +".xml";
+        if (!xmlPath.endsWith("xml"))
+            xmlPath = xmlPath + ".xml";
         File file = new File(xmlPath);
         document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file);
         document.getDocumentElement().normalize();
@@ -93,8 +93,8 @@ public class FileHandler {
 
 
             NodeList result = targetNode.getElementsByTagName("Result");
-            if(result.getLength() != 0){
-                target.setResult(result.item(0).getTextContent());
+            if (result.getLength() != 0) {
+                target.setResultFromStr(result.item(0).getTextContent());
             }
 
             NodeList userData = targetNode.getElementsByTagName("GPUP-User-Data");
@@ -127,10 +127,9 @@ public class FileHandler {
                 Target target = OptionalTarget.get();
                 if (target.getResult() != null) {
                     Node resultNode = targetNode.getElementsByTagName("Result").item(0);
-                    if(resultNode != null){
+                    if (resultNode != null) {
                         resultNode.setTextContent(target.getResult().toString());
-                    }
-                    else {
+                    } else {
                         Element result = document.createElement("Result");
                         result.appendChild(document.createTextNode(target.getResult().toString()));
                         targetNode.appendChild(result);

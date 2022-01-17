@@ -1,23 +1,22 @@
-import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class AdjMap2 extends HashMap<String, Map<String, Boolean>> {
-}
-
-class AdjMap extends HashMap<String, Set<String>> {
-}
 
 public class TargetGraph implements Graph<Target> {
 
     private String GraphsName;
     private String WorkingDir;
+    private int maxParallelism;
     private AdjMap targetsAdjacentOG;
     private AdjMap targetsAdjToRunOn;
+    private AdjMap parentsMap;
     private Map<String, Target> allTargets;
-    private Map<String, Status> targetsStatuses;
+    private SerialSetController serialSets;
+//    public ExecutorService threadExecutor;
 
     public TargetGraph() {
     }
@@ -25,40 +24,70 @@ public class TargetGraph implements Graph<Target> {
     public TargetGraph(String GraphsName, String WorkingDir, List<Target> Targets, List<Edge> edges) {
         this.GraphsName = GraphsName;
         this.WorkingDir = WorkingDir;
-        allTargets = new HashMap<>();
-        targetsAdjacentOG = new AdjMap();
-        targetsStatuses = new HashMap<>();
-        targetsAdjToRunOn = targetsAdjacentOG;
+        this.allTargets = new HashMap<>();
+        this.targetsAdjacentOG = new AdjMap();
+        this.targetsAdjToRunOn = targetsAdjacentOG;
 
         for (Target t : Targets) {
             this.allTargets.put(t.name, t);
             this.targetsAdjacentOG.put(t.name, new HashSet<>());
 
             if (t.getResult() != null)
-                this.targetsStatuses.put(t.name, Status.FINISHED);
+                setStatus(t.name, Status.FINISHED);
             else
-                this.targetsStatuses.put(t.name, Status.FROZEN);
+                setStatus(t.name, Status.FROZEN);
+        }
+        connect(edges);
+    }
+
+    public TargetGraph(String GraphsName, String WorkingDir, int maxParallelism, List<Target> Targets, List<Edge> edges, List<SerialSet> serialSets) {
+        this.GraphsName = GraphsName;
+        this.WorkingDir = WorkingDir;
+        this.maxParallelism = maxParallelism;
+        this.allTargets = new HashMap<>();
+        this.targetsAdjacentOG = new AdjMap();
+        this.parentsMap = new AdjMap();
+        this.targetsAdjToRunOn = targetsAdjacentOG;
+        this.serialSets = new SerialSetController(serialSets);
+
+        for (Target t : Targets) {
+            this.allTargets.put(t.name, t);
+            this.targetsAdjacentOG.put(t.name, new HashSet<>());
+            this.parentsMap.put(t.name, new HashSet<>());
+
+            if (t.getResult() != null)
+                setStatus(t.name, Status.FINISHED);
+            else
+                setStatus(t.name, Status.FROZEN);
         }
         connect(edges);
     }
 
     public void connect(List<Edge> targetsEdges) {
         for (Edge e : targetsEdges) {
-            targetsAdjacentOG.get(e.out).add(e.in);
-            allTargets.get(e.out);
+            targetsAdjacentOG.get(e.out).add(allTargets.get(e.in));
+            parentsMap.get(e.in).add(allTargets.get(e.out));
         }
     }
 
+    public int size() {
+        return allTargets.size();
+    }
+
     public Status getStatus(String targetName) {
-        return targetsStatuses.get(targetName);
+        return allTargets.get(targetName).getStatus();
     }
 
     public void setStatus(String targetName, Status status) {
-        targetsStatuses.put(targetName, status);
+        allTargets.get(targetName).setStatus(status);
     }
 
     public Optional<Target> getTarget(String name) {
         return Optional.ofNullable(allTargets.getOrDefault(name, null));
+    }
+
+    public SerialSetController getSerialSets() {
+        return serialSets;
     }
 
     public boolean NoSuchTarget(String targetName) {
@@ -87,11 +116,11 @@ public class TargetGraph implements Graph<Target> {
         }
 
         isVisited.replace(source, true);
-        for (String targetAdj : targetsAdjacentOG.get(source)) {
-            if (!isVisited.get(targetAdj)) {
-                localPathList.add(targetAdj);
-                findAllPathsRec(targetAdj, destination, isVisited, localPathList, allPaths);
-                localPathList.remove(targetAdj);
+        for (Target targetAdj : targetsAdjacentOG.get(source)) {
+            if (!isVisited.get(targetAdj.name)) {
+                localPathList.add(targetAdj.name);
+                findAllPathsRec(targetAdj.name, destination, isVisited, localPathList, allPaths);
+                localPathList.remove(targetAdj.name);
             }
         }
         isVisited.replace(source, false);
@@ -124,52 +153,107 @@ public class TargetGraph implements Graph<Target> {
 
     private void reset() {
         allTargets.values().forEach(target -> {
-            target.setResult(null);
+            target.setResultFromStr(null);
             setStatus(target.name, Status.FROZEN);
         });
     }
 
     public void createNewGraphFromWhatsLeft() {
         targetsAdjToRunOn = new AdjMap();
-        allTargets.forEach((k, v) -> {
-            if (v.getResult() != Result.Success) {
-                setStatus(k, Status.FROZEN);
-                v.setResult(null);
-                targetsAdjToRunOn.put(k, new HashSet<>());
-                targetsAdjacentOG.get(k).forEach((k2) -> {
-                    if (allTargets.get(k2).getResult() != Result.Success) {
-                        targetsAdjToRunOn.get(k).add(k2);
-                    }
-                });
-            }
-        });
-    }
+        allTargets.forEach((k, target) -> {
+            if (target.getResult() == Result.Success)
+                return;
 
-    public void addTheDadsThatAllTheirSonsFinishedSuccessfullyToQueue(Queue<Target> queue, Target target) {
-        requiredFor(target.name).forEach(tDadName -> { // all dads
-            if (getStatus(tDadName) == Status.FROZEN) {
-                AtomicBoolean AllSonsFinishedSuccessfully = new AtomicBoolean(true);
-                targetsAdjacentOG.get(tDadName).forEach(tBrotherName -> {
-                    Target tBrother = allTargets.get(tBrotherName);
-
-                    if (tBrother.getResult() == Result.Failure || getStatus(tBrotherName) == Status.SKIPPED) {
-                        setStatus(tBrotherName, Status.SKIPPED);
-                        AllSonsFinishedSuccessfully.set(false);
-                    }
-
-                    if (getStatus(tBrotherName) != Status.FINISHED) {
-                        AllSonsFinishedSuccessfully.set(false);
-                    }
-                });
-
-                if (AllSonsFinishedSuccessfully.get()) {
-                    setStatus(tDadName, Status.WAITING);
-                    queue.add(allTargets.get(tDadName));
+            target.setResultFromStr(null);
+            target.setStatus(Status.FROZEN);
+            targetsAdjToRunOn.put(k, new HashSet<>());
+            targetsAdjacentOG.get(k).forEach((k2) -> {
+                if (k2.getResult() != Result.Success) {
+                    targetsAdjToRunOn.get(k).add(k2);
+                    parentsMap.get(k2.name).add(target);
                 }
-            }
+            });
         });
-
     }
+
+//    public void addTheDadsThatAllTheirSonsFinishedSuccessfullyToQueue(Queue<Target> queue, Target target) {
+//        whoAreYourDaddies(target.name).forEach(tDadName -> { // all dads
+//            if (getStatus(tDadName) == Status.FROZEN) {
+//                AtomicBoolean AllSonsFinishedSuccessfully = new AtomicBoolean(true);
+//                targetsAdjacentOG.get(tDadName).forEach(tBrotherName -> {
+//                    Target tBrother = allTargets.get(tBrotherName);
+//
+//                    if (tBrother.getResult() == Result.Failure || getStatus(tBrotherName) == Status.SKIPPED) {
+//                        setStatus(tBrotherName, Status.SKIPPED);
+//                        AllSonsFinishedSuccessfully.set(false);
+//                    }
+//
+//                    if (getStatus(tBrotherName) != Status.FINISHED) {
+//                        AllSonsFinishedSuccessfully.set(false);
+//                    }
+//                });
+//
+//                if (AllSonsFinishedSuccessfully.get()) {
+//                    setStatus(tDadName, Status.WAITING);
+//                    queue.add(allTargets.get(tDadName));
+//                }
+//            }
+//        });
+//    }
+
+//    public void runTask(Task task, boolean startFromLastPoint) throws InterruptedException {
+//        Queue<Target> queue;
+//        if (startFromLastPoint) {
+//            queue = getQueueFromLastTime();
+//        } else {
+//            queue = getQueueFromScratch();
+//        }
+//
+//        while (!queue.isEmpty()) {
+//            Target target = queue.poll();
+//            runTaskOnTarget(target, new Simulation((Simulation) task));
+//        }
+////        threadExecutor.shutdown();
+////        boolean ok = threadExecutor.awaitTermination(3000, TimeUnit.SECONDS);
+////        System.out.println(ok);
+//        getStatusesStatistics().forEach((k, v) -> System.out.println(k + ": " + v.size() + " : {" + String.join(", ", v) + "}" + "\n"));
+//    }
+
+
+//
+//    public void runTheDadsThatAllTheirSonsFinishedSuccessfully(Target target, Task task) {
+//        System.out.println("searching parents target = " + target + ", task = " + task);
+//        requiredFor(target.name).forEach(tDadName -> { // all dads
+//            if (getStatus(tDadName) != Status.FROZEN) {
+//                return;
+//            }
+//            if (targetsAdjacentOG.get(tDadName).stream().anyMatch(tBrotherName -> getStatus(tBrotherName) != Status.FINISHED)) {
+//                return;
+//            }
+//
+//            AtomicBoolean AllSonsFinishedSuccessfully = new AtomicBoolean(true);
+//            boolean allSonsFinished = targetsAdjacentOG.get(tDadName).stream().anyMatch(tBrotherName -> allTargets.get(tBrotherName).getResult() == Result.Failure);
+//            targetsAdjacentOG.get(tDadName).forEach(tBrotherName -> {
+//                Target tBrother = allTargets.get(tBrotherName);
+//
+//                if (tBrother.getResult() == Result.Failure || getStatus(tBrotherName) == Status.SKIPPED) {
+//                    setStatus(tDadName, Status.SKIPPED);
+//                    AllSonsFinishedSuccessfully.set(false);
+//                }
+//            });
+//            System.out.println(tDadName + " , " + AllSonsFinishedSuccessfully.get());
+//            if (AllSonsFinishedSuccessfully.get()) {
+//                setStatus(tDadName, Status.WAITING);
+//                Target d = allTargets.get(tDadName);
+//                try {
+//                    runTaskOnTarget(allTargets.get(tDadName), new Simulation((Simulation) task));
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+////                    queue.add(allTargets.get(tDadName));
+//            }
+//        });
+//    }
 
     public void setFrozensToSkipped() {
         allTargets.keySet().forEach(targetName -> {
@@ -178,21 +262,17 @@ public class TargetGraph implements Graph<Target> {
         });
     }
 
-    public ArrayList<String> requiredFor(String name) {
-        if (targetsAdjToRunOn == null)
-            targetsAdjToRunOn = targetsAdjacentOG;
+    public Set<Target> whoAreYourDaddies(String name) {
+        return parentsMap.get(name);
+    }
 
-        ArrayList<String> requiredFor = new ArrayList<>();
-        targetsAdjToRunOn.forEach((k, v) -> {
-            if (v.contains(name))
-                requiredFor.add(k);
-        });
-        return requiredFor;
+    public Set<Target> whoAreYourBabies(String name) {
+        return targetsAdjToRunOn.get(name);
     }
 
     public Type getType(String name) {
         boolean depends = !targetsAdjToRunOn.get(name).isEmpty();
-        boolean required = requiredFor(name).size() > 0;
+        boolean required = whoAreYourDaddies(name).size() > 0;
         if (depends && required) {
             return Type.middle;
         }
@@ -223,14 +303,14 @@ public class TargetGraph implements Graph<Target> {
     }
 
     private boolean findCircuitByDfs(String vertex, String source, LinkedList<String> path, AdjMap adjMapMark) {
-        for (String neighbor : targetsAdjacentOG.get(source)) {
+        for (Target neighbor : targetsAdjacentOG.get(source)) {
             if (!adjMapMark.get(source).contains(neighbor)) {
-                path.add(neighbor);
+                path.add(neighbor.name);
                 adjMapMark.get(source).add(neighbor);
-                if (neighbor.equals(vertex)) {
+                if (neighbor.name.equals(vertex)) {
                     return true;
                 }
-                if (findCircuitByDfs(vertex, neighbor, path, adjMapMark)) {
+                if (findCircuitByDfs(vertex, neighbor.name, path, adjMapMark)) {
                     return true;
                 }
                 path.removeLast();
@@ -241,6 +321,14 @@ public class TargetGraph implements Graph<Target> {
 
 
     public Map<String, List<String>> getStatusesStatistics() {
+        Map<String, List<String>> statuses = new HashMap<>();
+//        allTargets.values().forEach(target -> statuses.put(Engine.ifNullThenString(target.getResult(), "Skipped"), Stream.concat(statuses.getOrDefault(Engine.ifNullThenString(target.getResult(), "Skipped"), new ArrayList<>()).stream(), Stream.of(target.name)).collect(Collectors.toList())));
+        allTargets.values().forEach(target -> statuses.put(target.getStatus().name(), Stream.concat(statuses.getOrDefault(target.getStatus().name(), new ArrayList<>()).stream(), Stream.of(target.name)).collect(Collectors.toList())));
+
+        return statuses;
+    }
+
+    public Map<String, List<String>> getResultStatistics() {
         Map<String, List<String>> statuses = new HashMap<>();
         allTargets.values().forEach(target -> statuses.put(Engine.ifNullThenString(target.getResult(), "Skipped"), Stream.concat(statuses.getOrDefault(Engine.ifNullThenString(target.getResult(), "Skipped"), new ArrayList<>()).stream(), Stream.of(target.name)).collect(Collectors.toList())));
 
@@ -271,6 +359,25 @@ public class TargetGraph implements Graph<Target> {
                 "Types: " + getTypesStatistics();
     }
 
+    public void setParentsStatuses(String targetName, Status status, AtomicInteger targetsDone) {
+        parentsMap.get(targetName).stream().parallel().forEach((target -> {
+            if (target.getStatus() == status)
+                return;
+            target.setStatus(status);
+            synchronized (this) {
+                targetsDone.incrementAndGet();
+                System.out.println("++++++++++++++++++++++++++++++++");
+                System.out.println("target: " + target.name + " was set to skipped!!!!" + targetsDone.get());
+                System.out.println("++++++++++++++++++++++++++++++++");
+            }
+            setParentsStatuses(target.name, status, targetsDone);
+        }));
+    }
+
+    public boolean didAllChildrenFinish(String targetName) {
+        return whoAreYourBabies(targetName).stream().allMatch(tChild -> tChild.getStatus() == Status.FINISHED);
+    }
+
     public String getTargetInfo(String targetName) {
         Optional<Target> target = getTarget(targetName);
         return target.map(value -> value + "\nStatus=" + getStatus(targetName)).orElseGet(() -> targetName + " is not a target!");
@@ -280,19 +387,25 @@ public class TargetGraph implements Graph<Target> {
         return allTargets.values().stream().anyMatch(target -> target.getResult() != null);
     }
 
-    public void runTaskOnTarget(Target target, Task task) throws InterruptedException {
-        setStatus(target.name, Status.IN_PROCESS);
-        target.run(task);
-        setStatus(target.name, Status.FINISHED);
-    }
 
     @Override
-    public Map<String, Set<String>> getAdjNameMap() {
-        return targetsAdjacentOG;
+    public Map<String, Set<Target>> getAdjNameMap() {
+        return targetsAdjToRunOn;
     }
 
     @Override
     public Map<String, Target> getAllElementMap() {
         return allTargets;
     }
+
+    public void printGraphStatusInfo() {
+        getStatusesStatistics().forEach((k, v) -> System.out.println(k + ": " + v.size() + " : {" + String.join(", ", v) + "}" + "\n"));
+
+    }
+
+    public void printStatsInfo(Map<String, List<String>> stats) {
+        stats.forEach((k, v) -> System.out.println(k + ": " + v.size() + " : {" + String.join(", ", v) + "}" + "\n"));
+
+    }
+
 }

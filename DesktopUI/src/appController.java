@@ -1,4 +1,11 @@
 
+import com.brunomnsilva.smartgraph.containers.SmartGraphDemoContainer;
+import com.brunomnsilva.smartgraph.graph.Digraph;
+import com.brunomnsilva.smartgraph.graph.DigraphEdgeList;
+import com.brunomnsilva.smartgraph.graph.InvalidVertexException;
+import com.brunomnsilva.smartgraph.graphview.SmartCircularSortedPlacementStrategy;
+import com.brunomnsilva.smartgraph.graphview.SmartGraphPanel;
+import com.brunomnsilva.smartgraph.graphview.SmartGraphProperties;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -11,12 +18,9 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.io.File;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Queue;
 
 public class appController {
+    private Engine engine;
 
     //    @FXML
 //    private Button runTaskButton;
@@ -29,6 +33,7 @@ public class appController {
         File file = fileChooser.showOpenDialog(GraphApplication.getPrimaryStage());
 
         Engine.load(FileHandler.loadGPUPXMLFile(file));
+        engine = new Engine();
     }
 
     @FXML
@@ -49,20 +54,20 @@ public class appController {
         Engine.load(FileHandler.loadGPUPXMLFile(file));
     }
 
-    public void visualGraph() throws Exception {
-        GraphProperties properties = new GraphProperties("edge.arrow = true\n" + "edge.label = false\n" + "edge.arrowsize = 7\n");
-        GraphPanel<Target> graphView = new GraphPanel<>(Engine.getTargetGraph(), properties);
-        Scene scene = new Scene(new BorderPane(graphView), 1024, 768);
-
-        Stage stage = new Stage(StageStyle.DECORATED);
-        stage.setTitle("JavaFX SmartGraph City Distances");
-        stage.setMinHeight(500);
-        stage.setMinWidth(800);
-        stage.setScene(scene);
-        stage.show();
-
-        graphView.init();
-    }
+//    public void visualGraph() throws Exception {
+//        GraphProperties properties = new GraphProperties("edge.arrow = true\n" + "edge.label = false\n" + "edge.arrowsize = 7\n");
+//        GraphPanel<Target> graphView = new GraphPanel<>(Engine.getTargetGraph(), properties);
+//        Scene scene = new Scene(new BorderPane(graphView), 1024, 768);
+//
+//        Stage stage = new Stage(StageStyle.DECORATED);
+//        stage.setTitle("JavaFX SmartGraph City Distances");
+//        stage.setMinHeight(500);
+//        stage.setMinWidth(800);
+//        stage.setScene(scene);
+//        stage.show();
+//
+//        graphView.init();
+//    }
 
 
     public void runTaskConsole() {
@@ -73,33 +78,62 @@ public class appController {
         boolean startFromLastPoint = Engine.validateGraph() && UI.promptBoolean("Do you want to start the task on the graph from the last point");
 
         Simulation simulation = new Simulation(timeToProcess, isRandom, successProbability, successWithWarningProbability);
+        int parallel = UI.promptInt("Please enter the number of threads ", 0, Integer.MAX_VALUE);
 
         if (startFromLastPoint && !Engine.taskAlreadyRan())
             UI.warning("the graph does not have previous task runs");
 
-        FileHandler.createLogLibrary(simulation.getName());
 
-        Queue<Target> queue = Engine.InitTaskAndGetRunningQueue(startFromLastPoint);
+        Thread work = new Thread(() -> {
+            engine.runTask(simulation, parallel);
+        }, "Task Running");
+        System.out.println("started");
+        work.start();
+    }
 
-        while (!queue.isEmpty()) {
-            Target target = queue.poll();
+    public void visualGraph() {
+        Digraph<String, String> targets = new DigraphEdgeList<>();
+        StringBuilder Props = new StringBuilder("");
+        Props.append("edge.arrow = true").append("\n");
+        Props.append("edge.label = false").append("\n");
+        Props.append("edge.arrowsize = 7").append("\n");
+
+        SmartGraphProperties properties = new SmartGraphProperties(Props.toString());
+        SmartGraphPanel<String, String> graphView = new SmartGraphPanel<>(targets, properties, new SmartCircularSortedPlacementStrategy());
+
+        Scene scene = new Scene(new SmartGraphDemoContainer(graphView), 1024, 768);
+
+        Stage stage = new Stage(StageStyle.UNIFIED);
+        stage.setTitle("JavaFX SmartGraph City Distances");
+        stage.setMinHeight(500);
+        stage.setMinWidth(800);
+        stage.setScene(scene);
+        stage.show();
+
+        graphView.init();
+
+
+        Engine.getTargetGraph().getAllElementMap().keySet().forEach(t -> {
             try {
-                UI.log("Start Time: " + DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()), target.name);
-                UI.log("Start Task On " + target.name, target.name);
-                UI.log("Targets Data: " + target.getUserData(), target.name);
-                Engine.runTaskOnTarget(target, simulation);
-                UI.log("Finished Time: " + DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()), target.name);
-                UI.log("Task Finished with " + target.getResult().toString(), target.name);
-                UI.println("--------------------------------\n");
-            } catch (IOException e) {
-                UI.warning("couldn't log to file");
-            } catch (InterruptedException ignored) {
+                targets.insertVertex(t);
+            } catch (InvalidVertexException ignored) {
             }
+        });
 
-            Engine.addTheDadsThatAllTheirSonsFinishedSuccessfullyToQueue(queue, target);
-        }
-        Engine.setAllFrozensToSkipped();
 
-        Engine.getStatusesStatistics().forEach((k, v) -> UI.printDivide(k + ": " + v.size() + " : {" + String.join(", ", v) + "}" + "\n"));
+        Engine.getTargetGraph().getAdjNameMap().forEach((k, v) -> {
+            v.forEach(t -> {
+                try {
+                    targets.insertEdge(k, t.name, (k + "->" + t));
+                } catch (InvalidVertexException ignored) {
+                }
+            });
+        });
+        graphView.update();
+
+    }
+
+    public void toggleTask() {
+        engine.toggleTaskRunning();
     }
 }

@@ -58,7 +58,7 @@ public class GraphPanel<V> extends Pane {
     private final double attractionForce;
     private final double attractionScale;
 
-    private static final int AUTOMATIC_LAYOUT_ITERATIONS = 20;
+    private static final int AUTOMATIC_LAYOUT_ITERATIONS = 30;
 
     private Consumer<GraphEdgeLine> edgeClickConsumer = null;
 
@@ -93,6 +93,8 @@ public class GraphPanel<V> extends Pane {
                 runLayoutIteration();
             }
         };
+        
+        timer.start();
     }
 
     private synchronized void runLayoutIteration() {
@@ -117,7 +119,7 @@ public class GraphPanel<V> extends Pane {
         new RandomPlacementStrategy().place(this.widthProperty().doubleValue(),
                 this.heightProperty().doubleValue(),
                 this.vertexNodes.values());
-        timer.start();
+//        timer.start();
         this.initialized = true;
     }
 

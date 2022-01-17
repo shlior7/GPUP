@@ -11,7 +11,7 @@
 <?import javafx.scene.text.Font?>
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="0.0" minWidth="0.0" prefHeight="510.0"
-            prefWidth="550.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="appController">
     <center>
         <GridPane alignment="CENTER" hgap="5.0" vgap="5.0">
@@ -24,15 +24,18 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
             </rowConstraints>
             <children>
-                <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="load graph"
+                <Button mnemonicParsing="false" text="load graph"
                         GridPane.columnIndex="0"
                         GridPane.rowIndex="0" GridPane.valignment="TOP" onAction="#loadGraph"/>
-                <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="run Task"
+                <Button mnemonicParsing="false" text="run Task"
                         GridPane.columnIndex="1"
                         GridPane.rowIndex="0" GridPane.valignment="TOP" onAction="#runTask"/>
                 <Button mnemonicParsing="false" text="show graph"
                         GridPane.columnIndex="2"
                         GridPane.rowIndex="0" GridPane.valignment="TOP" onAction="#showGraph"/>
+                <Button mnemonicParsing="false" text="stop tasks"
+                        GridPane.columnIndex="3"
+                        GridPane.rowIndex="0" GridPane.valignment="TOP" onAction="#toggleTask"/>
 
             </children>
         </GridPane>

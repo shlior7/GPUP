@@ -34,9 +34,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Queue;
 
-/**
- * @author Liron Blecher
- */
 public class MainApplication extends Application {
 
 
@@ -80,7 +77,7 @@ public class MainApplication extends Application {
         Engine.getTargetGraph().getAdjNameMap().forEach((k, v) -> {
             v.forEach(t -> {
                 try {
-                    targets.insertEdge(k, t, (k + "->" + t));
+                    targets.insertEdge(k, t.name, (k + "->" + t));
                 } catch (InvalidVertexException ignored) {
                 }
             });
@@ -102,38 +99,5 @@ public class MainApplication extends Application {
         File file = fileChooser.showOpenDialog(stage);
 
         Engine.load(FileHandler.loadGPUPXMLFile(file));
-    }
-
-    void runTask() {
-
-        Simulation simulation = new Simulation(2000, true, 0.6f, 0.3f);
-
-//    if (startFromLastPoint && !Engine.taskAlreadyRan())
-//      UI.warning("the graph does not have previous task runs");
-
-        FileHandler.createLogLibrary(simulation.getName());
-
-        Queue<Target> queue = Engine.InitTaskAndGetRunningQueue(false);
-
-        while (!queue.isEmpty()) {
-            Target target = queue.poll();
-            try {
-                UI.log("Start Time: " + DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()), target.name);
-                UI.log("Start Task On " + target.name, target.name);
-                UI.log("Targets Data: " + target.getUserData(), target.name);
-                Engine.runTaskOnTarget(target, simulation);
-                UI.log("Finished Time: " + DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()), target.name);
-                UI.log("Task Finished with " + target.getResult().toString(), target.name);
-                UI.println("--------------------------------\n");
-            } catch (IOException e) {
-                UI.warning("couldn't log to file");
-            } catch (InterruptedException ignored) {
-            }
-            Engine.addTheDadsThatAllTheirSonsFinishedSuccessfullyToQueue(queue, target);
-        }
-        Engine.setAllFrozensToSkipped();
-        Engine.getStatusesStatistics().forEach((k, v) -> UI.printDivide(k + ": " + v.size() + " : {" + String.join(", ", v) + "}" + "\n"));
-
-
     }
 }

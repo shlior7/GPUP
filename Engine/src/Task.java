@@ -1,4 +1,10 @@
-public interface Task {
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+
+public interface Task extends Runnable {
     String getName();
-    Result run(Target target) throws InterruptedException;
+
+    void setTarget(Target target);
+
+    void setFuncOnFinished(BiConsumer<Target, Task> onFinished);
 }
