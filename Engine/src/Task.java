@@ -1,10 +1,16 @@
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public interface Task extends Runnable {
-    String getName();
+public abstract class Task implements Runnable {
+    protected Target targetToRunOn;
+    protected Consumer<Target> onFinished;
 
-    void setTarget(Target target);
+    void setTarget(Target targetToRunOn) {
+        this.targetToRunOn = targetToRunOn;
+    }
 
-    void setFuncOnFinished(BiConsumer<Target, Task> onFinished);
+    void setFuncOnFinished(Consumer<Target> onFinished) {
+        this.onFinished = onFinished;
+    }
+
+    public abstract String getName();
 }

@@ -49,6 +49,8 @@ public class GraphApplication extends Application {
         Scene scene = new Scene(root, 510, 550);
         primaryStage.setScene(scene);
         primaryStage.show();
+
+
     }
 
     private void setPrimaryStage(Stage stage) {

@@ -54,9 +54,7 @@ public class FileHandler {
         String GraphsName = validateTextContent(config, "GPUP-Graph-Name");
         String WorkingDir = validateTextContent(config, "GPUP-Working-Directory");
         String maxParallelism = validateTextContent(config, "GPUP-Max-Parallelism");
-//        config.getElementsByTagName("GPUP-Graph-Name").item(0).getTextContent();
-//        String WorkingDir = config.getElementsByTagName("GPUP-Working-Directory").item(0).getTextContent();
-//        String maxParallelism = config.getElementsByTagName("GPUP-Max-Parallelism").item(0).getTextContent();
+
         return new HashMap<String, String>() {{
             put("name", GraphsName);
             put("directory", WorkingDir);
@@ -158,7 +156,7 @@ public class FileHandler {
             Optional<Target> OptionalTarget = targetGraph.getTarget(targetName);
             if (OptionalTarget.isPresent()) {
                 Target target = OptionalTarget.get();
-                if (target.getResult() != null) {
+                if (target.getResult() != Result.NULL) {
                     Node resultNode = targetNode.getElementsByTagName("Result").item(0);
                     if (resultNode != null) {
                         resultNode.setTextContent(target.getResult().toString());

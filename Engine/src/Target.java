@@ -1,6 +1,10 @@
-import java.time.Duration;
-import java.time.Instant;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.time.Duration;
+
+@Getter
+@Setter
 public class Target {
     public String name;
     private Result result;
@@ -10,25 +14,14 @@ public class Target {
 
     public Target(String name) {
         this.name = name;
-        this.setProcessTime(Duration.ZERO);
+        this.processTime = Duration.ZERO;
+        this.result = Result.NULL;
     }
 
-    public String getUserData() {
-
-        return userData;
-    }
-
-    public Result getResult() {
-        return result;
-    }
-
-    public void setResult(Result result) {
-        this.result = result;
-    }
 
     public void setResultFromStr(String result) {
         if (result == null) {
-            this.result = null;
+            this.result = Result.NULL;
             return;
         }
         try {
@@ -37,41 +30,17 @@ public class Target {
         }
     }
 
-    public void setUserData(String userData) {
-        this.userData = userData;
-    }
-
     public String geStringInfo() {
         return
-                "\nName= '" + name + '\'' +
-                        "\nUser Data= '" + userData + '\'';
+                "Name: " + name +
+                        "\nUser Data: " + userData +
+                        "\nStatus: " + status +
+                        "\nResult: " + result;
+
     }
 
     @Override
     public String toString() {
         return name;
-    }
-//
-//    public void run(Task task) throws InterruptedException {
-//        Instant before = Instant.now();
-//        result = task.run(this);
-//        Instant after = Instant.now();
-//        setProcessTime(Duration.between(before, after));
-//    }
-
-    public Duration getProcessTime() {
-        return processTime;
-    }
-
-    public void setProcessTime(Duration processTime) {
-        this.processTime = processTime;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
     }
 }

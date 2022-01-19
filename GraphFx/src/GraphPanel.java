@@ -24,6 +24,7 @@
 
 
 import javafx.animation.AnimationTimer;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
@@ -31,6 +32,10 @@ import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Popup;
+
+import javafx.scene.text.Text;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -47,7 +52,7 @@ public class GraphPanel<V> extends Pane {
     private final Graph<V> theGraph;
     //    private final SmartPlacementStrategy placementStrategy;
     private final Map<Vertex<V>, GraphVertexNode<V>> vertexNodes;
-    private final Map<String, Vertex<V>> verteces;
+    private final Map<V, Vertex<V>> vertices;
     private final Set<GraphEdgeLine<V>> edgeNodes;
 
     private boolean initialized = false;
@@ -59,20 +64,21 @@ public class GraphPanel<V> extends Pane {
     private final double attractionScale;
 
     private static final int AUTOMATIC_LAYOUT_ITERATIONS = 30;
+    public final BooleanProperty automaticLayoutProperty;
 
-    private Consumer<GraphEdgeLine> edgeClickConsumer = null;
+    private final Consumer<V> vertexClickConsumer;
 
-    public GraphPanel(Graph<V> theGraph, GraphProperties properties) {
-        this(theGraph, properties, null);
+    public GraphPanel(Graph<V> theGraph, GraphProperties properties, Consumer<V> edgeClickConsumer) {
+        this(theGraph, properties, edgeClickConsumer, null);
     }
 
-    public GraphPanel(Graph<V> theGraph, GraphProperties properties, URI cssFile) {
-
+    public GraphPanel(Graph<V> theGraph, GraphProperties properties, Consumer<V> edgeClickConsumer, URI cssFile) {
         if (theGraph == null) {
             throw new IllegalArgumentException("The graph cannot be null.");
         }
         this.theGraph = theGraph;
         this.graphProperties = properties != null ? properties : new GraphProperties();
+        this.vertexClickConsumer = edgeClickConsumer;
 //        this.placementStrategy = placementStrategy != null ? placementStrategy : new SmartRandomPlacementStrategy();
         this.loadStylesheet(cssFile);
         this.edgesWithArrows = this.graphProperties.getUseEdgeArrow();
@@ -83,7 +89,7 @@ public class GraphPanel<V> extends Pane {
 
         vertexNodes = new HashMap<>();
         edgeNodes = new HashSet<>();
-        verteces = new HashMap<>();
+        vertices = new HashMap<>();
 
         initNodes();
         timer = new AnimationTimer() {
@@ -93,8 +99,15 @@ public class GraphPanel<V> extends Pane {
                 runLayoutIteration();
             }
         };
-        
-        timer.start();
+        this.automaticLayoutProperty = new SimpleBooleanProperty(true);
+        this.automaticLayoutProperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                timer.start();
+            } else {
+                timer.stop();
+            }
+        });
+
     }
 
     private synchronized void runLayoutIteration() {
@@ -119,22 +132,24 @@ public class GraphPanel<V> extends Pane {
         new RandomPlacementStrategy().place(this.widthProperty().doubleValue(),
                 this.heightProperty().doubleValue(),
                 this.vertexNodes.values());
-//        timer.start();
+        timer.start();
         this.initialized = true;
     }
 
     private void initNodes() {
         theGraph.getAllElementMap().forEach((name, element) -> {
             Vertex<V> vertex = new Vertex<>(element);
-            verteces.put(name, vertex);
-            GraphVertexNode<V> vertexAnchor = new GraphVertexNode<V>(vertex, 0, 0, graphProperties.getVertexRadius());
+            vertices.put(element, vertex);
+            GraphVertexNode<V> vertexAnchor = new GraphVertexNode<V>(vertex, 0, 0, graphProperties.getVertexRadius(), vertexClickConsumer);
             vertexNodes.put(vertex, vertexAnchor);
+            addVertex(vertexAnchor);
+            setHoverPane(vertexAnchor);
         });
 
-        verteces.forEach((name, vertex) -> {
+        theGraph.getAllElementMap().forEach((name, element) -> {
+            GraphVertexNode<V> graphVertexOut = vertexNodes.get(vertices.get(element));
             theGraph.getAdjNameMap().get(name).forEach(inboundVertex -> {
-                GraphVertexNode<V> graphVertexOut = vertexNodes.get(vertex);
-                GraphVertexNode<V> graphVertexIn = vertexNodes.get(verteces.get(inboundVertex));
+                GraphVertexNode<V> graphVertexIn = vertexNodes.get(vertices.get(inboundVertex));
                 GraphEdgeLine<V> graphEdge = createEdge(graphVertexIn, graphVertexOut);
                 addEdge(graphEdge);
 
@@ -146,15 +161,14 @@ public class GraphPanel<V> extends Pane {
             });
         });
 
-        for (Vertex<V> vertex : vertexNodes.keySet()) {
-            GraphVertexNode<V> v = vertexNodes.get(vertex);
-            addVertex(v);
-        }
+//        for (Vertex<V> vertex : vertexNodes.keySet()) {
+//            GraphVertexNode<V> v = vertexNodes.get(vertex);
+//            addVertex(v);
+//        }
     }
 
     private GraphEdgeLine<V> createEdge(GraphVertexNode<V> graphVertexInbound, GraphVertexNode<V> graphVertexOutbound) {
-        GraphEdgeLine<V> graphEdge;
-        graphEdge = new GraphEdgeLine<V>(graphVertexInbound, graphVertexOutbound);
+        GraphEdgeLine<V> graphEdge = new GraphEdgeLine<V>(graphVertexInbound, graphVertexOutbound);
         edgeNodes.add(graphEdge);
         return graphEdge;
     }
@@ -165,7 +179,8 @@ public class GraphPanel<V> extends Pane {
         String labelText = generateVertexLabel(v.getUnderlyingVertex().element());
 
         if (graphProperties.getUseVertexTooltip()) {
-            Tooltip t = new Tooltip(labelText);
+            Tooltip t = new Tooltip();
+            t.setText(v.getUnderlyingVertex().element().toString());
             Tooltip.install(v, t);
         }
 
@@ -236,19 +251,9 @@ public class GraphPanel<V> extends Pane {
         return vertexNodes.get(v);
     }
 
-    /**
-     * Returns the associated stylable element with a graph vertex.
-     *
-     * @param vertexElement underlying vertex's element
-     * @return stylable element
-     */
+
     public StyledElement getStylableVertex(V vertexElement) {
-        for (Vertex<V> v : vertexNodes.keySet()) {
-            if (v.element().equals(vertexElement)) {
-                return vertexNodes.get(v);
-            }
-        }
-        return null;
+        return vertexNodes.getOrDefault(vertices.getOrDefault(vertexElement, null), null);
     }
 
     public StyledElement getStylableLabel(Vertex<V> v) {
@@ -275,6 +280,22 @@ public class GraphPanel<V> extends Pane {
     }
 
 
+    private double sqr(double x) {
+        return x * x;
+    }
+
+    private Point2D getClosestPoint(Point2D pt1, Point2D pt2, Point2D p) {
+        return getClosestPoint(pt1.getX(), pt1.getY(), pt2.getX(), pt2.getY(), p.getX(), p.getY());
+    }
+
+    private Point2D getClosestPoint(double pt1X, double pt1Y, double pt2X, double pt2Y, double pX, double pY) {
+        double u = ((pX - pt1X) * (pt2X - pt1X) + (pY - pt1Y) * (pt2Y - pt1Y)) / (sqr(pt2X - pt1X) + sqr(pt2Y - pt1Y));
+        if (u > 0.0 && u < 1.0)
+            return new Point2D((int) (pt2X * u + pt1X * (1.0 - u) + 0.5), (int) (pt2Y * u + pt1Y * (1.0 - u) + 0.5));
+        return null;
+    }
+
+
     /*
      * AUTOMATIC LAYOUT
      */
@@ -286,7 +307,26 @@ public class GraphPanel<V> extends Pane {
                 }
 
                 //double k = Math.sqrt(getWidth() * getHeight() / graphVertexMap.size());
+                Point2D vPos = v.getUpdatedPosition();
+                Point2D otherPos = other.getUpdatedPosition();
+
                 Point2D repellingForce = UtilitiesPoint2D.repellingForce(v.getUpdatedPosition(), other.getUpdatedPosition(), this.repulsionForce);
+
+
+                for (GraphVertexNode<V> diff : vertexNodes.values()) {
+                    if (diff == v || diff == other)
+                        continue;
+                    Point2D diffPos = diff.getUpdatedPosition();
+                    Point2D closest = getClosestPoint(vPos, otherPos, diffPos);
+                    if (closest == null)
+                        continue;
+
+                    Point2D repellingForceFromLine = UtilitiesPoint2D.repellingForce(diffPos, closest, 0.02);
+                    Point2D attractiveForce = UtilitiesPoint2D.attractiveForce(diffPos, closest,
+                            vertexNodes.size(), 0.02, 5);
+
+                    diff.addForceVector(attractiveForce.getX() + repellingForceFromLine.getX(), attractiveForce.getY() + repellingForceFromLine.getY());
+                }
 
                 double deltaForceX = 0, deltaForceY = 0;
 
@@ -320,4 +360,33 @@ public class GraphPanel<V> extends Pane {
         vertexNodes.values().forEach(GraphVertexNode::resetForces);
     }
 
+    private void setHoverPane(GraphVertexNode<V> vertex) {
+        Text text = new Text(theGraph.getVertexInfo(vertex.getUnderlyingVertex().element()));
+        text.setStyle("-fx-fill: #FFFFFF; -fx-font-size: 25;");
+        StackPane stickyNotesPane = new StackPane(text);
+        stickyNotesPane.setPrefSize(200, 200);
+        stickyNotesPane.getStyleClass().add("tooltip");
+
+
+        Popup popup = new Popup();
+        popup.getContent().add(stickyNotesPane);
+
+        vertex.hoverProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal) {
+                text.setText(theGraph.getVertexInfo(vertex.getUnderlyingVertex().element()));
+                Bounds bounds = vertex.localToScreen(vertex.getBoundsInLocal());
+                Bounds paneBounds = this.localToScreen(this.getBoundsInLocal());
+
+                boolean passedRight = bounds.getMaxX() + stickyNotesPane.getWidth() >= paneBounds.getMaxX();
+                boolean passedBottom = bounds.getMinY() + stickyNotesPane.getHeight() >= paneBounds.getMaxY();
+
+                double sX = passedRight ? bounds.getMinX() - stickyNotesPane.getWidth() - 5 : bounds.getMaxX();
+                double sY = passedBottom ? bounds.getMinY() - stickyNotesPane.getHeight() - 5 : bounds.getMaxY();
+
+                popup.show(this, sX, sY);
+            } else {
+                popup.hide();
+            }
+        });
+    }
 }
