@@ -4,33 +4,34 @@
 }
 
 .vertex {
-    -fx-stroke-width: 3;
-    -fx-stroke: #61B5F1;
+    -fx-stroke-width: 5;
+    -fx-stroke: #7B9CAC;
     -fx-stroke-type: inside; /* you should keep this if using arrows */
-    -fx-fill: #B1DFF7;
+    -fx-fill: #6A8594;
 }
 
 .vertex-label {
-    -fx-font: bold 8pt "sans-serif";
+    -fx-font: bold 12pt "sans-serif";
+}
+
+.outline.vertex-label .text {
+    -fx-stroke: white;
+    -fx-stroke-width: 2px;
 }
 
 .edge {
     -fx-stroke-width: 2;
-    -fx-stroke: #FF6D66;
-    -fx-stroke-dash-array: 2 5 2 5; /* remove for clean edges */
+    -fx-stroke: #000000;
     -fx-fill: transparent; /*important for curved edges */
     -fx-stroke-line-cap: round;
-    -fx-opacity: 0.8;
+    -fx-opacity: 0.5;
 }
 
-.edge-label {
-    -fx-font: normal 5pt "sans-serif";
-}
 
 .arrow {
-    -fx-stroke-width: 2;
-    -fx-stroke: #FF6D66;
-    -fx-opacity: 0.8;
+    -fx-stroke-width: 5;
+    -fx-stroke: red;
+    -fx-opacity: 0.7;
 }
 
 /* Custom vertex. You should revert any unwanted styling in the default element, 
@@ -40,4 +41,14 @@
     -fx-stroke: green;
     -fx-stroke-type: inside; /* you should keep this if using arrows */
     -fx-fill: yellowgreen;
+}
+
+.tooltip {
+    -fx-background: rgba(0, 0, 0);
+    /*-fx-background-color: rgba(30, 30, 30, 0.8);*/
+    -fx-background-radius: 6px;
+    -fx-background-insets: 0;
+    -fx-padding: 0.667em 0.75em 0.667em 0.75em; /* 10px */
+    /*-fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 10, 0.0, 0, 3);*/
+    -fx-font-size: 40px;
 }

@@ -26,11 +26,11 @@ import javafx.scene.text.Text;
 
 
 public class Label extends Text implements StyledElement {
-    
+
     private final StyleHandler styleProxy;
-    
+
     public Label() {
-        this(0,0,"");
+        this(0, 0, "");
     }
 
     public Label(String text) {
@@ -40,8 +40,9 @@ public class Label extends Text implements StyledElement {
     public Label(double x, double y, String text) {
         super(x, y, text);
         styleProxy = new StyleHandler(this);
+        styleProxy.addStyleClass("outline");
     }
-    
+
     public void setStyleClass(String cssClass) {
         styleProxy.setStyleClass(cssClass);
     }
@@ -53,5 +54,5 @@ public class Label extends Text implements StyledElement {
     public boolean removeStyleClass(String cssClass) {
         return styleProxy.removeStyleClass(cssClass);
     }
-    
+
 }

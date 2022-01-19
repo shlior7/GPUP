@@ -1,5 +1,6 @@
+import lombok.SneakyThrows;
+
 import java.util.Queue;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -11,8 +12,9 @@ public class TaskRunner implements Runnable {
     private Queue<Target> queue;
     private final AtomicInteger targetsDone = new AtomicInteger(0);
     public final AtomicBoolean pause = new AtomicBoolean(false);
-    private Task task;
+    private final Task task;
     int prev = -1;
+    private boolean finished = false;
 
     public TaskRunner(TargetGraph targetGraph, Task task, int maxParallelism) {
         this.targetGraph = targetGraph;
@@ -20,6 +22,7 @@ public class TaskRunner implements Runnable {
         this.task = task;
     }
 
+    @SneakyThrows
     @Override
     public void run() {
         queue = targetGraph.initQueue();
@@ -53,10 +56,12 @@ public class TaskRunner implements Runnable {
 
         while (!threadExecutor.isTerminated()) {
             System.out.println("not Done!!!!!!");
-
+            Thread.sleep(1000);
         }
         System.out.println("Im done!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         targetGraph.printStatsInfo(targetGraph.getResultStatistics());
+        targetGraph.printStatsInfo(targetGraph.getStatusesStatistics());
+        finished = true;
     }
 
     public synchronized void runTaskOnTarget(Target target, Task task) {
@@ -81,10 +86,8 @@ public class TaskRunner implements Runnable {
 
         newTask.setTarget(target);
         newTask.setFuncOnFinished(this::OnFinish);
-        synchronized (this) {
-            System.out.println("Adding task " + newTask.getName() + " to thread pool.");
-        }
         threadExecutor.execute(newTask);
+
         ssc.setBusy(target.name, true);
         synchronized (this) {
             targetsDone.incrementAndGet();
@@ -95,7 +98,7 @@ public class TaskRunner implements Runnable {
     }
 
 
-    public synchronized void OnFinish(Target target, Task task) {
+    public synchronized void OnFinish(Target target) {
         target.setStatus(Status.FINISHED);
         String name = target.name;
         System.out.println("finished task " + name);
@@ -123,5 +126,9 @@ public class TaskRunner implements Runnable {
             }
         }
         System.out.println("paused: " + pause.get());
+    }
+
+    public boolean isFinished() {
+        return finished;
     }
 }

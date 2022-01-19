@@ -1,9 +1,8 @@
 
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Engine {
     private static TargetGraph targetGraph;
@@ -83,6 +82,28 @@ public class Engine {
     public void runTask(Task task, int maxParallel) {
         taskRunner = new TaskRunner(targetGraph, task, maxParallel);
         taskRunner.run();
+    }
+
+    public String onTargetClicked(Target target) {
+        return "parents : " + targetGraph.howManyRequireFor(target.name) + "\nChildren : " + targetGraph.howManyDependsOn(target.name);
+    }
+
+    public Map<Target, Status> getTargetsStatus() {
+        return targetGraph.getAllElementMap().values().stream().collect(Collectors.toMap(Function.identity(), Target::getStatus));
+    }
+
+    public Map<Target, Result> getTargetsResult() {
+        return targetGraph.getAllElementMap().values().stream().collect(Collectors.toMap(Function.identity(), Target::getResult));
+    }
+
+    public Map<String, Target> getAllTargets() {
+        return targetGraph.getAllElementMap();
+    }
+
+    public boolean isFinishedRunning() {
+        if (taskRunner == null)
+            return false;
+        return taskRunner.isFinished();
     }
 }
 

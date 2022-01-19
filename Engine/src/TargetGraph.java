@@ -1,6 +1,4 @@
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,7 +30,7 @@ public class TargetGraph implements Graph<Target> {
             this.allTargets.put(t.name, t);
             this.targetsAdjacentOG.put(t.name, new HashSet<>());
 
-            if (t.getResult() != null)
+            if (t.getResult() != Result.NULL)
                 setStatus(t.name, Status.FINISHED);
             else
                 setStatus(t.name, Status.FROZEN);
@@ -55,7 +53,7 @@ public class TargetGraph implements Graph<Target> {
             this.targetsAdjacentOG.put(t.name, new HashSet<>());
             this.parentsMap.put(t.name, new HashSet<>());
 
-            if (t.getResult() != null)
+            if (t.getResult() != Result.NULL)
                 setStatus(t.name, Status.FINISHED);
             else
                 setStatus(t.name, Status.FROZEN);
@@ -396,6 +394,41 @@ public class TargetGraph implements Graph<Target> {
     @Override
     public Map<String, Target> getAllElementMap() {
         return allTargets;
+    }
+
+    @Override
+    public String getVertexInfo(Target target) {
+        String res = target.geStringInfo() + "\nType: " + getType(target.name) +
+                "\nDepends on: " + howManyDependsOn(target.name) +
+                "\nRequired For: " + howManyRequireFor(target.name);
+        return res;
+    }
+
+    public int howManyDependsOn(String name) {
+        return recursiveChildrenCounting(name, targetsAdjToRunOn);
+    }
+
+    public int howManyRequireFor(String name) {
+        return recursiveChildrenCounting(name, parentsMap);
+    }
+
+    private int recursiveChildrenCounting(String name, AdjMap parentsMap) {
+        Map<String, Boolean> passedOn = new HashMap<>(allTargets.size());
+        AtomicInteger requiredOn = new AtomicInteger(0);
+
+        RecursiveConsumer<String> rec = (consumer, targetName) -> parentsMap.get(targetName).forEach((target -> {
+            if (Boolean.TRUE.equals(passedOn.putIfAbsent(target.name, false)))
+                return;
+            synchronized (this) {
+                passedOn.put(target.name, true);
+                requiredOn.incrementAndGet();
+            }
+            consumer.accept(target.name);
+        }));
+
+        rec.accept(name);
+
+        return requiredOn.get();
     }
 
     public void printGraphStatusInfo() {

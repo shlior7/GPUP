@@ -28,6 +28,7 @@ import javafx.scene.shape.Circle;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 
 public class GraphVertexNode<T> extends Circle implements StyledElement {
@@ -42,10 +43,12 @@ public class GraphVertexNode<T> extends Circle implements StyledElement {
     private final PointVector forceVector = new PointVector(0, 0);
     private final PointVector updatedPosition = new PointVector(0, 0);
 
-    public GraphVertexNode(Vertex<T> v, double x, double y, double radius) {
+
+    public GraphVertexNode(Vertex<T> v, double x, double y, double radius, Consumer<T> onClicked) {
         super(x, y, radius);
 
         this.underlyingVertex = v;
+        this.setOnMouseClicked((me) -> onClicked.accept(underlyingVertex.element()));
         this.attachedLabel = null;
 
         this.adjacentVertices = new HashSet<>();
@@ -154,15 +157,14 @@ public class GraphVertexNode<T> extends Circle implements StyledElement {
 
 
     public void updateDelta() {
-        updatedPosition.x = updatedPosition.x /* + speed*/ + forceVector.x;
+        updatedPosition.x = updatedPosition.x + forceVector.x;
         updatedPosition.y = updatedPosition.y + forceVector.y;
     }
-
 
     public void moveFromForces() {
 
         //limit movement to parent bounds
-        double height = getParent().getLayoutBounds().getHeight();
+        double height = getParent().getLayoutBounds().getHeight() - 25;
         double width = getParent().getLayoutBounds().getWidth();
 
         updatedPosition.x = boundCenterCoordinate(updatedPosition.x, 0, width);
@@ -180,7 +182,6 @@ public class GraphVertexNode<T> extends Circle implements StyledElement {
     }
 
     private static class PointVector {
-
         double x, y;
 
         public PointVector(double x, double y) {
