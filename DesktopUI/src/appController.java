@@ -58,6 +58,7 @@ public class appController {
     public void visualGraph() {
         GraphProperties properties = new GraphProperties("edge.arrow = true\n" + "edge.label = false\n" + "edge.arrowsize = 7\n");
         graphView = new GraphPanel<>(Engine.getTargetGraph(), properties, this::onVertexClicked);
+
         BorderPane root = new BorderPane();
         root.setCenter(graphView);
         VBox vBox = new VBox(5);
@@ -92,7 +93,7 @@ public class appController {
 //        boolean startFromLastPoint = Engine.validateGraph() && UI.promptBoolean("Do you want to start the task on the graph from the last point");
 //
 //        Simulation simulation = new Simulation(timeToProcess, isRandom, successProbability, successWithWarningProbability);
-        Simulation simulation = new Simulation(10000, false, 0.8f, 0.3f);
+        Simulation simulation = new Simulation(5000, false, 0.8f, 0.3f);
 //        int parallel = UI.promptInt("Please enter the number of threads ", 0, Integer.MAX_VALUE);
         int parallel = 10;
 //        if (false && !Engine.taskAlreadyRan())
@@ -115,7 +116,6 @@ public class appController {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                System.out.println("still running");
             }
             changeColors(flickering);
         }, "Task Running");
@@ -125,13 +125,13 @@ public class appController {
     public void changeColors(HashMap<String, AtomicBoolean> flickering) {
         engine.getAllTargets().forEach((name, target) -> {
             Status status = target.getStatus();
-            Result result = target.getResult();
-            String stroke = status.getColor(), fill = result.getColor();
+            String stroke = status.getColor();
+            String fill = target.getResult().getColor();
             if (status == Status.FINISHED)
                 stroke = fill;
             if (status == Status.IN_PROCESS) {
                 flickering.putIfAbsent(name, new AtomicBoolean(false));
-                stroke = flickering.get(name).get() ? status.getColor() : "GOLD";
+                stroke = flickering.get(name).get() ? "yellow" : "gold";
                 flickering.get(name).set(!flickering.get(name).get());
             }
             graphView.getStylableVertex(target).setStyle("-fx-stroke: " + stroke + ";" + "-fx-fill: " + fill + ";");
@@ -141,6 +141,8 @@ public class appController {
     public void onVertexClicked(Target target) {
         System.out.println(engine.onTargetClicked(target));
     }
+
+
 //    public void visualGraph() {
 //        Digraph<String, String> targets = new DigraphEdgeList<>();
 //        StringBuilder Props = new StringBuilder("");

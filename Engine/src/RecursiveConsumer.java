@@ -6,5 +6,5 @@ public interface RecursiveConsumer<T> extends Consumer<T> {
         accept(this, t);
     }
 
-    public void accept(RecursiveConsumer<T> runnable, T t);
+    void accept(RecursiveConsumer<T> runnable, T t);
 }

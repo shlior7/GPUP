@@ -29,11 +29,8 @@ import java.util.Queue;
 
 
 public class GraphApplication extends Application {
-    private static Stage primaryStage; // **Declare static Stage**
+    private Stage primaryStage;
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
         launch(args);
     }
@@ -49,15 +46,13 @@ public class GraphApplication extends Application {
         Scene scene = new Scene(root, 510, 550);
         primaryStage.setScene(scene);
         primaryStage.show();
-
-
     }
 
     private void setPrimaryStage(Stage stage) {
-        GraphApplication.primaryStage = stage;
+        this.primaryStage = stage;
     }
 
-    static public Stage getPrimaryStage() {
-        return GraphApplication.primaryStage;
+    public Stage getPrimaryStage() {
+        return primaryStage;
     }
 }

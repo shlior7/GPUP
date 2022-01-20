@@ -1,7 +1,7 @@
 enum Status {
     WAITING("blue"),
     FROZEN("blue"),
-    SKIPPED("orange"),
+    SKIPPED("yellow"),
     IN_PROCESS("yellow"),
     FINISHED("darkgray");
 

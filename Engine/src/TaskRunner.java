@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TaskRunner implements Runnable {
     private final TargetGraph targetGraph;
-    private static ExecutorService threadExecutor;
+    private final ExecutorService threadExecutor;
     private Queue<Target> queue;
     private final AtomicInteger targetsDone = new AtomicInteger(0);
     public final AtomicBoolean pause = new AtomicBoolean(false);
@@ -18,7 +18,7 @@ public class TaskRunner implements Runnable {
 
     public TaskRunner(TargetGraph targetGraph, Task task, int maxParallelism) {
         this.targetGraph = targetGraph;
-        threadExecutor = Executors.newFixedThreadPool(maxParallelism);
+        this.threadExecutor = Executors.newFixedThreadPool(maxParallelism);
         this.task = task;
     }
 
@@ -33,7 +33,6 @@ public class TaskRunner implements Runnable {
                 try {
                     synchronized (targetGraph) {
                         System.out.println("wait");
-
                         targetGraph.wait();
                         System.out.println("notified");
                     }
@@ -79,6 +78,7 @@ public class TaskRunner implements Runnable {
             default:
                 return;
         }
+
         Task newTask = new Simulation((Simulation) task);
         synchronized (this) {
             System.out.println("running task on target: " + target.name);
