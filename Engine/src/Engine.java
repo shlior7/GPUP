@@ -8,9 +8,10 @@ public class Engine {
     private static TargetGraph targetGraph;
     private TaskRunner taskRunner;
 
-    public void toggleTaskRunning() {
+    public boolean toggleTaskRunning() {
         if (taskRunner != null)
-            taskRunner.togglePause();
+            return taskRunner.togglePause();
+        return false;
     }
 
     public static void load(TargetGraph _targetGraph) {
@@ -50,11 +51,11 @@ public class Engine {
         return obj == null ? instead : obj.toString();
     }
 
-    public static LinkedList<String> findCircuit(String targetName) {
+    public LinkedList<String> findCircuit(String targetName) {
         return targetGraph.findCircuit(targetName);
     }
 
-    public static LinkedList<List<String>> findPaths(String targetName1, String targetName2, boolean dependsOn) {
+    public LinkedList<List<String>> findPaths(String targetName1, String targetName2, boolean dependsOn) {
         return targetGraph.findAllPaths(dependsOn ? targetName1 : targetName2, dependsOn ? targetName2 : targetName1);
     }
 
@@ -71,7 +72,7 @@ public class Engine {
     }
 
 
-    public static boolean NoSuchTarget(String targetName) {
+    public boolean NoSuchTarget(String targetName) {
         return targetGraph.NoSuchTarget(targetName);
     }
 
@@ -79,8 +80,9 @@ public class Engine {
         targetGraph.setFrozensToSkipped();
     }
 
-    public void runTask(Task task, int maxParallel) {
-        taskRunner = new TaskRunner(targetGraph, task, maxParallel);
+    public void runTask(Task task, Set<Target> targetsToRunOn, int maxParallel, boolean runFromScratch) {
+//        targetGraph.createNewGraphFromTargetList(targetsToRunOn);
+        taskRunner = new TaskRunner(targetGraph, task, maxParallel, runFromScratch);
         taskRunner.run();
     }
 
@@ -100,10 +102,36 @@ public class Engine {
         return targetGraph.getAllElementMap();
     }
 
-    public boolean isFinishedRunning() {
+    public Map<String, Set<Target>> getAdjacentMap() {
+        return targetGraph.getAdjacentNameMap();
+    }
+
+
+    public boolean isTaskRunning() {
         if (taskRunner == null)
             return false;
-        return taskRunner.isFinished();
+        return taskRunner.isRunning();
+    }
+
+    public TaskRunner getTaskRunner() {
+        return taskRunner;
+    }
+
+    public void reset() {
+        targetGraph.reset();
+    }
+
+    public void createNewGraphFromTargetList(Set<Target> targetToRunOn) {
+        targetGraph.createNewGraphFromTargetList(targetToRunOn);
+    }
+
+    public LinkedList<List<String>> findAllPaths(String source, String destination) {
+        return targetGraph.findAllPaths(source, destination);
+    }
+
+
+    public int getMaxThreads() {
+        return targetGraph.getMaxThreads();
     }
 }
 

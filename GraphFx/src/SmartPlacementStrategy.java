@@ -2,28 +2,51 @@
 import javafx.geometry.Point2D;
 
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
 public class SmartPlacementStrategy implements PlacementStrategy {
 
-    int padding = 10;
-    int margin = 10;
-
-    @Override
     public <V> void place(double width, double height, Collection<? extends GraphVertexNode<V>> vertices) {
-        Point2D center = new Point2D(width / 2, height / 2);
-        int N = vertices.size();
-        double UpperLine = padding;
-        double centerLine = center.getY();
-        double bottomLine = height - padding;
-        double x = margin;
-        for (GraphVertexNode<V> vertex : vertices) {
-            x += vertex.getRadius() / 2;
-            if (vertex.getAdjacents().size() == 0) {
-                vertex.setPosition(x + vertex.getRadius() / 2, bottomLine);
-                x += margin + vertex.getRadius();
+        List<GraphVertexNode<V>> roots = new LinkedList<>();
+        List<GraphVertexNode<V>> leafs = new LinkedList<>();//leafs with independents
+        List<GraphVertexNode<V>> middles = new LinkedList<>();
+
+
+        vertices.forEach((vertexNode) -> {
+            switch (vertexNode.getType()) {
+                case Root:
+                    roots.add(vertexNode);
+                    break;
+                case Middle:
+                    middles.add(vertexNode);
+                    break;
+                default:
+                    leafs.add(vertexNode);
             }
-        }
+        });
+
+        double precentOfLeafs = (double) leafs.size() / (double) vertices.size();
+        double precentOfRoots = (double) roots.size() / (double) vertices.size();
+
+        PlaceByType(width, height, 0, precentOfRoots, roots);
+        PlaceByType(width, height, precentOfRoots, 1 - precentOfLeafs, middles);
+        PlaceByType(width, height, 1 - precentOfLeafs, 1, leafs);
     }
 
+    private <V> void PlaceByType(double width, double height, double minHeightPercent, double maxHeightPercent, List<GraphVertexNode<V>> vertices) {
+        Random rand = new Random();
+        double minHeight = minHeightPercent * height;
+        double maxHeight = maxHeightPercent * height;
+        for (GraphVertexNode<V> vertex : vertices) {
+            vertex.setMinHeightPercent(minHeightPercent);
+            vertex.setMaxHeightPercent(maxHeightPercent);
+
+            double x = rand.nextDouble() * width;
+            double y = minHeight + (rand.nextDouble() * maxHeight);
+
+            vertex.setPosition(x, y);
+        }
+    }
 }

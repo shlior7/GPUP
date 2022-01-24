@@ -15,16 +15,20 @@ public class TaskRunner implements Runnable {
     private final Task task;
     int prev = -1;
     private boolean finished = false;
+    private boolean running = false;
+    private boolean runFromScratch;
 
-    public TaskRunner(TargetGraph targetGraph, Task task, int maxParallelism) {
+    public TaskRunner(TargetGraph targetGraph, Task task, int maxParallelism, boolean runFromScratch) {
         this.targetGraph = targetGraph;
         this.threadExecutor = Executors.newFixedThreadPool(maxParallelism);
         this.task = task;
+        this.runFromScratch = runFromScratch;
     }
 
     @SneakyThrows
     @Override
     public void run() {
+        running = true;
         queue = targetGraph.initQueue();
 
         int prev = -1;
@@ -60,6 +64,7 @@ public class TaskRunner implements Runnable {
         System.out.println("Im done!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         targetGraph.printStatsInfo(targetGraph.getResultStatistics());
         targetGraph.printStatsInfo(targetGraph.getStatusesStatistics());
+        running = false;
         finished = true;
     }
 
@@ -108,7 +113,7 @@ public class TaskRunner implements Runnable {
             targetGraph.setParentsStatuses(name, Status.SKIPPED, targetsDone);
         }
 
-        queue.addAll(targetGraph.whoAreYourDaddies(target.name));
+        queue.addAll(targetGraph.whoAreYourDirectDaddies(target.name));
         if (prev != targetsDone.get()) {
             System.out.println("done : " + targetsDone.get());
             System.out.println("status = " + target.getStatus() + ",result = " + target.getResult());
@@ -116,7 +121,7 @@ public class TaskRunner implements Runnable {
         }
     }
 
-    public void togglePause() {
+    public boolean togglePause() {
         System.out.println("XXXXXXXXXXXXXXXXXXXXX");
         pause.set(!pause.get());
         if (!pause.get()) {
@@ -125,10 +130,16 @@ public class TaskRunner implements Runnable {
                 System.out.println("notify!!!");
             }
         }
-        System.out.println("paused: " + pause.get());
+        return pause.get();
     }
 
     public boolean isFinished() {
         return finished;
     }
+
+    public boolean isRunning() {
+        return running;
+    }
+
+
 }

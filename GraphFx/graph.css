@@ -10,6 +10,10 @@
     -fx-fill: #6A8594;
 }
 
+.vertex_pressed {
+    -fx-stroke: blue;
+}
+
 .vertex-label {
     -fx-font: bold 12pt "sans-serif";
 }
@@ -20,11 +24,15 @@
 }
 
 .edge {
-    -fx-stroke-width: 2;
+    -fx-stroke-width: 3;
     -fx-stroke: #000000;
     -fx-fill: transparent; /*important for curved edges */
     -fx-stroke-line-cap: round;
     -fx-opacity: 0.5;
+}
+
+.edge_pressed {
+    -fx-stroke: MAGENTA;
 }
 
 

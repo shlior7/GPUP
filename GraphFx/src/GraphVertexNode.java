@@ -23,6 +23,8 @@
  */
 
 import javafx.geometry.Point2D;
+import javafx.scene.Cursor;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Circle;
 
 import java.util.Collection;
@@ -37,27 +39,90 @@ public class GraphVertexNode<T> extends Circle implements StyledElement {
     private final Set<GraphVertexNode<T>> adjacentVertices;
 
     private Label attachedLabel = null;
-
+    private boolean isDragging = false;
+    private boolean pressed = false;
+    private boolean pressable = false;
     private final StyleHandler styleProxy;
 
     private final PointVector forceVector = new PointVector(0, 0);
     private final PointVector updatedPosition = new PointVector(0, 0);
-
+    private final Consumer<T> onClicked;
+    private VertexType type = VertexType.Independent;
+    private double minHeightPercent;
+    private double maxHeightPercent;
 
     public GraphVertexNode(Vertex<T> v, double x, double y, double radius, Consumer<T> onClicked) {
         super(x, y, radius);
 
         this.underlyingVertex = v;
-        this.setOnMouseClicked((me) -> onClicked.accept(underlyingVertex.element()));
+        this.onClicked = onClicked;
+        this.setOnMouseClicked((me) -> press());
         this.attachedLabel = null;
-
         this.adjacentVertices = new HashSet<>();
 
         styleProxy = new StyleHandler(this);
         styleProxy.addStyleClass("vertex");
+        enableDrag();
     }
 
-    public void addAdjacentVertex(GraphVertexNode<T> v) {
+
+    public VertexType addInAdjacent() {
+        switch (type) {
+            case Independent:
+                type = VertexType.Leaf;
+                break;
+            case Root:
+                type = VertexType.Middle;
+                break;
+        }
+        return type;
+    }
+
+    public VertexType addOutAdjacent() {
+        switch (type) {
+            case Independent:
+                type = VertexType.Root;
+                break;
+            case Leaf:
+                type = VertexType.Middle;
+                break;
+        }
+        return type;
+    }
+
+    public void press() {
+        if (pressable) {
+            if (pressed) {
+                setVertexStyleToDefault();
+            } else {
+                setVertexStyleToPressed();
+            }
+            onClicked.accept(underlyingVertex.element());
+        }
+    }
+
+    public VertexType getType() {
+        return type;
+    }
+
+    public void setVertexStyleToDefault() {
+        this.setStyleClass("vertex");
+        pressed = false;
+    }
+
+    public void setVertexStyleToPressed() {
+        this.addStyleClass("vertex_pressed");
+        pressed = true;
+    }
+
+    public void setPressable(boolean pressable) {
+        this.pressable = pressable;
+        if (!pressable)
+            setStyleClass("vertex");
+    }
+
+    public void addAdjacentVertex(GraphVertexNode<T> v, boolean in) {
+        VertexType _ = in ? addInAdjacent() : addOutAdjacent();
         this.adjacentVertices.add(v);
     }
 
@@ -82,8 +147,18 @@ public class GraphVertexNode<T> extends Circle implements StyledElement {
     }
 
     public void setPosition(double x, double y) {
+        if (isDragging) {
+            return;
+        }
         setCenterX(x);
-        setCenterY(y);
+        double height = getParent().getLayoutBounds().getHeight();
+        double minHeight = minHeightPercent * height;
+        double maxHeight = maxHeightPercent * height;
+        if (y > maxHeight)
+            setCenterY(maxHeight);
+        else setCenterY(Math.max(y, minHeight));
+
+
     }
 
     public double getPositionCenterX() {
@@ -173,12 +248,72 @@ public class GraphVertexNode<T> extends Circle implements StyledElement {
         setPosition(updatedPosition.x, updatedPosition.y);
     }
 
+    private void enableDrag() {
+        final PointVector dragDelta = new PointVector(0, 0);
+
+        setOnMousePressed((MouseEvent mouseEvent) -> {
+            if (mouseEvent.isPrimaryButtonDown()) {
+                // record a delta distance for the drag and drop operation.
+                dragDelta.x = getCenterX() - mouseEvent.getX();
+                dragDelta.y = getCenterY() - mouseEvent.getY();
+                getScene().setCursor(Cursor.MOVE);
+                isDragging = true;
+
+                mouseEvent.consume();
+            }
+
+        });
+
+        setOnMouseReleased((MouseEvent mouseEvent) -> {
+            getScene().setCursor(Cursor.HAND);
+            isDragging = false;
+
+            mouseEvent.consume();
+        });
+
+        setOnMouseDragged((MouseEvent mouseEvent) -> {
+            if (mouseEvent.isPrimaryButtonDown()) {
+                double newX = mouseEvent.getX() + dragDelta.x;
+                double x = boundCenterCoordinate(newX, 0, getParent().getLayoutBounds().getWidth());
+                setCenterX(x);
+
+                double newY = mouseEvent.getY() + dragDelta.y;
+                double y = boundCenterCoordinate(newY, 0, getParent().getLayoutBounds().getHeight());
+                setCenterY(y);
+                mouseEvent.consume();
+            }
+
+        });
+
+        setOnMouseEntered((MouseEvent mouseEvent) -> {
+            if (!mouseEvent.isPrimaryButtonDown()) {
+                getScene().setCursor(Cursor.HAND);
+            }
+
+        });
+
+        setOnMouseExited((MouseEvent mouseEvent) -> {
+            if (!mouseEvent.isPrimaryButtonDown()) {
+                getScene().setCursor(Cursor.DEFAULT);
+            }
+
+        });
+    }
+
     private double boundCenterCoordinate(double value, double min, double max) {
         double radius = getRadius();
 
         if (value < min + radius) {
             return min + radius;
         } else return Math.min(value, max - radius);
+    }
+
+    public void setMinHeightPercent(double minHeightPercent) {
+        this.minHeightPercent = minHeightPercent;
+    }
+
+    public void setMaxHeightPercent(double maxHeightPercent) {
+        this.maxHeightPercent = maxHeightPercent;
     }
 
     private static class PointVector {

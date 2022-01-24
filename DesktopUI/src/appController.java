@@ -38,20 +38,16 @@ public class appController {
     }
 
     @FXML
-    void runTask(ActionEvent event) {
-        runTaskConsole();
-    }
-
-    @FXML
     void showGraph(ActionEvent event) throws Exception {
-        visualGraph();
+        GraphStage graphController = new GraphStage(engine);
+        graphController.showGraph();
+//        visualGraph();
     }
 
     void load(Stage stage) throws Exception {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Resource File");
         File file = fileChooser.showOpenDialog(stage);
-
         Engine.load(FileHandler.loadGPUPXMLFile(file));
     }
 
@@ -84,6 +80,10 @@ public class appController {
 
     }
 
+    private void runTask(ActionEvent actionEvent) {
+        runTaskConsole();
+    }
+
 
     public void runTaskConsole() {
 //        int timeToProcess = UI.promptInt("Please enter the time to process the simulation (milliseconds) ", 0, Integer.MAX_VALUE);
@@ -101,7 +101,7 @@ public class appController {
 
 
         Thread work = new Thread(() -> {
-            engine.runTask(simulation, parallel);
+//            engine.runTask(simulation, parallel);
         }, "Task Running");
         System.out.println("started");
         work.start();
@@ -109,7 +109,7 @@ public class appController {
 
         Thread check = new Thread(() -> {
             HashMap<String, AtomicBoolean> flickering = new HashMap<>();
-            while (!engine.isFinishedRunning()) {
+            while (engine.isTaskRunning()) {
                 changeColors(flickering);
                 try {
                     Thread.sleep(1000);

@@ -8,12 +8,12 @@ class FindCircuit_Option implements Option {
 
     @Override
     public void actOption() {
-        String targetName = UI.prompt("Please enter the targets name", Engine::NoSuchTarget, "No such target in the graph");
-        LinkedList<String> circuit = Engine.findCircuit(targetName);
-        if (circuit.size() == 0) {
-            UI.printDivide("the target " + targetName + " was not found to be in a circuit");
-            return;
-        }
-        UI.printPath(circuit);
+//        String targetName = UI.prompt("Please enter the targets name", Engine::NoSuchTarget, "No such target in the graph");
+////        LinkedList<String> circuit = Engine.findCircuit(targetName);
+//        if (circuit.size() == 0) {
+//            UI.printDivide("the target " + targetName + " was not found to be in a circuit");
+//            return;
+//        }
+//        UI.printPath(circuit);
     }
 }

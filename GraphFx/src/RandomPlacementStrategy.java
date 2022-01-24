@@ -2,12 +2,6 @@
 import java.util.Collection;
 import java.util.Random;
 
-/**
- * Scatters the vertices randomly.
- *
- * @author brunomnsilva
- * @see PlacementStrategy
- */
 public class RandomPlacementStrategy implements PlacementStrategy {
 
     @Override
@@ -24,5 +18,4 @@ public class RandomPlacementStrategy implements PlacementStrategy {
 
         }
     }
-
 }

@@ -7,6 +7,7 @@ import java.time.Duration;
 @Setter
 public class Target {
     public String name;
+    private String targetInfo;
     private Result result;
     private Status status;
     private String userData;
@@ -37,6 +38,12 @@ public class Target {
                         "\nStatus: " + status +
                         "\nResult: " + result;
 
+    }
+
+    public void init(String info) {
+        this.result = Result.NULL;
+        this.status = Status.FROZEN;
+        this.targetInfo = info;
     }
 
     @Override

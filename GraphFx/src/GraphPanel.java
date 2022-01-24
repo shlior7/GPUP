@@ -25,6 +25,7 @@
 
 import javafx.animation.AnimationTimer;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
@@ -44,6 +45,8 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class GraphPanel<V> extends Pane {
 
@@ -54,7 +57,7 @@ public class GraphPanel<V> extends Pane {
     private final Map<Vertex<V>, GraphVertexNode<V>> vertexNodes;
     private final Map<V, Vertex<V>> vertices;
     private final Set<GraphEdgeLine<V>> edgeNodes;
-
+    private final Map<V, Map<V, GraphEdgeLine<V>>> graphEdgesMap;
     private boolean initialized = false;
     private final boolean edgesWithArrows;
 
@@ -63,7 +66,7 @@ public class GraphPanel<V> extends Pane {
     private final double attractionForce;
     private final double attractionScale;
 
-    private static final int AUTOMATIC_LAYOUT_ITERATIONS = 30;
+    private static final int AUTOMATIC_LAYOUT_ITERATIONS = 1;
     public final BooleanProperty automaticLayoutProperty;
 
     private final Consumer<V> vertexClickConsumer;
@@ -90,6 +93,7 @@ public class GraphPanel<V> extends Pane {
         vertexNodes = new HashMap<>();
         edgeNodes = new HashSet<>();
         vertices = new HashMap<>();
+        graphEdgesMap = new HashMap<>();
 
         initNodes();
         timer = new AnimationTimer() {
@@ -129,7 +133,7 @@ public class GraphPanel<V> extends Pane {
             throw new IllegalStateException("Already initialized. Use update() method instead.");
         }
 
-        new RandomPlacementStrategy().place(this.widthProperty().doubleValue(),
+        new SmartPlacementStrategy().place(this.widthProperty().doubleValue(),
                 this.heightProperty().doubleValue(),
                 this.vertexNodes.values());
         timer.start();
@@ -148,9 +152,17 @@ public class GraphPanel<V> extends Pane {
 
         theGraph.getAllElementMap().forEach((name, element) -> {
             GraphVertexNode<V> graphVertexOut = vertexNodes.get(vertices.get(element));
-            theGraph.getAdjNameMap().get(name).forEach(inboundVertex -> {
+            theGraph.getAdjacentNameMap().get(name).forEach(inboundVertex -> {
                 GraphVertexNode<V> graphVertexIn = vertexNodes.get(vertices.get(inboundVertex));
+
+                graphVertexIn.addAdjacentVertex(graphVertexOut, true);
+                graphVertexOut.addAdjacentVertex(graphVertexIn, false);
+
                 GraphEdgeLine<V> graphEdge = createEdge(graphVertexIn, graphVertexOut);
+
+                graphEdgesMap.putIfAbsent(element, new HashMap<>());
+                graphEdgesMap.get(element).putIfAbsent(inboundVertex, graphEdge);
+
                 addEdge(graphEdge);
 
                 if (this.edgesWithArrows) {
@@ -170,6 +182,7 @@ public class GraphPanel<V> extends Pane {
     private GraphEdgeLine<V> createEdge(GraphVertexNode<V> graphVertexInbound, GraphVertexNode<V> graphVertexOutbound) {
         GraphEdgeLine<V> graphEdge = new GraphEdgeLine<V>(graphVertexInbound, graphVertexOutbound);
         edgeNodes.add(graphEdge);
+
         return graphEdge;
     }
 
@@ -253,6 +266,10 @@ public class GraphPanel<V> extends Pane {
 
 
     public StyledElement getStylableVertex(V vertexElement) {
+        return getGraphVertex(vertexElement);
+    }
+
+    public GraphVertexNode<V> getGraphVertex(V vertexElement) {
         return vertexNodes.getOrDefault(vertices.getOrDefault(vertexElement, null), null);
     }
 
@@ -312,21 +329,21 @@ public class GraphPanel<V> extends Pane {
 
                 Point2D repellingForce = UtilitiesPoint2D.repellingForce(v.getUpdatedPosition(), other.getUpdatedPosition(), this.repulsionForce);
 
-
-                for (GraphVertexNode<V> diff : vertexNodes.values()) {
-                    if (diff == v || diff == other)
-                        continue;
-                    Point2D diffPos = diff.getUpdatedPosition();
-                    Point2D closest = getClosestPoint(vPos, otherPos, diffPos);
-                    if (closest == null)
-                        continue;
-
-                    Point2D repellingForceFromLine = UtilitiesPoint2D.repellingForce(diffPos, closest, 0.02);
-                    Point2D attractiveForce = UtilitiesPoint2D.attractiveForce(diffPos, closest,
-                            vertexNodes.size(), 0.02, 5);
-
-                    diff.addForceVector(attractiveForce.getX() + repellingForceFromLine.getX(), attractiveForce.getY() + repellingForceFromLine.getY());
-                }
+//
+//                for (GraphVertexNode<V> diff : vertexNodes.values()) {
+//                    if (diff == v || diff == other)
+//                        continue;
+//                    Point2D diffPos = diff.getUpdatedPosition();
+//                    Point2D closest = getClosestPoint(vPos, otherPos, diffPos);
+//                    if (closest == null)
+//                        continue;
+//
+//                    Point2D repellingForceFromLine = UtilitiesPoint2D.repellingForce(diffPos, closest, 0.2);
+//                    Point2D attractiveForce = UtilitiesPoint2D.attractiveForce(diffPos, closest,
+//                            vertexNodes.size(), 0.02, 5);
+//
+//                    diff.addForceVector(attractiveForce.getX() + repellingForceFromLine.getX(), attractiveForce.getY() + repellingForceFromLine.getY());
+//                }
 
                 double deltaForceX = 0, deltaForceY = 0;
 
@@ -388,5 +405,62 @@ public class GraphPanel<V> extends Pane {
                 popup.hide();
             }
         });
+    }
+
+    public Property<Boolean> automaticLayoutProperty() {
+        return automaticLayoutProperty;
+    }
+
+    public void setPressable(boolean pressable) {
+        vertexNodes.values().forEach(v -> v.setPressable(pressable));
+    }
+
+    public void setPressable(V element, boolean pressable) {
+        vertexNodes.get(vertices.get(element)).setPressable(pressable);
+    }
+
+    public void pressOnVertex(V element) {
+        vertexNodes.get(vertices.get(element)).press();
+    }
+
+    public void hideEdges(Set<V> elementsNotIncluded) {
+        edgeNodes.forEach((edge) ->
+        {
+            if (elementsNotIncluded.containsAll(Stream.of(edge.getInbound().getUnderlyingVertex().element(), edge.getOutbound().getUnderlyingVertex().element()).collect(Collectors.toSet())))
+                return;
+            edge.hide();
+        });
+    }
+
+    public void pressOnEdge(V outbound, V inbound) {
+        Map<V, GraphEdgeLine<V>> map = graphEdgesMap.getOrDefault(outbound, null);
+        if (map != null) {
+            GraphEdgeLine<V> edge = map.getOrDefault(inbound, null);
+            if (edge != null) {
+                edge.setEdgeStyleToPressed();
+            }
+        }
+    }
+
+    public void resetEdgesToDefault() {
+        edgeNodes.forEach(GraphEdgeLine::setEdgeStyleToDefault);
+    }
+
+    public void resetVerticesToDefault() {
+        vertexNodes.values().forEach(GraphVertexNode::setVertexStyleToDefault);
+    }
+
+    public GraphEdgeLine<V> getEdgeLine(V outbound, V inbound) {
+        Map<V, GraphEdgeLine<V>> map = graphEdgesMap.getOrDefault(outbound, null);
+        if (map != null) {
+            return map.getOrDefault(inbound, null);
+        }
+        return null;
+    }
+
+    public void reset() {
+        edgeNodes.forEach(GraphEdgeLine::show);
+        vertexNodes.values().forEach(GraphVertexNode::setVertexStyleToDefault);
+        edgeNodes.forEach(GraphEdgeLine::setEdgeStyleToDefault);
     }
 }
