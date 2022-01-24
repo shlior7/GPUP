@@ -35,6 +35,11 @@ public class Simulation extends Task {
     }
 
     @Override
+    public Task copy() {
+        return new Simulation(this);
+    }
+
+    @Override
     public void setTarget(Target targetToRunOn) {
         this.targetToRunOn = targetToRunOn;
     }

@@ -13,6 +13,10 @@ public class Compilation extends Task {
             System.out.println("Already exists");
     }
 
+    public Compilation(Compilation task) {
+        this.outFolder = task.outFolder;
+    }
+
     public String getName() {
         return "compilation";
     }
@@ -20,6 +24,11 @@ public class Compilation extends Task {
     public void setTarget(Target target) {
         this.targetToRunOn = target;
         this.javaFilesPath = String.join("/", target.getUserData().split("\\.")) + ".java";
+    }
+
+    @Override
+    public Task copy() {
+        return new Compilation(this);
     }
 
     @Override

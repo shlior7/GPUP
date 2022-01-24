@@ -14,7 +14,7 @@ public class SideController extends VBox {
     public SideController(GraphStage graphStage) {
         this.graphStage = graphStage;
         settings = new StackPane();
-        actionList = Stream.of(new RunTask(graphStage), new FindPath(graphStage)).collect(Collectors.toList());
+        actionList = Stream.of(new RunTask(graphStage), new FindPath(graphStage), new FindCircuit(graphStage)).collect(Collectors.toList());
         this.setSpacing(20);
         this.setPrefWidth(200);
         CreateButtonsVBox();

@@ -48,5 +48,6 @@ public abstract class SideAction {
 
     public void reset() {
         settings.setVisible(false);
+        graphStage.choosingController.setChoosingState(false);
     }
 }

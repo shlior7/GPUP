@@ -16,6 +16,7 @@ public class FindCircuit extends SideAction {
 
     public FindCircuit(GraphStage graphStage) {
         super("Find Circuit", graphStage);
+        setOnAction(this::chooseTargets);
         choose = true;
         createChooserComboBox();
         ActionButton findCircuit = new ActionButton("Find", this::findCircuit);

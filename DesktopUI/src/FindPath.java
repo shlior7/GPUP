@@ -32,7 +32,7 @@ public class FindPath extends SideAction {
         createComboBoxListener(dest, source);
 
         Button opposite = new Button("<-->");
-        opposite.setMinWidth(50);
+        opposite.setMinWidth(80);
         opposite.setMaxHeight(source.getHeight());
         opposite.setOnAction((ae) -> {
             Target tempS = source.getSelectionModel().getSelectedItem();

@@ -20,7 +20,7 @@ public class appController {
     private GraphPanel<Target> graphView;
 
     public appController() throws Exception {
-        File file = new File("ex2-big.xml");
+        File file = new File("ex2-compilation.xml");
         Engine.load(FileHandler.loadGPUPXMLFile(file));
         engine = new Engine();
 

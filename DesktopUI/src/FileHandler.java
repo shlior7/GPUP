@@ -125,7 +125,7 @@ public class FileHandler {
 
         NodeList serialSets = document.getElementsByTagName("GPUP-Serial-Sets");
         if (serialSets.getLength() == 0 || serialSets.item(0).getNodeType() != Node.ELEMENT_NODE)
-            throw new Exception("no serial sets");
+            return new ArrayList<>();
 
         Element serialSetsElement = (Element) serialSets.item(0);
         List<Element> allSerialSets = nodeListToElements(serialSetsElement.getElementsByTagName("GPUP-Serial-set"));

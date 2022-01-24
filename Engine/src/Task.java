@@ -4,6 +4,8 @@ public abstract class Task implements Runnable {
     protected Target targetToRunOn;
     protected Consumer<Target> onFinished;
 
+    public abstract Task copy();
+
     void setTarget(Target targetToRunOn) {
         this.targetToRunOn = targetToRunOn;
     }

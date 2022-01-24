@@ -46,7 +46,7 @@ public class TaskRunner implements Runnable {
             }
             if (!queue.isEmpty()) {
                 Target target = queue.poll();
-                runTaskOnTarget(target, new Simulation((Simulation) task));
+                runTaskOnTarget(target, task.copy());
             }
             if (prev != targetsDone.get()) {
                 System.out.println("number of targets Done: " + targetsDone.get());
