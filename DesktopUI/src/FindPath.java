@@ -93,15 +93,11 @@ public class FindPath extends SideAction {
         }
     }
 
-    private String getSelected(ComboBox<Target> comboBox) {
-        return comboBox.getSelectionModel().getSelectedItem().getName();
-    }
-
     private void findPath(ActionEvent actionEvent) {
         if (source.getValue() == null || dest.getValue() == null)
             return;
 
-        LinkedList<List<String>> paths = graphStage.engine.findAllPaths(getSelected(source), getSelected(dest));
+        LinkedList<List<String>> paths = graphStage.engine.findAllPaths(source.getValue().getName(), dest.getValue().getName());
         paths.forEach(path -> {
             Paint currentColor = Color.color(Math.random(), Math.random(), Math.random());
             Utils.tupleIterator(path, (outbound, inbound) -> {

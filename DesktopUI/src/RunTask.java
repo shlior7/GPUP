@@ -1,15 +1,13 @@
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
-import org.controlsfx.control.CheckComboBox;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class RunTask extends SideAction {
-    private TargetsComboBox<String> targetsComboBox;
+    private TargetsCheckComboBox<String> targetsComboBox;
     private ActionButton runButton;
     private boolean choose;
     Set<Target> targetsToRunOn;
@@ -19,12 +17,12 @@ public class RunTask extends SideAction {
         runButton = new ActionButton();
         setOnAction(this::runTask);
         choose = true;
-        targetsComboBox = new TargetsComboBox<>(graphStage.engine.getAllTargets().values().stream().map(Target::getName).collect(Collectors.toList()), this::onAdd, this::onRemove);
+        targetsComboBox = new TargetsCheckComboBox<>(graphStage.engine.getAllTargets().values().stream().map(Target::getName).collect(Collectors.toList()), this::onAdd, this::onRemove);
         this.settings.getChildren().addAll(new AnchoredButton(runButton), new AnchoredNode(targetsComboBox));
     }
 
     public void initCheckComboBox() {
-        targetsComboBox = new TargetsComboBox<>(FXCollections.observableList(new ArrayList<>(graphStage.engine.getAllTargets().values().stream().map(Target::getName).collect(Collectors.toList()))), this::onAdd, this::onRemove);
+        targetsComboBox = new TargetsCheckComboBox<>(FXCollections.observableList(new ArrayList<>(graphStage.engine.getAllTargets().values().stream().map(Target::getName).collect(Collectors.toList()))), this::onAdd, this::onRemove);
         //        Set<String> prevAdded = new HashSet<>();
         //        Set<String> prevRemoved = new HashSet<>();
         //        targetsComboBox.getCheckModel().getCheckedItems().addListener((ListChangeListener<String>) change -> {

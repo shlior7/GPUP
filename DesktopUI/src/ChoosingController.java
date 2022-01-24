@@ -41,6 +41,8 @@ public class ChoosingController {
     }
 
     public void all(ActionEvent actionEvent) {
+        if (limit != -1)
+            return;
         graphStage.engine.getAllTargets().values().forEach(target -> {
             if (chosen.getOrDefault(target, false))
                 return;
@@ -91,7 +93,7 @@ public class ChoosingController {
     }
 
     public void manualClick(Target target) {
-        if (target == null)
+        if (target == null || getChosenTargets().size() == limit)
             return;
         graphStage.graphView.pressOnVertex(target);
     }

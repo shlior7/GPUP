@@ -1,6 +1,9 @@
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.layout.HBox;
 import org.controlsfx.control.CheckComboBox;
 
 import java.util.ArrayList;
@@ -9,8 +12,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class TargetsComboBox<V> extends CheckComboBox<V> {
-    public TargetsComboBox(List<V> items, Consumer<V> onAdd, Consumer<V> onRemove) {
+public class TargetsCheckComboBox<V> extends CheckComboBox<V> {
+    public TargetsCheckComboBox(List<V> items, Consumer<V> onAdd, Consumer<V> onRemove) {
         super(FXCollections.observableList(items));
         Set<V> prevAdded = new HashSet<>();
         Set<V> prevRemoved = new HashSet<>();
@@ -31,5 +34,6 @@ public class TargetsComboBox<V> extends CheckComboBox<V> {
             }
         });
     }
+
 
 }
