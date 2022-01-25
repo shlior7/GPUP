@@ -1,4 +1,6 @@
 import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import lombok.SneakyThrows;
 
@@ -15,16 +17,16 @@ public class TaskRunner implements Runnable {
     private final AtomicInteger targetsDone = new AtomicInteger(0);
     public final AtomicBoolean pause = new AtomicBoolean(false);
     private Task task;
-    int prev = -1;
     private boolean finished = false;
     private boolean running = false;
     private boolean runFromScratch;
-    private SimpleStringProperty taskOutput;
-
+    private final SimpleStringProperty taskOutput;
+    private final SimpleDoubleProperty progress;
 
     public TaskRunner(TargetGraph targetGraph) {
         this.targetGraph = targetGraph;
         this.taskOutput = new SimpleStringProperty("");
+        this.progress = new SimpleDoubleProperty(0);
     }
 
     public void initTaskRunner(Task task, int maxParallelism, boolean runFromScratch) {
@@ -37,16 +39,22 @@ public class TaskRunner implements Runnable {
     @Override
     public void run() {
         running = true;
-        queue = targetGraph.initQueue();
+        if (!runFromScratch) {
+            queue = targetGraph.getQueueFromLastTime();
+        } else {
+            queue = targetGraph.getQueueFromScratch();
+        }
 
         int prev = -1;
         while (targetsDone.get() != targetGraph.size()) {
             if (pause.get()) {
                 try {
                     synchronized (targetGraph) {
-                        System.out.println("wait");
+                        setTaskOutput("Paused!");
+                        System.out.println("Paused");
                         targetGraph.wait();
-                        System.out.println("notified");
+                        setTaskOutput("Resumed!");
+                        System.out.println("Resumed");
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -57,19 +65,20 @@ public class TaskRunner implements Runnable {
                 runTaskOnTarget(target, task.copy());
             }
             if (prev != targetsDone.get()) {
-                System.out.println("number of targets Done: " + targetsDone.get());
-                System.out.println("number of targets: " + targetGraph.size());
+                System.out.println("Not done!!!!!!" + targetsDone.get());
                 prev = targetsDone.get();
-                targetGraph.printStatsInfo(targetGraph.getStatusesStatistics());
             }
         }
         threadExecutor.shutdown();
 
         while (!threadExecutor.isTerminated()) {
-            System.out.println("not Done!!!!!!");
+            System.out.println("Not done!!!!!!");
             Thread.sleep(1000);
         }
-        System.out.println("Im done!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+        setTaskOutput("Done!");
+        System.out.println("Im done!!!!!!!!!!!!!!!");
+        setTaskOutput(targetGraph.getStatsInfoStream(targetGraph.getResultStatistics()));
         targetGraph.printStatsInfo(targetGraph.getResultStatistics());
         targetGraph.printStatsInfo(targetGraph.getStatusesStatistics());
         running = false;
@@ -93,16 +102,12 @@ public class TaskRunner implements Runnable {
         }
 
         synchronized (this) {
-            Platform.runLater(() -> {
-                setTaskOutput("running task on target: " + target.name);
-            });
-
+            setTaskOutput("running task on target: " + target.name);
             System.out.println("running task on target: " + target.name);
         }
         threadExecutor.execute(initTask(target));
-
-        ssc.setBusy(target.name, true);
         targetsDone.incrementAndGet();
+        ssc.setBusy(target.name, true);
     }
 
     public Task initTask(Target target) {
@@ -116,9 +121,8 @@ public class TaskRunner implements Runnable {
     public synchronized void OnFinish(Target target) {
         target.setStatus(Status.FINISHED);
         String name = target.name;
-        Platform.runLater(() -> {
-            setTaskOutput("finished task " + name + " with the result " + target.getResult());
-        });
+        updateProgress();
+        setTaskOutput("finished task " + name + " with the result " + target.getResult());
         System.out.println("finished task " + name + " with the result " + target.getResult());
 
         targetGraph.getSerialSets().setBusy(name, false);
@@ -126,10 +130,12 @@ public class TaskRunner implements Runnable {
         if (target.getResult() == Result.Failure) {
             targetGraph.setParentsStatuses(name, Status.SKIPPED, targetsDone);
             targetGraph.whoAreYourAllDaddies(name).forEach(t -> setTaskOutput(t.getName() + " was set to skipped"));
+            updateProgress();
         }
 
         queue.addAll(targetGraph.whoAreYourDirectDaddies(target.name));
     }
+
 
     public boolean togglePause() {
         pause.set(!pause.get());
@@ -157,5 +163,11 @@ public class TaskRunner implements Runnable {
         return running;
     }
 
+    public synchronized void updateProgress() {
+        progress.set(targetsDone.doubleValue() / (double) targetGraph.size());
+    }
 
+    public ReadOnlyDoubleProperty getProgress() {
+        return progress;
+    }
 }

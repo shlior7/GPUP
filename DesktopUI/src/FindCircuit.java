@@ -21,7 +21,7 @@ public class FindCircuit extends SideAction {
         choose = true;
         createChooserComboBox();
         ActionButton findCircuit = new ActionButton("Find", this::findCircuit);
-        this.settings.getChildren().addAll(new AnchoredButton(findCircuit), targetChooser);
+        this.settings.getChildren().addAll(new AnchoredNode(findCircuit), targetChooser);
     }
 
     private void findCircuit(ActionEvent actionEvent) {

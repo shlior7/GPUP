@@ -84,8 +84,7 @@ public class Engine {
         targetGraph.setFrozensToSkipped();
     }
 
-    public void runTask(Task task, Set<Target> targetsToRunOn, int maxParallel, boolean runFromScratch) {
-        targetGraph.createNewGraphFromTargetList(targetsToRunOn);
+    public void runTask(Task task, int maxParallel, boolean runFromScratch) {
         taskRunner.initTaskRunner(task, maxParallel, runFromScratch);
         taskRunner.run();
     }

@@ -70,8 +70,7 @@ public class ChoosingController {
 
     private void cancel(ActionEvent actionEvent) {
         clear(actionEvent);
-        setChoosingState(false);
-        graphStage.reset(actionEvent);
+        graphStage.reset();
 
         System.out.println("chosen after cancel " + chosen);
     }
@@ -93,7 +92,9 @@ public class ChoosingController {
     }
 
     public void manualClick(Target target) {
-        if (target == null || getChosenTargets().size() == limit)
+        System.out.println("target = " + target);
+
+        if (target == null || getChosenTargets().size() == limit && !getChosenTargets().contains(target))
             return;
         graphStage.graphView.pressOnVertex(target);
     }

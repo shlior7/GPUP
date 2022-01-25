@@ -8,7 +8,6 @@ import java.net.URL;
 
 
 public class GraphApplication extends Application {
-    private Stage primaryStage;
 
     public static void main(String[] args) {
         launch(args);
@@ -16,7 +15,6 @@ public class GraphApplication extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        setPrimaryStage(primaryStage);
         FXMLLoader fxmlLoader = new FXMLLoader();
         URL url = getClass().getResource("main.fxml");
         fxmlLoader.setLocation(url);
@@ -27,11 +25,5 @@ public class GraphApplication extends Application {
         primaryStage.show();
     }
 
-    private void setPrimaryStage(Stage stage) {
-        this.primaryStage = stage;
-    }
 
-    public Stage getPrimaryStage() {
-        return primaryStage;
-    }
 }

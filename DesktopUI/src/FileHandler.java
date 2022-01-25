@@ -22,23 +22,15 @@ public class FileHandler {
     private static Element targetsElement;
     public static String logLibraryPath;
 
-    public static void createLogLibrary(String taskName) {
-        String currentTime = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss").format(LocalDateTime.now());
-        String path = taskName + " - " + currentTime;
-        new File(path).mkdir();
-        logLibraryPath = path;
-    }
+    public static TargetGraph loadGPUPXMLFile(File file) throws Exception {
+        createDocument(file);
+        Map<String, String> config = readConfigurations();
+        Map<String, List> targets = readTargets();
+        List<SerialSet> serialSets = readSerialSets();
 
-    public static void log(String Data, String targetName) throws IOException {
-        String filePath = logLibraryPath + "/" + targetName + ".log";
-        new File(filePath).createNewFile();
-        FileWriter fw = new FileWriter(filePath, true);
-        BufferedWriter bw = new BufferedWriter(fw);
-        PrintWriter out = new PrintWriter(bw);
-        out.println(Data + "\n");
-        out.close();
+        int parallelism = Integer.parseInt(config.get("parallelism"));
+        return new TargetGraph(config.get("name"), config.get("directory"), parallelism, targets.get("targets"), targets.get("edges"), serialSets);
     }
-
 
     private static void createDocument(File file) throws ParserConfigurationException, IOException, SAXException {
         document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file);
@@ -87,7 +79,7 @@ public class FileHandler {
 
         NodeList targetsNodes = document.getElementsByTagName("GPUP-Targets");
         if (targetsNodes.getLength() == 0 || targetsNodes.item(0).getNodeType() != Node.ELEMENT_NODE)
-            throw new Exception("no Targets");
+            throw new Exception("Bad Format: No Targets");
 
         targetsElement = (Element) targetsNodes.item(0);
         List<Element> targets = nodeListToElements(targetsElement.getElementsByTagName("GPUP-Target"));
@@ -120,7 +112,7 @@ public class FileHandler {
         }};
     }
 
-    private static List<SerialSet> readSerialSets() throws Exception {
+    private static List<SerialSet> readSerialSets() {
         List<SerialSet> serialSetsList = new ArrayList<>();
 
         NodeList serialSets = document.getElementsByTagName("GPUP-Serial-Sets");
@@ -139,15 +131,6 @@ public class FileHandler {
         return serialSetsList;
     }
 
-    public static TargetGraph loadGPUPXMLFile(File file) throws Exception {
-        createDocument(file);
-        Map<String, String> config = readConfigurations();
-        Map<String, List> targets = readTargets();
-        List<SerialSet> serialSets = readSerialSets();
-
-        int parallelism = Integer.parseInt(config.get("parallelism"));
-        return new TargetGraph(config.get("name"), config.get("directory"), parallelism, targets.get("targets"), targets.get("edges"), serialSets);
-    }
 
     public static void saveToXML(TargetGraph targetGraph, String xmlFilePath) throws TransformerException {
         nodeListToElements(targetsElement.getChildNodes()).forEach(targetNode ->
@@ -174,5 +157,23 @@ public class FileHandler {
         DOMSource domSource = new DOMSource(document);
         StreamResult streamResult = new StreamResult(new File(xmlFilePath + ".xml"));
         transformer.transform(domSource, streamResult);
+    }
+
+
+    public static void createLogLibrary(String taskName) {
+        String currentTime = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss").format(LocalDateTime.now());
+        String path = taskName + " - " + currentTime;
+        new File(path).mkdir();
+        logLibraryPath = path;
+    }
+
+    public static void log(String Data, String targetName) throws IOException {
+        String filePath = logLibraryPath + "/" + targetName + ".log";
+        new File(filePath).createNewFile();
+        FileWriter fw = new FileWriter(filePath, true);
+        BufferedWriter bw = new BufferedWriter(fw);
+        PrintWriter out = new PrintWriter(bw);
+        out.println(Data + "\n");
+        out.close();
     }
 }

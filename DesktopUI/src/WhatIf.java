@@ -2,10 +2,8 @@ import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.scene.control.ComboBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.Set;
 
 public class WhatIf extends SideAction {
@@ -19,7 +17,7 @@ public class WhatIf extends SideAction {
         createChooserComboBox();
         ActionButton findParents = new ActionButton("Find Required For", this::findParents);
         ActionButton findChildren = new ActionButton("Find Depends On", this::findChildren);
-        this.settings.getChildren().addAll(new AnchoredButton(findParents), new AnchoredButton(findChildren), targetChooser);
+        this.settings.getChildren().addAll(new AnchoredNode(findParents), new AnchoredNode(findChildren), new AnchoredNode(targetChooser));
     }
 
     private void findChildren(ActionEvent actionEvent) {

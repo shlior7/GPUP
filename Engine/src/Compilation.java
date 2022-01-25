@@ -44,9 +44,7 @@ public class Compilation extends Task {
         int exitCode = -1;
         Instant before = Instant.now();
         targetToRunOn.setStatus(Status.IN_PROCESS);
-        Platform.runLater(() -> {
-            outputText.accept("before running on  " + targetToRunOn.name);
-        });
+        outputText.accept("before running on " + targetToRunOn.name);
         System.out.println("before running on " + targetToRunOn.name);
         try {
             Process process = new ProcessBuilder("javac", "-d", outFolder, "-cp", outFolder, workingDir + "/" + javaFilesPath).start();
@@ -55,17 +53,11 @@ public class Compilation extends Task {
             final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
             StringJoiner sj = new StringJoiner(System.getProperty("line.separator"));
             reader.lines().iterator().forEachRemaining(sj::add);
-            Platform.runLater(() -> {
-                outputText.accept(sj.toString());
-            });
+            outputText.accept(sj.toString());
             System.out.println(sj);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        Platform.runLater(() -> {
-            outputText.accept("ran on " + targetToRunOn.name);
-        });
-        System.out.println("ran on " + targetToRunOn.name);
         Instant after = Instant.now();
         targetToRunOn.setProcessTime(Duration.between(before, after));
         targetToRunOn.setResult(exitCode == 0 ? Result.Success : Result.Failure);

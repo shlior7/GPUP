@@ -21,7 +21,7 @@ public class FindPath extends SideAction {
         setOnAction(this::chooseTargets);
         choose = true;
         ActionButton findButton = new ActionButton("Find", this::findPath);
-        this.settings.getChildren().addAll(new AnchoredButton(findButton), createFindPathHBox(), new HBox(100, new Label("source"), new Label("dest")));
+        this.settings.getChildren().addAll(new AnchoredNode(findButton), createFindPathHBox(), new HBox(100, new Label("source"), new Label("dest")));
     }
 
     public HBox createFindPathHBox() {

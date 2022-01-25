@@ -1,5 +1,6 @@
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
 import javafx.beans.binding.Bindings;
 import javafx.scene.layout.AnchorPane;
@@ -10,21 +11,30 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class RunTask extends SideAction {
-    private TargetsCheckComboBox<String> targetsComboBox;
-    private ActionButton runButton;
+    private final TargetsCheckComboBox<String> targetsComboBox;
+    private final ActionButton runButton;
     private boolean choose;
     private TextArea taskOutput;
+    private final ProgressBar progressBar;
 
     public RunTask(GraphStage graphStage, Runnable onOpenSettings) {
         super("Run Task", graphStage, onOpenSettings);
-        runButton = new ActionButton();
+        this.progressBar = new ProgressBar();
+        this.runButton = new ActionButton();
+        this.targetsComboBox = new TargetsCheckComboBox<>(graphStage.engine.getAllTargets().values().stream().map(Target::getName).collect(Collectors.toList()), this::onAdd, this::onRemove);
+        this.settings.getChildren().addAll(new AnchoredNode(runButton), new AnchoredNode(targetsComboBox));
+        this.choose = true;
+        createLogTextArea();
         setOnAction(this::runTask);
-        choose = true;
+
+    }
+
+    public void createLogTextArea() {
         taskOutput = new TextArea();
-        targetsComboBox = new TargetsCheckComboBox<>(graphStage.engine.getAllTargets().values().stream().map(Target::getName).collect(Collectors.toList()), this::onAdd, this::onRemove);
-        this.settings.getChildren().addAll(new AnchoredButton(runButton), new AnchoredNode(targetsComboBox));
         AnchorPane.setLeftAnchor(taskOutput, 0.0);
         AnchorPane.setRightAnchor(taskOutput, 0.0);
+        AnchorPane.setLeftAnchor(progressBar, 0.0);
+        AnchorPane.setRightAnchor(progressBar, 0.0);
         taskOutput.minHeight(100);
         taskOutput.maxHeight(100);
         taskOutput.setStyle("-fx-font-size: 2em;");
@@ -53,8 +63,8 @@ public class RunTask extends SideAction {
     void runTask(ActionEvent event) {
         if (graphStage.choosingController.isChoosing())
             return;
-        onOpenSettings.run();
 
+        onOpenSettings.run();
         TaskSettings taskSettings = TaskSettings.createTaskSettings();
         taskSettings.showAndReturn(graphStage.engine.getMaxThreads(), graphStage);
 
@@ -106,14 +116,15 @@ public class RunTask extends SideAction {
         graphStage.choosingController.setChoosingState(false);
         System.out.println("targets = " + targetToRunOn);
         graphStage.graphView.hideEdges(targetToRunOn);
-//        graphStage.engine.createNewGraphFromTargetList(targetToRunOn);
+        graphStage.engine.createNewGraphFromTargetList(targetToRunOn);
         taskOutput.textProperty().bind(Bindings.createStringBinding(() -> taskOutput.getText() + "\n" + getInstantTime() + ".   " + graphStage.engine.getTaskRunner().getTaskOutput().get(), graphStage.engine.getTaskRunner().getTaskOutput()));
-
+        progressBar.progressProperty().bind(graphStage.engine.getTaskRunner().getProgress());
 
         graphStage.root.setBottom(taskOutput);
+        settings.getChildren().add(new AnchorPane(progressBar));
 
         Thread work = new Thread(() -> {
-            graphStage.engine.runTask(taskSettings.task, targetToRunOn, taskSettings.maxThreads, taskSettings.runFromScratch);
+            graphStage.engine.runTask(taskSettings.task, taskSettings.maxThreads, taskSettings.runFromScratch);
         }, "Task Running");
         System.out.println("started");
         work.start();
@@ -122,7 +133,7 @@ public class RunTask extends SideAction {
         Thread check = new Thread(() -> {
             HashMap<String, AtomicBoolean> flickering = new HashMap<>();
             while (graphStage.engine.isTaskRunning() || graphStage.engine.getTaskRunner() == null) {
-                System.out.println("changing colors");
+                System.out.println("changing colors " + graphStage.engine.isTaskRunning());
                 changeColors(flickering);
                 try {
                     Thread.sleep(1000);

@@ -11,6 +11,7 @@ public class SideController extends VBox {
     private List<SideAction> actionList;
     private StackPane settings;
 
+
     public SideController(GraphStage graphStage) {
         this.graphStage = graphStage;
         settings = new StackPane();

@@ -2,16 +2,16 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
-
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="0.0" minWidth="0.0" prefHeight="510.0"
             xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="appController">
+            fx:controller="AppController">
     <center>
         <GridPane alignment="CENTER" hgap="5.0" vgap="5.0">
             <columnConstraints>
@@ -32,4 +32,20 @@
             </children>
         </GridPane>
     </center>
+    <top>
+        <VBox alignment="TOP_CENTER" prefHeight="66.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <children>
+                <Label text="G.P.U.P">
+                    <font>
+                        <Font name="Bell MT Bold" size="47.0"/>
+                    </font>
+                </Label>
+                <Label text="Generic Platform for Utilizing Processes">
+                    <font>
+                        <Font name="Bodoni MT" size="19.0"/>
+                    </font>
+                </Label>
+            </children>
+        </VBox>
+    </top>
 </BorderPane>

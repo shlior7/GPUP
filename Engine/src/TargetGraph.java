@@ -1,4 +1,5 @@
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,7 +44,8 @@ public class TargetGraph implements Graph<Target> {
         connect(edges);
     }
 
-    public TargetGraph(String GraphsName, String WorkingDir, int maxThreads, List<Target> targets, List<Edge> edges, List<SerialSet> serialSets) {
+    public TargetGraph(String GraphsName, String WorkingDir, int maxThreads, List<Target> targets, List<Edge> edges, List<SerialSet> serialSets) throws Exception {
+        checkValidateGraph(targets, edges, serialSets);
         this.GraphsName = GraphsName;
         this.WorkingDir = WorkingDir;
         this.maxThreads = maxThreads;
@@ -297,7 +299,8 @@ public class TargetGraph implements Graph<Target> {
 
     public Map<String, List<String>> getResultStatistics() {
         Map<String, List<String>> statuses = new HashMap<>();
-        allTargets.values().forEach(target -> statuses.put(Engine.ifNullThenString(target.getResult(), "Skipped"), Stream.concat(statuses.getOrDefault(Engine.ifNullThenString(target.getResult(), "Skipped"), new ArrayList<>()).stream(), Stream.of(target.name)).collect(Collectors.toList())));
+        allTargets.values().forEach(target -> statuses.put(target.getResult() == Result.NULL ? "Skipped" : target.getResult().toString(), Stream.concat(statuses.getOrDefault(target.getResult() == Result.NULL ? "Skipped" : target.getResult().toString(), new ArrayList<>()).stream(), Stream.of(target.name)).collect(Collectors.toList())))
+        ;
 
         return statuses;
     }
@@ -326,18 +329,20 @@ public class TargetGraph implements Graph<Target> {
                 "Types: " + getTypesStatistics();
     }
 
-    public void setParentsStatuses(String targetName, Status status, AtomicInteger targetsDone) {
+    public void setParentsStatuses(String targetName, Status status, AtomicInteger TargetsDone) {
         currentTargetsGraph.parents.get(targetName).stream().parallel().forEach((target -> {
             if (target.getStatus() == status)
                 return;
             target.setStatus(status);
-            synchronized (this) {
-                targetsDone.incrementAndGet();
-                System.out.println("++++++++++++++++++++++++++++++++");
-                System.out.println("target: " + target.name + " was set to skipped!!!!" + targetsDone.get());
-                System.out.println("++++++++++++++++++++++++++++++++");
-            }
-            setParentsStatuses(target.name, status, targetsDone);
+            TargetsDone.incrementAndGet();
+//            setTaskOutput.accept();
+//            synchronized (this) {
+//                setToSkipped.incrementAndGet();
+//                System.out.println("++++++++++++++++++++++++++++++++");
+//                System.out.println("target: " + target.name + " was set to skipped!!!!" + targetsDone.get());
+//                System.out.println("++++++++++++++++++++++++++++++++");
+//            }
+            setParentsStatuses(target.name, status, TargetsDone);
         }));
     }
 
@@ -383,7 +388,8 @@ public class TargetGraph implements Graph<Target> {
     public String getVertexInfo(Target target) {
         if (getType(target.name) == null) {
             return "Name: " + target.name +
-                    "\nUser Data: " + target.getUserData();
+                    "\nUser Data: " + target.getUserData() +
+                    "\nSerial Sets: " + serialSets.getSerialSetsOf(target.name).size();
         }
         if (target.getTargetInfo() == null) {
             target.setTargetInfo(createTargetInGraphInfo(target));
@@ -432,7 +438,12 @@ public class TargetGraph implements Graph<Target> {
 
     public void printStatsInfo(Map<String, List<String>> stats) {
         stats.forEach((k, v) -> System.out.println(k + ": " + v.size() + " : {" + String.join(", ", v) + "}" + "\n"));
+    }
 
+    public String getStatsInfoStream(Map<String, List<String>> map) {
+        return "\n" + map.keySet().stream()
+                .map(key -> key + " " + map.get(key).size() + " : { " + String.join(", ", map.get(key)) + " }")
+                .collect(Collectors.joining("\n"));
     }
 
     public int getMaxThreads() {
@@ -442,4 +453,93 @@ public class TargetGraph implements Graph<Target> {
     public String getWorkingDir() {
         return WorkingDir;
     }
+
+    public void checkValidateGraph(List<Target> targets, List<Edge> edges, List<SerialSet> serialSets) throws Exception {
+        checkEqualTargets(targets);
+        checkValidEdges(targets, edges);
+        checkSerialSets(targets, serialSets);
+    }
+
+    public void checkSerialSets(List<Target> targets, List<SerialSet> serialSets) throws Exception {
+        Map<String, String> allTargetsInSerialMap = new HashMap<>();
+        for (SerialSet serialSet : serialSets) {
+            HashSet<String> serial = serialSet.getTargets();
+            for (String target : serial) {
+                allTargetsInSerialMap.put(target, serialSet.getName());
+            }
+        }
+        Map<String, Integer> duplicates = new HashMap<>();
+        serialSets.stream().map(SerialSet::getName).forEach(name ->
+                duplicates.put(name, duplicates.getOrDefault(name, 0) + 1)
+        );
+
+        for (Map.Entry<String, Integer> entry : duplicates.entrySet()) {
+            if (entry.getValue() > 1)
+                throw new Exception("there are 2 serial sets with the same name ( " + entry.getKey() + " )");
+        }
+
+        for (SerialSet serialSet1 : serialSets) {
+            for (SerialSet serialSet2 : serialSets) {
+                if (serialSet1 != serialSet2) {
+                    if (serialSet1.getName().equals(serialSet2.getName())) {
+                        throw new Exception("there are 2 serial sets with the same name ( " + serialSet1.getName() + " )");
+                    }
+                }
+            }
+        }
+        AtomicBoolean equal = new AtomicBoolean(false);
+        for (Map.Entry<String, String> entry : allTargetsInSerialMap.entrySet()) {
+            for (Target target : targets) {
+                if (target.name.equals(entry.getKey()))
+                    equal.set(true);
+            }
+            if (!equal.get()) {
+                throw new Exception("The target \"" + entry.getKey() + "\" in serial set \"" + entry.getValue() + "\" doesn't exist");
+            }
+            equal.set(false);
+        }
+    }
+
+    public void checkValidEdges(List<Target> targets, List<Edge> edges) throws Exception {
+        AtomicBoolean validIn = new AtomicBoolean(false);
+        AtomicBoolean validOut = new AtomicBoolean(false);
+        for (Edge edge : edges) {
+            for (Target target : targets) {
+                if (target.name.equals(edge.in)) {
+                    validIn.set(true);
+                }
+                if (target.name.equals(edge.out)) {
+                    validOut.set(true);
+                }
+            }
+            if (!validOut.get()) {
+                throw new Exception("Target " + edge.out + " does not exist");
+            }
+            if (!validIn.get()) {
+                throw new Exception("Target " + edge.in + " does not exist");
+            }
+            validIn.set(false);
+            validOut.set(false);
+            checkConflictBetweenDependencies(edge, edges);
+        }
+    }
+
+    public void checkConflictBetweenDependencies(Edge edge, List<Edge> edges) throws Exception {
+        for (Edge edge1 : edges) {
+            if (edge.in.equals(edge1.out) && edge.out.equals(edge1.in)) {
+                throw new Exception("There is a conflict between dependencies of " + edge.in + " and " + edge.out);
+            }
+        }
+    }
+
+
+    public void checkEqualTargets(List<Target> targets) throws Exception {
+        Map<String, Integer> duplicates = new HashMap<>();
+        targets.stream().map(Target::getName).forEach(name ->
+                duplicates.put(name, duplicates.getOrDefault(name, 0) + 1)
+        );
+        if (duplicates.values().stream().anyMatch(count -> count > 1))
+            throw new Exception("There are 2 targets with the same name");
+    }
+
 }

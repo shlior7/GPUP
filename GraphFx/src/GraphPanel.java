@@ -384,7 +384,6 @@ public class GraphPanel<V> extends Pane {
         stickyNotesPane.setPrefSize(200, 200);
         stickyNotesPane.getStyleClass().add("tooltip");
 
-
         Popup popup = new Popup();
         popup.getContent().add(stickyNotesPane);
 
@@ -459,8 +458,10 @@ public class GraphPanel<V> extends Pane {
     }
 
     public void reset() {
+        System.out.println("reset");
         edgeNodes.forEach(GraphEdgeLine::show);
         vertexNodes.values().forEach(GraphVertexNode::setVertexStyleToDefault);
         edgeNodes.forEach(GraphEdgeLine::setEdgeStyleToDefault);
+        System.out.println("cleared");
     }
 }
