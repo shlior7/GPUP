@@ -438,4 +438,8 @@ public class TargetGraph implements Graph<Target> {
     public int getMaxThreads() {
         return maxThreads;
     }
+
+    public String getWorkingDir() {
+        return WorkingDir;
+    }
 }

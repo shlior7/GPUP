@@ -1,3 +1,5 @@
+import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import lombok.SneakyThrows;
 
 import java.util.Queue;
@@ -8,18 +10,24 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TaskRunner implements Runnable {
     private final TargetGraph targetGraph;
-    private final ExecutorService threadExecutor;
+    private ExecutorService threadExecutor;
     private Queue<Target> queue;
     private final AtomicInteger targetsDone = new AtomicInteger(0);
     public final AtomicBoolean pause = new AtomicBoolean(false);
-    private final Task task;
+    private Task task;
     int prev = -1;
     private boolean finished = false;
     private boolean running = false;
     private boolean runFromScratch;
+    private SimpleStringProperty taskOutput;
 
-    public TaskRunner(TargetGraph targetGraph, Task task, int maxParallelism, boolean runFromScratch) {
+
+    public TaskRunner(TargetGraph targetGraph) {
         this.targetGraph = targetGraph;
+        this.taskOutput = new SimpleStringProperty("");
+    }
+
+    public void initTaskRunner(Task task, int maxParallelism, boolean runFromScratch) {
         this.threadExecutor = Executors.newFixedThreadPool(maxParallelism);
         this.task = task;
         this.runFromScratch = runFromScratch;
@@ -84,53 +92,61 @@ public class TaskRunner implements Runnable {
                 return;
         }
 
-        Task newTask = new Simulation((Simulation) task);
         synchronized (this) {
+            Platform.runLater(() -> {
+                setTaskOutput("running task on target: " + target.name);
+            });
+
             System.out.println("running task on target: " + target.name);
         }
-
-        newTask.setTarget(target);
-        newTask.setFuncOnFinished(this::OnFinish);
-        threadExecutor.execute(newTask);
+        threadExecutor.execute(initTask(target));
 
         ssc.setBusy(target.name, true);
-        synchronized (this) {
-            targetsDone.incrementAndGet();
-            System.out.println("++++++++++++++++++++++++++++++++");
-            System.out.println("target: " + target.name + " started to run and now its : " + targetsDone.get());
-            System.out.println("++++++++++++++++++++++++++++++++");
-        }
+        targetsDone.incrementAndGet();
     }
 
+    public Task initTask(Target target) {
+        Task newTask = task.copy();
+        newTask.setTarget(target);
+        newTask.setFuncOnFinished(this::OnFinish);
+        newTask.setOutputText(this::setTaskOutput);
+        return newTask;
+    }
 
     public synchronized void OnFinish(Target target) {
         target.setStatus(Status.FINISHED);
         String name = target.name;
-        System.out.println("finished task " + name);
+        Platform.runLater(() -> {
+            setTaskOutput("finished task " + name + " with the result " + target.getResult());
+        });
+        System.out.println("finished task " + name + " with the result " + target.getResult());
+
         targetGraph.getSerialSets().setBusy(name, false);
 
         if (target.getResult() == Result.Failure) {
             targetGraph.setParentsStatuses(name, Status.SKIPPED, targetsDone);
+            targetGraph.whoAreYourAllDaddies(name).forEach(t -> setTaskOutput(t.getName() + " was set to skipped"));
         }
 
         queue.addAll(targetGraph.whoAreYourDirectDaddies(target.name));
-        if (prev != targetsDone.get()) {
-            System.out.println("done : " + targetsDone.get());
-            System.out.println("status = " + target.getStatus() + ",result = " + target.getResult());
-            prev = targetsDone.get();
-        }
     }
 
     public boolean togglePause() {
-        System.out.println("XXXXXXXXXXXXXXXXXXXXX");
         pause.set(!pause.get());
         if (!pause.get()) {
             synchronized (targetGraph) {
                 targetGraph.notifyAll();
-                System.out.println("notify!!!");
             }
         }
         return pause.get();
+    }
+
+    public synchronized void setTaskOutput(String text) {
+        taskOutput.set(text);
+    }
+
+    public SimpleStringProperty getTaskOutput() {
+        return taskOutput;
     }
 
     public boolean isFinished() {

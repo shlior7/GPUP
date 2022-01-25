@@ -1,37 +1,45 @@
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Set;
 
-public class FindCircuit extends SideAction {
+public class WhatIf extends SideAction {
     private ComboBox<Target> targetChooser;
     private boolean choose;
 
-    public FindCircuit(GraphStage graphStage, Runnable onOpenSettings) {
-        super("Find Circuit", graphStage, onOpenSettings);
+    public WhatIf(GraphStage graphStage, Runnable onOpenSettings) {
+        super("What If", graphStage, onOpenSettings);
         setOnAction(this::chooseTargets);
         choose = true;
         createChooserComboBox();
-        ActionButton findCircuit = new ActionButton("Find", this::findCircuit);
-        this.settings.getChildren().addAll(new AnchoredButton(findCircuit), targetChooser);
+        ActionButton findParents = new ActionButton("Find Required For", this::findParents);
+        ActionButton findChildren = new ActionButton("Find Depends On", this::findChildren);
+        this.settings.getChildren().addAll(new AnchoredButton(findParents), new AnchoredButton(findChildren), targetChooser);
     }
 
-    private void findCircuit(ActionEvent actionEvent) {
+    private void findChildren(ActionEvent actionEvent) {
         if (targetChooser.getValue() == null)
             return;
 
-        LinkedList<String> path = graphStage.engine.findCircuit(targetChooser.getValue().getName());
-        Paint currentColor = Color.color(Math.random(), Math.random(), Math.random());
-        Utils.tupleIterator(path, (outbound, inbound) -> {
-            graphStage.graphView.getEdgeLine(graphStage.engine.getAllTargets().get(outbound), graphStage.engine.getAllTargets().get(inbound)).setStroke(currentColor);
+        Set<Target> parents = graphStage.engine.getTargetGraph().whoAreYourAllBabies(targetChooser.getValue().getName());
+        parents.forEach((target) -> {
+            graphStage.graphView.getGraphVertex(target).setStroke(Color.CRIMSON);
+        });
+    }
+
+    private void findParents(ActionEvent actionEvent) {
+        if (targetChooser.getValue() == null)
+            return;
+
+        Set<Target> parents = graphStage.engine.getTargetGraph().whoAreYourAllDaddies(targetChooser.getValue().getName());
+        parents.forEach((target) -> {
+            System.out.println("target " + target);
+            graphStage.graphView.getGraphVertex(target).setStroke(Color.CRIMSON);
         });
     }
 
@@ -53,10 +61,10 @@ public class FindCircuit extends SideAction {
             if (newValue == null) {
                 graphStage.choosingController.manualClick(oldValue);
                 choose = true;
+                clear();
                 return;
             }
             graphStage.choosingController.manualClick(oldValue);
-            clear();
             graphStage.choosingController.manualClick(newValue);
             choose = true;
         });

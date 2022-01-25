@@ -11,7 +11,7 @@ class SaveFile_Option implements Option {
     public void actOption() {
         String xmlPath = UI.prompt("Please enter the the path which to save the graph file\n(no need for file suffix .xml/.json/.txt etc)");
         try {
-            FileHandler.saveToXML(Engine.getTargetGraph(),xmlPath);
+            FileHandler.saveToXML(Engine.TargetGraph(), xmlPath);
         } catch (TransformerException e) {
             UI.error(e.getMessage());
         }

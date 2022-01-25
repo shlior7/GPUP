@@ -14,7 +14,7 @@ public class SideController extends VBox {
     public SideController(GraphStage graphStage) {
         this.graphStage = graphStage;
         settings = new StackPane();
-        actionList = Stream.of(new RunTask(graphStage), new FindPath(graphStage), new FindCircuit(graphStage)).collect(Collectors.toList());
+        actionList = Stream.of(new RunTask(graphStage, this::onOpenSettings), new FindPath(graphStage, this::onOpenSettings), new FindCircuit(graphStage, this::onOpenSettings), new WhatIf(graphStage, this::onOpenSettings)).collect(Collectors.toList());
         this.setSpacing(20);
         this.setPrefWidth(200);
         CreateButtonsVBox();
@@ -26,29 +26,15 @@ public class SideController extends VBox {
             System.out.println(action.getActionButton().getText());
             this.getChildren().add(action.getAnchoredButton());
         }
-//        actionSet.forEach(action -> {
-//            this.getChildren().add(action.getAnchoredButton());
-//        });
-//        vBox.getChildren().add(createAnchoredButton("Find Circuit", this::findCircuit));
-//        vBox.getChildren().add(createAnchoredButton("What If", this::whatIf));
         this.getChildren().add(new AnchoredButton("Reset", this::reset));
-////        vBox.getChildren().add(createAnchoredButton(actionButton));
         this.getChildren().add(settings);
     }
 
     public void createSettingsStack() {
         actionList.forEach(action -> {
-            this.getChildren().add(action.getSettings());
+            settings.getChildren().add(action.getSettings());
         });
     }
-//    public AnchorPane createAnchoredButton(String text, javafx.event.EventHandler<javafx.event.ActionEvent> value) {
-//        Button task = new Button(text);
-//        AnchorPane anchorPane = new AnchorPane(task);
-//        AnchorPane.setLeftAnchor(task, 0.0);
-//        AnchorPane.setRightAnchor(task, 0.0);
-//        task.setOnAction(value);
-//        return anchorPane;
-//    }
 
     public void reset(ActionEvent actionEvent) {
         if (graphStage.engine.isTaskRunning())
@@ -57,5 +43,9 @@ public class SideController extends VBox {
         graphStage.engine.reset();
         graphStage.choosingController.setChoosingState(false);
         actionList.forEach((SideAction::reset));
+    }
+
+    public void onOpenSettings() {
+        reset(null);
     }
 }

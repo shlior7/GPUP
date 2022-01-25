@@ -6,6 +6,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -19,6 +20,7 @@ public class TaskSettings {
     public boolean submitted;
     public boolean chooseAll;
     public Stage settingStage;
+    public GraphStage parent;
 
     @FXML
     private Parent root;
@@ -59,7 +61,7 @@ public class TaskSettings {
     public TaskSettings() {
     }
 
-    public TaskSettings(int maxThreads) {
+    public TaskSettings(int maxThreads, Stage parent) {
         this.submitted = false;
         this.maxThreads = maxThreads;
         settingStage = new Stage();
@@ -77,6 +79,9 @@ public class TaskSettings {
         }
         Scene scene = new Scene(load, 600, 400);
         settingStage.setScene(scene);
+        settingStage.setAlwaysOnTop(true);
+        settingStage.initModality(Modality.WINDOW_MODAL);
+        settingStage.initOwner(parent);
         initialize(scene);
     }
 
@@ -99,14 +104,17 @@ public class TaskSettings {
         System.out.println("hey");
     }
 
-    public void showAndReturn(int maxThreads) {
+    public void showAndReturn(int maxThreads, GraphStage parent) {
         this.submitted = false;
         this.maxThreads = maxThreads;
+        this.parent = parent;
         settingStage = new Stage();
         settingStage.setTitle("Task Settings");
         Scene scene = new Scene(root);
         settingStage.setScene(scene);
         initialize(scene);
+        settingStage.initModality(Modality.WINDOW_MODAL);
+        settingStage.initOwner(parent);
         settingStage.showAndWait();
     }
 
@@ -147,7 +155,7 @@ public class TaskSettings {
     private void addListenerToTime(TextField text) {
         text.textProperty().addListener((observable, oldValue, newValue) -> {
             try {
-                if (Integer.parseInt(newValue) > 0) {
+                if (Integer.parseInt(newValue) <= 0) {
                     text.setStyle("-fx-text-box-border: red;");
                 } else {
                     text.setStyle("");
@@ -215,7 +223,7 @@ public class TaskSettings {
                 }
                 if (compilerTask.isSelected()) {
                     submitted = true;
-                    task = new Compilation("CompilationOutput");
+                    task = new Compilation("CompilationOutput", Engine.TargetGraph().getWorkingDir());
                     stage.close();
                 }
             }

@@ -1,3 +1,5 @@
+import javafx.application.Platform;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Random;
@@ -59,12 +61,18 @@ public class Simulation extends Task {
         Random rand = new Random();
         Instant before = Instant.now();
         targetToRunOn.setStatus(Status.IN_PROCESS);
+        Platform.runLater(() -> {
+            outputText.accept("before running on " + targetToRunOn.name);
+        });
         System.out.println("before running on " + targetToRunOn.name);
         try {
             sleep(isRandom ? rand.nextInt(timeToProcess) : timeToProcess);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        Platform.runLater(() -> {
+            outputText.accept("ran on " + targetToRunOn.name);
+        });
         System.out.println("ran on " + targetToRunOn.name);
         Instant after = Instant.now();
         targetToRunOn.setProcessTime(Duration.between(before, after));

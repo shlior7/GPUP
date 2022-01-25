@@ -16,8 +16,8 @@ public class FindPath extends SideAction {
     private ComboBox<Target> dest;
     private boolean choose;
 
-    public FindPath(GraphStage graphStage) {
-        super("Find Path", graphStage);
+    public FindPath(GraphStage graphStage, Runnable onOpenSettings) {
+        super("Find Path", graphStage, onOpenSettings);
         setOnAction(this::chooseTargets);
         choose = true;
         ActionButton findButton = new ActionButton("Find", this::findPath);
@@ -109,6 +109,8 @@ public class FindPath extends SideAction {
     }
 
     private void chooseTargets(ActionEvent actionEvent) {
+        onOpenSettings.run();
+
         graphStage.choosingController.setChoosingState(true, 2);
         graphStage.choosingController.setOnChoose(this::onChoose);
         settings.setVisible(true);

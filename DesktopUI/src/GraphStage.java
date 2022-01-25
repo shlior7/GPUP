@@ -101,7 +101,7 @@ public class GraphStage extends Stage {
 
     public void CreateGraph() {
         GraphProperties properties = new GraphProperties("edge.arrow = true\n" + "edge.label = false\n" + "edge.arrowsize = 7\n");
-        graphView = new GraphPanel<>(Engine.getTargetGraph(), properties, this::onVertexClicked);
+        graphView = new GraphPanel<>(Engine.TargetGraph(), properties, this::onVertexClicked);
         GraphContainer graphContainer = new GraphContainer(graphView);
         root.setCenter(graphContainer);
     }
@@ -143,7 +143,7 @@ public class GraphStage extends Stage {
         if (choosingController.isChoosing())
             return;
 
-        TaskSettings ts = new TaskSettings(10);
+        TaskSettings ts = new TaskSettings(10, this);
         ts.showAndWait();
         if (!ts.submitted)
             return;

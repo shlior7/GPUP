@@ -9,13 +9,15 @@ public abstract class SideAction {
     protected AnchorPane anchoredButton;
     protected Button actionButton;
     protected VBox settings;
+    protected Runnable onOpenSettings;
 
-    public SideAction(String label, GraphStage graphStage) {
+    public SideAction(String label, GraphStage graphStage, Runnable onOpenSettings) {
         this.graphStage = graphStage;
         this.actionButton = new Button(label);
         this.anchoredButton = new AnchoredButton(actionButton);
         this.settings = new VBox(10);
         this.settings.setVisible(false);
+        this.onOpenSettings = onOpenSettings;
     }
 
     public void setOnAction(EventHandler<ActionEvent> eventHandler) {

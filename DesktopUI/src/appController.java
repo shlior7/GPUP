@@ -20,7 +20,7 @@ public class appController {
     private GraphPanel<Target> graphView;
 
     public appController() throws Exception {
-        File file = new File("ex2-compilation.xml");
+        File file = new File("ex2-cycle.xml");
         Engine.load(FileHandler.loadGPUPXMLFile(file));
         engine = new Engine();
 
@@ -53,7 +53,7 @@ public class appController {
 
     public void visualGraph() {
         GraphProperties properties = new GraphProperties("edge.arrow = true\n" + "edge.label = false\n" + "edge.arrowsize = 7\n");
-        graphView = new GraphPanel<>(Engine.getTargetGraph(), properties, this::onVertexClicked);
+        graphView = new GraphPanel<>(Engine.TargetGraph(), properties, this::onVertexClicked);
 
         BorderPane root = new BorderPane();
         root.setCenter(graphView);

@@ -1,7 +1,10 @@
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
+import javafx.scene.control.TextArea;
+import javafx.beans.binding.Bindings;
+import javafx.scene.layout.AnchorPane;
 
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -10,46 +13,21 @@ public class RunTask extends SideAction {
     private TargetsCheckComboBox<String> targetsComboBox;
     private ActionButton runButton;
     private boolean choose;
-    Set<Target> targetsToRunOn;
+    private TextArea taskOutput;
 
-    public RunTask(GraphStage graphStage) {
-        super("Run Task", graphStage);
+    public RunTask(GraphStage graphStage, Runnable onOpenSettings) {
+        super("Run Task", graphStage, onOpenSettings);
         runButton = new ActionButton();
         setOnAction(this::runTask);
         choose = true;
+        taskOutput = new TextArea();
         targetsComboBox = new TargetsCheckComboBox<>(graphStage.engine.getAllTargets().values().stream().map(Target::getName).collect(Collectors.toList()), this::onAdd, this::onRemove);
         this.settings.getChildren().addAll(new AnchoredButton(runButton), new AnchoredNode(targetsComboBox));
-    }
-
-    public void initCheckComboBox() {
-        targetsComboBox = new TargetsCheckComboBox<>(FXCollections.observableList(new ArrayList<>(graphStage.engine.getAllTargets().values().stream().map(Target::getName).collect(Collectors.toList()))), this::onAdd, this::onRemove);
-        //        Set<String> prevAdded = new HashSet<>();
-        //        Set<String> prevRemoved = new HashSet<>();
-        //        targetsComboBox.getCheckModel().getCheckedItems().addListener((ListChangeListener<String>) change -> {
-        //            change.next();
-        //            Set<String> addedSet = new HashSet<>(change.getAddedSubList());
-        //            if (!addedSet.equals(prevAdded)) {
-        //                change.getAddedSubList().forEach((name) -> {
-        //                    choose = false;
-        //                    graphStage.choosingController.manualClick(graphStage.engine.getAllTargets().get(name));
-        //                    choose = true;
-        //                });
-        //                prevAdded.clear();
-        //                prevAdded.addAll(addedSet);
-        //            }
-        //
-        //            Set<String> removedSet = new HashSet<>(change.getRemoved());
-        //            if (!removedSet.equals(prevRemoved)) {
-        //                change.getRemoved().forEach((name) -> {
-        //                    choose = false;
-        //                    graphStage.choosingController.manualClick(graphStage.engine.getAllTargets().get(name));
-        //                    choose = true;
-        //
-        //                });
-        //                prevRemoved.clear();
-        //                prevRemoved.addAll(removedSet);
-        //            }
-        //        });
+        AnchorPane.setLeftAnchor(taskOutput, 0.0);
+        AnchorPane.setRightAnchor(taskOutput, 0.0);
+        taskOutput.minHeight(100);
+        taskOutput.maxHeight(100);
+        taskOutput.setStyle("-fx-font-size: 2em;");
     }
 
     public void onAdd(String name) {
@@ -75,9 +53,10 @@ public class RunTask extends SideAction {
     void runTask(ActionEvent event) {
         if (graphStage.choosingController.isChoosing())
             return;
+        onOpenSettings.run();
 
         TaskSettings taskSettings = TaskSettings.createTaskSettings();
-        taskSettings.showAndReturn(graphStage.engine.getMaxThreads());
+        taskSettings.showAndReturn(graphStage.engine.getMaxThreads(), graphStage);
 
         if (!taskSettings.submitted)
             return;
@@ -116,12 +95,22 @@ public class RunTask extends SideAction {
         });
     }
 
+    public String getInstantTime() {
+        taskOutput.setScrollTop(Double.MIN_VALUE);
+        taskOutput.deselect();
+        return LocalTime.now().toString();
+    }
+
     public void taskRun(TaskSettings taskSettings) {
         Set<Target> targetToRunOn = graphStage.choosingController.getChosenTargets();
         graphStage.choosingController.setChoosingState(false);
         System.out.println("targets = " + targetToRunOn);
         graphStage.graphView.hideEdges(targetToRunOn);
-        graphStage.engine.createNewGraphFromTargetList(targetToRunOn);
+//        graphStage.engine.createNewGraphFromTargetList(targetToRunOn);
+        taskOutput.textProperty().bind(Bindings.createStringBinding(() -> taskOutput.getText() + "\n" + getInstantTime() + ".   " + graphStage.engine.getTaskRunner().getTaskOutput().get(), graphStage.engine.getTaskRunner().getTaskOutput()));
+
+
+        graphStage.root.setBottom(taskOutput);
 
         Thread work = new Thread(() -> {
             graphStage.engine.runTask(taskSettings.task, targetToRunOn, taskSettings.maxThreads, taskSettings.runFromScratch);

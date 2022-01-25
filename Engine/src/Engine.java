@@ -8,6 +8,10 @@ public class Engine {
     private static TargetGraph targetGraph;
     private TaskRunner taskRunner;
 
+    Engine() {
+        taskRunner = new TaskRunner(targetGraph);
+    }
+
     public boolean toggleTaskRunning() {
         if (taskRunner != null)
             return taskRunner.togglePause();
@@ -19,7 +23,7 @@ public class Engine {
 //        threadExecutor = _targetGraph.threadExecutor;
     }
 
-    public static TargetGraph getTargetGraph() {
+    public static TargetGraph TargetGraph() {
         return targetGraph;
     }
 
@@ -81,8 +85,8 @@ public class Engine {
     }
 
     public void runTask(Task task, Set<Target> targetsToRunOn, int maxParallel, boolean runFromScratch) {
-//        targetGraph.createNewGraphFromTargetList(targetsToRunOn);
-        taskRunner = new TaskRunner(targetGraph, task, maxParallel, runFromScratch);
+        targetGraph.createNewGraphFromTargetList(targetsToRunOn);
+        taskRunner.initTaskRunner(task, maxParallel, runFromScratch);
         taskRunner.run();
     }
 
@@ -132,6 +136,10 @@ public class Engine {
 
     public int getMaxThreads() {
         return targetGraph.getMaxThreads();
+    }
+
+    public TargetGraph getTargetGraph() {
+        return targetGraph;
     }
 }
 
