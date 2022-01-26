@@ -10,10 +10,7 @@ import java.io.File;
 public class AppController {
     private Engine engine;
 
-    public AppController() throws Exception {
-//        File file = new File("ex2-cycle.xml");
-////        Engine.load(FileHandler.loadGPUPXMLFile(file));
-//        engine = new Engine();
+    public AppController() {
     }
 
     @FXML

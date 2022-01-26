@@ -1,9 +1,12 @@
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
 import javafx.beans.binding.Bindings;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
 
 import java.time.LocalTime;
 import java.util.*;
@@ -25,7 +28,7 @@ public class RunTask extends SideAction {
         this.settings.getChildren().addAll(new AnchoredNode(runButton), new AnchoredNode(targetsComboBox));
         this.choose = true;
         createLogTextArea();
-        setOnAction(this::runTask);
+        setOnAction(this::chooseTargets);
 
     }
 
@@ -39,6 +42,7 @@ public class RunTask extends SideAction {
         taskOutput.maxHeight(100);
         taskOutput.setStyle("-fx-font-size: 2em;");
     }
+
 
     public void onAdd(String name) {
         if (!choose) {
@@ -60,25 +64,29 @@ public class RunTask extends SideAction {
         choose = true;
     }
 
-    void runTask(ActionEvent event) {
+    void chooseTargets(ActionEvent event) {
         if (graphStage.choosingController.isChoosing())
             return;
 
-        onOpenSettings.run();
         TaskSettings taskSettings = TaskSettings.createTaskSettings();
         taskSettings.showAndReturn(graphStage.engine.getMaxThreads(), graphStage);
 
         if (!taskSettings.submitted)
             return;
 
+        graphStage.choosingController.getChosenTargets().forEach(target ->
+                graphStage.graphView.getGraphVertex(target).setStroke(Color.BLUE)
+        );
         graphStage.choosingController.setChoosingState(true);
         graphStage.choosingController.setOnChoose(this::onChoose);
+
         if (taskSettings.chooseAll)
             graphStage.choosingController.all(null);
 
         runButton.setOnAction((ea) -> taskRun(taskSettings));
         runButton.setText("Start");
         settings.setVisible(true);
+        progressBar.setProgress(0);
     }
 
     public void onChoose(Target target) {
@@ -115,9 +123,23 @@ public class RunTask extends SideAction {
         Set<Target> targetToRunOn = graphStage.choosingController.getChosenTargets();
         graphStage.choosingController.setChoosingState(false);
         System.out.println("targets = " + targetToRunOn);
+
+        boolean taskAlreadyRan = graphStage.engine.didTaskAlreadyRan();
+        boolean PreviousRunContainsTargetToRunOn = graphStage.engine.createNewGraphFromTargetList(targetToRunOn);
+
+        if (!taskSettings.runFromScratch && (!PreviousRunContainsTargetToRunOn || !taskAlreadyRan)) {
+            alertWarning(!PreviousRunContainsTargetToRunOn ? "Previous Run has to contain the targets you chose to run again on the same graph\n Running from scratch on the targets you chose..." : "There were no task that ran yet\n Running from scratch on the targets you chose...");
+            taskSettings.runFromScratch = true;
+        }
+        if (taskSettings.runFromScratch) {
+            graphStage.graphView.reset();
+        }
         graphStage.graphView.hideEdges(targetToRunOn);
-        graphStage.engine.createNewGraphFromTargetList(targetToRunOn);
-        taskOutput.textProperty().bind(Bindings.createStringBinding(() -> taskOutput.getText() + "\n" + getInstantTime() + ".   " + graphStage.engine.getTaskRunner().getTaskOutput().get(), graphStage.engine.getTaskRunner().getTaskOutput()));
+
+        graphStage.engine.getTaskRunner().getTaskOutput().addListener((observable, oldValue, newValue) -> {
+            Platform.runLater(() -> taskOutput.appendText("\n" + getInstantTime() + ".   " + newValue));
+        });
+
         progressBar.progressProperty().bind(graphStage.engine.getTaskRunner().getProgress());
 
         graphStage.root.setBottom(taskOutput);
@@ -145,6 +167,7 @@ public class RunTask extends SideAction {
             Platform.runLater(() ->
             {
                 runButton.setText("Finished!");
+                alertWhenDone();
             });
         }, "Task Running");
         check.start();
@@ -161,5 +184,19 @@ public class RunTask extends SideAction {
             runButton.setText("Resume");
         else
             runButton.setText("Pause");
+    }
+
+    private void alertWhenDone() {
+        Alert information = new Alert(Alert.AlertType.INFORMATION);
+        information.setTitle("Final-Results");
+        information.setContentText(graphStage.engine.getResultStatistics());
+        information.showAndWait();
+    }
+
+    private void alertWarning(String warning) {
+        Alert information = new Alert(Alert.AlertType.WARNING);
+        information.setTitle("Warning");
+        information.setContentText(warning);
+        information.showAndWait();
     }
 }

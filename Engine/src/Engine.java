@@ -63,18 +63,22 @@ public class Engine {
         return targetGraph.findAllPaths(dependsOn ? targetName1 : targetName2, dependsOn ? targetName2 : targetName1);
     }
 
-    public static String getPostTaskRunInfo() {
-        return targetGraph.getPostTaskRunInfo();
-    }
 
     public static Map<String, List<String>> getStatusesStatistics() {
         return targetGraph.getStatusesStatistics();
+    }
+
+    public String getResultStatistics() {
+        return targetGraph.getStatsInfoString(targetGraph.getResultStatistics());
     }
 
     public static boolean taskAlreadyRan() {
         return targetGraph.taskAlreadyRan();
     }
 
+    public boolean didTaskAlreadyRan() {
+        return targetGraph.taskAlreadyRan();
+    }
 
     public boolean NoSuchTarget(String targetName) {
         return targetGraph.NoSuchTarget(targetName);
@@ -124,8 +128,8 @@ public class Engine {
         targetGraph.reset();
     }
 
-    public void createNewGraphFromTargetList(Set<Target> targetToRunOn) {
-        targetGraph.createNewGraphFromTargetList(targetToRunOn);
+    public boolean createNewGraphFromTargetList(Set<Target> targetToRunOn) {
+        return targetGraph.createNewGraphFromTargetList(targetToRunOn);
     }
 
     public LinkedList<List<String>> findAllPaths(String source, String destination) {
@@ -139,6 +143,10 @@ public class Engine {
 
     public TargetGraph getTargetGraph() {
         return targetGraph;
+    }
+
+    public String getGraphInfo() {
+        return targetGraph.getInfo();
     }
 }
 

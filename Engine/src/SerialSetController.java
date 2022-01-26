@@ -3,7 +3,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class SerialSetController {
-    private List<SerialSet> serialSets;
+    private final List<SerialSet> serialSets;
 
     public SerialSetController(List<SerialSet> serialSets) {
         this.serialSets = serialSets;
@@ -24,4 +24,9 @@ public class SerialSetController {
     public synchronized Stream<SerialSet> getSetsContainingStream(String targetName) {
         return serialSets.stream().filter(serialSet -> serialSet.getTargets().contains(targetName));
     }
+
+    public List<String> getSerialSets() {
+        return serialSets.stream().map(SerialSet::toString).collect(Collectors.toList());
+    }
+
 }

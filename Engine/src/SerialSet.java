@@ -29,4 +29,8 @@ public class SerialSet {
     public void setBusy(boolean busy) {
         this.busy = busy;
     }
+
+    public String toString() {
+        return "name: " + this.getName() + ", targets=" + this.getTargets();
+    }
 }

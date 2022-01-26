@@ -1,4 +1,5 @@
 import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -14,13 +15,15 @@ public class GraphStage extends Stage {
         this.engine = engine;
         this.choosingController = new ChoosingController(this);
         this.sideController = new SideController(this);
+        AnchorPane.setBottomAnchor(sideController, 0.0);
+        AnchorPane.setTopAnchor(sideController, 0.0);
         this.root = new BorderPane();
         this.initStyle(StageStyle.DECORATED);
         this.setTitle("Target Graph");
         this.setMinHeight(500);
         this.setMinWidth(800);
         this.setScene(new Scene(root, 2048, 1800));
-        root.setRight(sideController);
+        root.setRight(new AnchorPane(sideController));
         CreateGraph();
     }
 

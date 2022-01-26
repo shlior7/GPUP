@@ -61,34 +61,9 @@ public class TaskSettings {
     public TaskSettings() {
     }
 
-    public TaskSettings(int maxThreads, Stage parent) {
-        this.submitted = false;
-        this.maxThreads = maxThreads;
-        settingStage = new Stage();
-        settingStage.setTitle("Task Settings");
-
-        FXMLLoader fxmlLoader = new FXMLLoader();
-        URL taskUrl = getClass().getResource("taskSettings.fxml");
-        System.out.println("taskUrl = " + taskUrl);
-        fxmlLoader.setLocation(taskUrl);
-        Parent load = null;
-        try {
-            load = fxmlLoader.load(taskUrl.openStream());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Scene scene = new Scene(load, 600, 400);
-        settingStage.setScene(scene);
-        settingStage.setAlwaysOnTop(true);
-        settingStage.initModality(Modality.WINDOW_MODAL);
-        settingStage.initOwner(parent);
-        initialize(scene);
-    }
-
     public static TaskSettings createTaskSettings() {
         FXMLLoader fxmlLoader = new FXMLLoader();
         URL taskUrl = TaskSettings.class.getResource("taskSettings.fxml");
-        System.out.println("taskUrl = " + taskUrl);
         fxmlLoader.setLocation(taskUrl);
         Parent load = null;
         try {

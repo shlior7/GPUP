@@ -431,24 +431,6 @@ public class GraphPanel<V> extends Pane {
         });
     }
 
-    public void pressOnEdge(V outbound, V inbound) {
-        Map<V, GraphEdgeLine<V>> map = graphEdgesMap.getOrDefault(outbound, null);
-        if (map != null) {
-            GraphEdgeLine<V> edge = map.getOrDefault(inbound, null);
-            if (edge != null) {
-                edge.setEdgeStyleToPressed();
-            }
-        }
-    }
-
-    public void resetEdgesToDefault() {
-        edgeNodes.forEach(GraphEdgeLine::setEdgeStyleToDefault);
-    }
-
-    public void resetVerticesToDefault() {
-        vertexNodes.values().forEach(GraphVertexNode::setVertexStyleToDefault);
-    }
-
     public GraphEdgeLine<V> getEdgeLine(V outbound, V inbound) {
         Map<V, GraphEdgeLine<V>> map = graphEdgesMap.getOrDefault(outbound, null);
         if (map != null) {

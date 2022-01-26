@@ -142,11 +142,11 @@ public class TargetGraph implements Graph<Target> {
     }
 
     public Queue<Target> getQueueFromLastTime() {
+        System.out.println(taskAlreadyRan());
         if (taskAlreadyRan()) {
             createNewGraphFromWhatsLeft();
-        } else {
-            currentTargetsGraph.children = originalTargetsGraph.children;
         }
+        System.out.println(currentTargetsGraph.children);
         return initQueue();
     }
 
@@ -166,38 +166,45 @@ public class TargetGraph implements Graph<Target> {
             target.setTargetInfo(null);
             setStatus(target.name, Status.FROZEN);
         });
-        this.currentTargetsGraph.clone(originalTargetsGraph);
+//        this.currentTargetsGraph.clone(originalTargetsGraph);
     }
 
     public void createNewGraphFromWhatsLeft() {
-        currentTargetsGraph = new AdjacentMap();
+        AdjacentMap newGraph = new AdjacentMap();
+        currentTargetsGraph.children.keySet().forEach((name) -> {
+            Target target = allTargets.get(name);
+            System.out.println(target.getName() + "  " + target.getResult());
 
-        allTargets.forEach((name, target) -> {
-            if (target.getResult() == Result.Success)
-                return;
+            newGraph.children.put(name, new HashSet<>());
+            newGraph.parents.putIfAbsent(name, new HashSet<>());
 
-            currentTargetsGraph.children.put(name, new HashSet<>());
-            currentTargetsGraph.parents.put(name, new HashSet<>());
-            target.init(createTargetInGraphInfo(target));
-            originalTargetsGraph.children.get(name).forEach((child) -> {
-                if (child.getResult() != Result.Success) {
-                    currentTargetsGraph.children.get(name).add(child);
-                    currentTargetsGraph.parents.putIfAbsent(child.name, new HashSet<>());
-                    currentTargetsGraph.parents.get(child.name).add(target);
-                }
+            if (target.getResult() != Result.Success && target.getResult() != Result.Warning)
+                target.init(createTargetInGraphInfo(target));
+
+            currentTargetsGraph.children.get(name).forEach((child) -> {
+                newGraph.children.get(name).add(child);
+                newGraph.parents.putIfAbsent(child.name, new HashSet<>());
+                newGraph.parents.get(child.name).add(target);
             });
         });
-        createTargetsGraphInfo(new HashSet<>(allTargets.values()));
+//        createTargetsGraphInfo(newGraph.children.keySet().stream().map(name -> allTargets.get(name)).collect(Collectors.toSet()));
+        currentTargetsGraph.clone(newGraph);
+        System.out.println(currentTargetsGraph.children);
+        System.out.println("---------------------");
+        System.out.println(newGraph.children);
     }
 
-    public void createNewGraphFromTargetList(Set<Target> targetsToRunOn) {
+    public boolean createNewGraphFromTargetList(Set<Target> targetsToRunOn) {
+        boolean CurrentGraphContainsTargetsToRunOn = getCurrentTargets().containsAll(targetsToRunOn);
+
         if (targetsToRunOn.size() == originalTargetsGraph.children.size()) {
             currentTargetsGraph.children = originalTargetsGraph.children;
-            return;
+            return CurrentGraphContainsTargetsToRunOn;
         }
+
         currentTargetsGraph = new AdjacentMap();
         targetsToRunOn.forEach(((target) -> {
-            target.init(createTargetInGraphInfo(target));
+            target.setTargetInfo(createTargetInGraphInfo(target));
             currentTargetsGraph.children.put(target.name, new HashSet<>());
             currentTargetsGraph.parents.putIfAbsent(target.name, new HashSet<>());
 
@@ -210,6 +217,9 @@ public class TargetGraph implements Graph<Target> {
             });
         }));
         createTargetsGraphInfo(targetsToRunOn);
+
+        System.out.println(getResultStatistics());
+        return CurrentGraphContainsTargetsToRunOn;
     }
 
 
@@ -299,8 +309,7 @@ public class TargetGraph implements Graph<Target> {
 
     public Map<String, List<String>> getResultStatistics() {
         Map<String, List<String>> statuses = new HashMap<>();
-        allTargets.values().forEach(target -> statuses.put(target.getResult() == Result.NULL ? "Skipped" : target.getResult().toString(), Stream.concat(statuses.getOrDefault(target.getResult() == Result.NULL ? "Skipped" : target.getResult().toString(), new ArrayList<>()).stream(), Stream.of(target.name)).collect(Collectors.toList())))
-        ;
+        getCurrentTargets().forEach(target -> statuses.put(target.getResult() == Result.NULL ? "Skipped" : target.getResult().toString(), Stream.concat(statuses.getOrDefault(target.getResult() == Result.NULL ? "Skipped" : target.getResult().toString(), new ArrayList<>()).stream(), Stream.of(target.name)).collect(Collectors.toList())));
 
         return statuses;
     }
@@ -311,16 +320,8 @@ public class TargetGraph implements Graph<Target> {
         return types;
     }
 
-    public String getPostTaskRunInfo() {
-        StringBuilder res = new StringBuilder();
-        allTargets.values().forEach(target -> {
-            res.append("Targets Name: ").append(target.name).append("\n");
-            res.append("    Tasks Result: ").append(target.getResult()).append("\n");
-            res.append("    Targets Status: ").append(getStatus(target.name)).append("\n");
-            res.append("    Process Time: ").append(target.getProcessTime().toString()).append("\n");
-            res.append("--------------------\n");
-        });
-        return res.toString();
+    public Set<Target> getCurrentTargets() {
+        return currentTargetsGraph.children.keySet().stream().map(name -> allTargets.get(name)).collect(Collectors.toSet());
     }
 
     @Override
@@ -335,13 +336,6 @@ public class TargetGraph implements Graph<Target> {
                 return;
             target.setStatus(status);
             TargetsDone.incrementAndGet();
-//            setTaskOutput.accept();
-//            synchronized (this) {
-//                setToSkipped.incrementAndGet();
-//                System.out.println("++++++++++++++++++++++++++++++++");
-//                System.out.println("target: " + target.name + " was set to skipped!!!!" + targetsDone.get());
-//                System.out.println("++++++++++++++++++++++++++++++++");
-//            }
             setParentsStatuses(target.name, status, TargetsDone);
         }));
     }
@@ -356,7 +350,7 @@ public class TargetGraph implements Graph<Target> {
     }
 
     public boolean taskAlreadyRan() {
-        return allTargets.values().stream().anyMatch(target -> target.getResult() != null);
+        return getCurrentTargets().stream().anyMatch(target -> target.getResult() != Result.NULL);
     }
 
 
@@ -440,11 +434,12 @@ public class TargetGraph implements Graph<Target> {
         stats.forEach((k, v) -> System.out.println(k + ": " + v.size() + " : {" + String.join(", ", v) + "}" + "\n"));
     }
 
-    public String getStatsInfoStream(Map<String, List<String>> map) {
-        return "\n" + map.keySet().stream()
-                .map(key -> key + " " + map.get(key).size() + " : { " + String.join(", ", map.get(key)) + " }")
+    public String getStatsInfoString(Map<String, List<String>> statsInfo) {
+        return "\n" + statsInfo.keySet().stream()
+                .map(key -> key + " " + statsInfo.get(key).size() + " : { " + String.join(", ", statsInfo.get(key)) + " }")
                 .collect(Collectors.joining("\n"));
     }
+
 
     public int getMaxThreads() {
         return maxThreads;
@@ -542,4 +537,7 @@ public class TargetGraph implements Graph<Target> {
             throw new Exception("There are 2 targets with the same name");
     }
 
+    public String getInfo() {
+        return "Targets Count: " + totalSize() + " \n" + getTypesStatistics().toString() + "\n Serial Sets: \n" + String.join("\n", serialSets.getSerialSets());
+    }
 }

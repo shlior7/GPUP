@@ -1,4 +1,3 @@
-import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -30,23 +29,31 @@ public class TaskRunner implements Runnable {
     }
 
     public void initTaskRunner(Task task, int maxParallelism, boolean runFromScratch) {
+        this.finished = false;
         this.threadExecutor = Executors.newFixedThreadPool(maxParallelism);
         this.task = task;
         this.runFromScratch = runFromScratch;
+        this.progress.set(0);
+        this.targetsDone.set(0);
     }
 
     @SneakyThrows
     @Override
     public void run() {
         running = true;
-        if (!runFromScratch) {
-            queue = targetGraph.getQueueFromLastTime();
+        System.out.println("started");
+        System.out.println(runFromScratch);
+        System.out.println(targetGraph.getResultStatistics());
+        if (runFromScratch) {
+            resetCurrentGraph();
+            queue = targetGraph.initQueue();
         } else {
-            queue = targetGraph.getQueueFromScratch();
+            queue = targetGraph.getQueueFromLastTime();
+            targetsDone.addAndGet((int) targetGraph.getCurrentTargets().stream().filter(t -> t.getResult() == Result.Success || t.getResult() == Result.Warning).count());
         }
 
         int prev = -1;
-        while (targetsDone.get() != targetGraph.size()) {
+        while (targetsDone.get() < targetGraph.size()) {
             if (pause.get()) {
                 try {
                     synchronized (targetGraph) {
@@ -65,6 +72,9 @@ public class TaskRunner implements Runnable {
                 runTaskOnTarget(target, task.copy());
             }
             if (prev != targetsDone.get()) {
+                targetGraph.printStatsInfo(targetGraph.getResultStatistics());
+                System.out.println("--------------------------------");
+                targetGraph.printStatsInfo(targetGraph.getStatusesStatistics());
                 System.out.println("Not done!!!!!!" + targetsDone.get());
                 prev = targetsDone.get();
             }
@@ -78,7 +88,7 @@ public class TaskRunner implements Runnable {
 
         setTaskOutput("Done!");
         System.out.println("Im done!!!!!!!!!!!!!!!");
-        setTaskOutput(targetGraph.getStatsInfoStream(targetGraph.getResultStatistics()));
+        setTaskOutput(targetGraph.getStatsInfoString(targetGraph.getResultStatistics()));
         targetGraph.printStatsInfo(targetGraph.getResultStatistics());
         targetGraph.printStatsInfo(targetGraph.getStatusesStatistics());
         running = false;
@@ -93,10 +103,16 @@ public class TaskRunner implements Runnable {
                 if (!targetGraph.didAllChildrenFinish(target.name) || ssc.isBusy(target.name)) {
                     target.setStatus(Status.WAITING);
                     queue.add(target);
+//                    targetGraph.printStatsInfo(targetGraph.getResultStatistics());
+//                    System.out.println("--------------------------------");
+//                    targetGraph.printStatsInfo(targetGraph.getStatusesStatistics());
                     return;
                 }
                 break;
-
+            case FINISHED:
+                if (target.getResult() == Result.Success || target.getResult() == Result.Warning) {
+                    queue.addAll(targetGraph.whoAreYourDirectDaddies(target.name));
+                }
             default:
                 return;
         }
@@ -145,6 +161,10 @@ public class TaskRunner implements Runnable {
             }
         }
         return pause.get();
+    }
+
+    private void resetCurrentGraph() {
+        targetGraph.reset();
     }
 
     public synchronized void setTaskOutput(String text) {

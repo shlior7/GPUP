@@ -60,22 +60,22 @@ public class ChoosingController {
         this.choosing = choosingState;
         graphStage.root.setBottom(choosingState ? bottomChoosingButtons : null);
         graphStage.graphView.setPressable(choosingState);
-        if (choosingState)
-            chosen.clear();
     }
 
 
     private void whatIfRequired(ActionEvent actionEvent) {
     }
 
+
+    private void whatIfDepends(ActionEvent actionEvent) {
+    }
+
+
     private void cancel(ActionEvent actionEvent) {
         clear(actionEvent);
         graphStage.reset();
 
         System.out.println("chosen after cancel " + chosen);
-    }
-
-    private void whatIfDepends(ActionEvent actionEvent) {
     }
 
     private synchronized void clear(ActionEvent actionEvent) {
@@ -86,8 +86,6 @@ public class ChoosingController {
             }
         });
         graphStage.graphView.setPressable(true);
-        this.onChoose = (t) -> {
-        };
         System.out.println("chosen after clear " + chosen);
     }
 
