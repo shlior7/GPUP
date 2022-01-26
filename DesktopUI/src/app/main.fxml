@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="0.0" minWidth="0.0" prefHeight="600"
+            prefWidth="800.0"
+            xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="app.controllers.AppController">
+    <center>
+        <GridPane alignment="CENTER" hgap="5.0" prefHeight="371.0" prefWidth="315.0" vgap="5.0">
+            <columnConstraints>
+                <ColumnConstraints hgrow="NEVER" maxWidth="147.0" minWidth="97.0" prefWidth="135.0"/>
+                <ColumnConstraints hgrow="NEVER" maxWidth="56.0" minWidth="0.0" prefWidth="0.0"/>
+                <ColumnConstraints hgrow="NEVER" maxWidth="169.0" minWidth="118.0" prefWidth="131.0"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            </rowConstraints>
+            <children>
+                <Button contentDisplay="RIGHT" mnemonicParsing="false" onAction="#loadGraph" text="load graph"
+                        GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="2"
+                        GridPane.valignment="TOP"/>
+                <Button mnemonicParsing="false" onAction="#showGraph" text="show graph" GridPane.columnIndex="2"
+                        GridPane.rowIndex="2"
+                        GridPane.valignment="TOP"/>
+            </children>
+        </GridPane>
+    </center>
+    <top>
+        <VBox alignment="TOP_LEFT" prefHeight="0.0" prefWidth="419.0" BorderPane.alignment="CENTER_LEFT">
+            <children>
+                <Label text="G.P.U.P" textFill="darkorange">
+                    <font>
+                        <Font name="Bell MT Bold" size="47.0"/>
+                    </font>
+                </Label>
+            </children>
+        </VBox>
+    </top>
+</BorderPane>

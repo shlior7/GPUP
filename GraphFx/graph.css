@@ -42,21 +42,13 @@
     -fx-opacity: 0.7;
 }
 
-/* Custom vertex. You should revert any unwanted styling in the default element, 
-   style, since custom styles will be appended to the default style */
-.myVertex {
-    -fx-stroke-width: 5;
-    -fx-stroke: green;
-    -fx-stroke-type: inside; /* you should keep this if using arrows */
-    -fx-fill: yellowgreen;
-}
 
 .tooltip {
-    -fx-background: rgba(0, 0, 0);
-    -fx-background-color: rgba(30, 30, 30, 0.8);
+    -fx-background: rgba(50, 50, 50);
+    -fx-background-color: rgba(60, 60, 60, 0.8);
     -fx-background-radius: 6px;
     -fx-background-insets: 0;
     -fx-padding: 0.667em 0.75em 0.667em 0.75em; /* 10px */
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 10, 0.0, 0, 3);
-    -fx-font-size: 40px;
 }
+

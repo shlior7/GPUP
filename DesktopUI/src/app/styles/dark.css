@@ -1,0 +1,101 @@
+.root {
+    -fx-accent: #1e74c6;
+    -fx-focus-color: #1e74c6;
+    -fx-base: #373e43;
+    -fx-control-inner-background: derive(-fx-base, 35%);
+    -fx-control-inner-background-alt: derive(-fx-base, 35%);
+    -fx-text-fill: white;
+}
+
+.label {
+    -fx-text-fill: lightgray;
+}
+
+.text-field {
+    -fx-prompt-text-fill: gray;
+}
+
+.button {
+    -fx-focus-traversable: false;
+}
+
+.button:hover {
+    -fx-text-fill: white;
+}
+
+.separator *.line {
+    -fx-background-color: #3C3C3C;
+    -fx-border-style: solid;
+    -fx-border-width: 1px;
+}
+
+.scroll-bar {
+    -fx-background-color: derive(-fx-base, 45%)
+}
+
+.button:default {
+    -fx-base: -fx-accent;
+}
+
+.info {
+    -fx-background: rgba(80, 80, 90);
+    -fx-background-color: rgba(170, 170, 170, 0.8);
+    -fx-background-radius: 6px;
+    -fx-background-insets: 0;
+    -fx-padding: 0.667em 0.75em 0.667em 0.75em; /* 10px */
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 10, 0.0, 0, 3);
+    -fx-font-size: 40px;
+}
+
+
+.graph {
+    -fx-background-color: #3F4F4F;
+}
+
+.vertex {
+    -fx-stroke-width: 5;
+    -fx-stroke: #7F9AAF;
+    -fx-stroke-type: inside; /* you should keep this if using arrows */
+    -fx-fill: #9999AF;
+}
+
+.vertex_pressed {
+    -fx-stroke: blue;
+}
+
+.vertex-label {
+    -fx-font: bold 15pt "sans-serif";
+}
+
+.outline.vertex-label .text {
+    -fx-stroke: lightgray;
+    -fx-stroke-width: 2px;
+}
+
+.edge {
+    -fx-stroke-width: 3;
+    -fx-stroke: white;
+    -fx-fill: transparent; /*important for curved edges */
+    -fx-stroke-line-cap: round;
+    -fx-opacity: 0.5;
+}
+
+.edge_pressed {
+    -fx-stroke: MAGENTA;
+}
+
+
+.arrow {
+    -fx-stroke-width: 5;
+    -fx-stroke: rgb(200, 90, 150);
+    -fx-opacity: 0.8;
+}
+
+.tooltip {
+    -fx-background: rgba(50, 50, 50);
+    -fx-background-color: rgba(60, 60, 60, 0.8);
+    -fx-background-radius: 6px;
+    -fx-background-insets: 0;
+    -fx-padding: 0.667em 0.75em 0.667em 0.75em; /* 10px */
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 10, 0.0, 0, 3);
+}

@@ -1,3 +1,6 @@
+import TargetGraph.Edge;
+import TargetGraph.Target;
+import TargetGraph.TargetGraph;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -60,7 +63,7 @@ public class FileHandler {
             throw new Exception("no configurations");
 
         Element config = (Element) configurations.item(0);
-        String GraphsName = config.getElementsByTagName("GPUP-Graph-Name").item(0).getTextContent();
+        String GraphsName = config.getElementsByTagName("GPUP-graph.Graph-Name").item(0).getTextContent();
         String WorkingDir = config.getElementsByTagName("GPUP-Working-Directory").item(0).getTextContent();
         return new HashMap<String, String>() {{
             put("name", GraphsName);
@@ -87,12 +90,12 @@ public class FileHandler {
             throw new Exception("no Targets");
 
         targetsElement = (Element) targetsNodes.item(0);
-        List<Element> targets = nodeListToElements(targetsElement.getElementsByTagName("GPUP-Target"));
+        List<Element> targets = nodeListToElements(targetsElement.getElementsByTagName("GPUP-TargetGraph.Target"));
         targets.forEach(targetNode -> {
             Target target = new Target(targetNode.getAttributes().getNamedItem("name").getTextContent());
 
 
-            NodeList result = targetNode.getElementsByTagName("Result");
+            NodeList result = targetNode.getElementsByTagName("TargetGraph.Result");
             if (result.getLength() != 0) {
                 target.setResultFromStr(result.item(0).getTextContent());
             }
@@ -126,11 +129,11 @@ public class FileHandler {
             if (OptionalTarget.isPresent()) {
                 Target target = OptionalTarget.get();
                 if (target.getResult() != null) {
-                    Node resultNode = targetNode.getElementsByTagName("Result").item(0);
+                    Node resultNode = targetNode.getElementsByTagName("TargetGraph.Result").item(0);
                     if (resultNode != null) {
                         resultNode.setTextContent(target.getResult().toString());
                     } else {
-                        Element result = document.createElement("Result");
+                        Element result = document.createElement("TargetGraph.Result");
                         result.appendChild(document.createTextNode(target.getResult().toString()));
                         targetNode.appendChild(result);
                     }

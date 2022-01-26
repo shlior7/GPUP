@@ -7,7 +7,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="Engine" />
+    <orderEntry type="module" module-name="Engine" exported="" />
     <orderEntry type="module" module-name="Graph" />
     <orderEntry type="module" module-name="GraphFx" />
     <orderEntry type="library" name="Maven: org.controlsfx:controlsfx:8.40.18" level="project" />

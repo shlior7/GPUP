@@ -1,4 +1,5 @@
 
+import engine.Engine;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -8,7 +9,7 @@ class Load_Option implements Option {
 
     @Override
     public String getText() {
-        return "Load the `Target Graph`";
+        return "Load the `TargetGraph.Target graph.Graph`";
     }
 
     @Override

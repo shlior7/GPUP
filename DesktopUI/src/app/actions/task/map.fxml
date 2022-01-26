@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.shape.Circle?>
+
+<GridPane alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="117.0" prefWidth="127.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
+  <columnConstraints>
+    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+    <ColumnConstraints halignment="LEFT" hgrow="NEVER" maxWidth="-Infinity" minWidth="10.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="NEVER" />
+    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+  </rowConstraints>
+   <children>
+      <Label text="Done" />
+      <Label text="Warning" GridPane.rowIndex="2" />
+      <Label text="Skipped" GridPane.rowIndex="3" />
+      <Label text="Fail" GridPane.rowIndex="1" />
+      <Label text="Waiting/Frozen" GridPane.rowIndex="4" />
+      <Circle fill="#478310" radius="12.0" stroke="BLACK" strokeType="INSIDE" GridPane.columnIndex="1" />
+      <Circle fill="#ff1f1f" radius="12.0" stroke="BLACK" strokeType="INSIDE" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+      <Circle fill="WHITE" radius="12.0" stroke="#ffef00" strokeType="INSIDE" strokeWidth="5.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+      <Circle fill="#ff5921" radius="12.0" stroke="BLACK" strokeType="INSIDE" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+      <Circle fill="WHITE" radius="12.0" stroke="#000bff" strokeType="INSIDE" strokeWidth="5.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+   </children>
+</GridPane>

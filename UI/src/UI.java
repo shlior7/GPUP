@@ -4,12 +4,11 @@ import java.io.IOException;
 import java.util.function.Predicate;
 
 public class UI {
-    public static void main(String[] args){
+    public static void main(String[] args) {
         try {
             showMenu();
-        }
-        catch (NoClassDefFoundError e){
-            UI.error("No Engine Found!\n Make sure the `Engine.jar` is in the same folder :)");
+        } catch (NoClassDefFoundError e) {
+            UI.error("No engine.Engine Found!\n Make sure the `engine.Engine.jar` is in the same folder :)");
         }
     }
 
@@ -40,7 +39,7 @@ public class UI {
     }
 
     public static void printDivide(String text) {
-        if(!text.equals("")) {
+        if (!text.equals("")) {
             printDivider();
             System.out.println(text);
         }
@@ -69,17 +68,15 @@ public class UI {
 
     public static void log(String Data, String targetName) throws IOException {
         println(Data);
-        try{
-        FileHandler.log(Data, targetName);
-        }
-        catch (IOException e){
+        try {
+            FileHandler.log(Data, targetName);
+        } catch (IOException e) {
             UI.error(e.getMessage());
-        }
-        catch (Exception ignored){
+        } catch (Exception ignored) {
         }
     }
 
-    public static String prompt(String question, Predicate<String> notRight,String errorMessage) {
+    public static String prompt(String question, Predicate<String> notRight, String errorMessage) {
         Scanner scanner = new Scanner(System.in);
         String input;
         boolean notOk;
@@ -87,8 +84,8 @@ public class UI {
             printDivide(question);
             input = scanner.nextLine();
             notOk = notRight.test(input);
-            if(notOk)
-                UI.error(input +" - "+errorMessage);
+            if (notOk)
+                UI.error(input + " - " + errorMessage);
         } while (notOk);
 
         return input;
@@ -107,13 +104,15 @@ public class UI {
 
         return input;
     }
+
     public static void printAllPaths(LinkedList<List<String>> allPaths) {
-        if(allPaths.size() == 0) {
+        if (allPaths.size() == 0) {
             UI.error("No directed path was found between the targets");
             return;
         }
         allPaths.forEach(UI::printPath);
     }
+
     public static void printPath(List<String> PathList) {
         for (String u : PathList) {
             UI.print(u + "->");
@@ -146,7 +145,7 @@ public class UI {
                 System.out.println("That's not a number!");
                 scanner.next();
             }
-                input = scanner.nextFloat();
+            input = scanner.nextFloat();
 
         } while (input < min || input > max);
 

@@ -1,3 +1,7 @@
+import TargetGraph.Target;
+import engine.Engine;
+import task.Simulation;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -30,11 +34,11 @@ class RunTask_Option implements Option {
             Target target = queue.poll();
             try {
                 UI.log("Start Time: " + DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()), target.name);
-                UI.log("Start Task On " + target.name, target.name);
+                UI.log("Start task.Task On " + target.name, target.name);
                 UI.log("Targets Data: " + target.getUserData(), target.name);
-//                Engine.runTaskOnTarget(target, simulation);
+//                engine.Engine.runTaskOnTarget(target, simulation);
                 UI.log("Finished Time: " + DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()), target.name);
-                UI.log("Task Finished with " + target.getResult().toString(), target.name);
+                UI.log("task.Task Finished with " + target.getResult().toString(), target.name);
                 UI.println("--------------------------------\n");
             } catch (IOException e) {
                 UI.warning("couldn't log to file");
