@@ -25,9 +25,8 @@ public class TaskRunner implements Runnable {
     private final AtomicInteger targetsDone = new AtomicInteger(0);
     public final AtomicBoolean pause = new AtomicBoolean(false);
     private Task task;
-    private boolean finished = false;
     private boolean running = false;
-    private boolean runFromScratch;
+    private int numThread;
     private final SimpleStringProperty taskOutput;
     private final SimpleDoubleProperty progress;
 
@@ -36,31 +35,35 @@ public class TaskRunner implements Runnable {
         this.targetGraph = targetGraph;
         this.taskOutput = new SimpleStringProperty("");
         this.progress = new SimpleDoubleProperty(0);
+        this.numThread = 0;
     }
 
-    public void initTaskRunner(Task task, int maxParallelism, boolean runFromScratch) {
-        this.finished = false;
-        this.threadExecutor = Executors.newFixedThreadPool(maxParallelism);
+    public void initTaskRunner(Task task, int maxParallelism) {
+        initTask(task, maxParallelism);
+        numThread = maxParallelism;
+        initIncrementalRun();
+    }
+
+    public void initTask(Task task, int maxParallelism) {
         this.task = task;
-        this.runFromScratch = runFromScratch;
+        this.numThread = maxParallelism;
+    }
+
+    public void initIncrementalRun() {
+        this.threadExecutor = Executors.newFixedThreadPool(numThread);
         this.progress.set(0);
         this.targetsDone.set(0);
+        pause.set(false);
+        running = true;
+        setTaskOutput("");
     }
+
 
     @SneakyThrows
     @Override
     public void run() {
-        running = true;
-        pause.set(false);
-        if (runFromScratch) {
-            resetCurrentGraph();
-            queue = targetGraph.initQueue();
-        } else {
-            queue = targetGraph.getQueueFromLastTime();
-            targetsDone.addAndGet((int) targetGraph.getCurrentTargets().stream().filter(t -> t.getResult() == Result.Success || t.getResult() == Result.Warning).count());
-        }
-
-        while (targetsDone.get() < targetGraph.size()) {
+        queue = targetGraph.initQueue();
+        while (targetsDone.get() < targetGraph.size() || !queue.isEmpty()) {
             if (pause.get()) {
                 try {
                     synchronized (targetGraph) {
@@ -74,7 +77,7 @@ public class TaskRunner implements Runnable {
             }
             if (!queue.isEmpty()) {
                 Target target = queue.poll();
-                runTaskOnTarget(target, task.copy());
+                runTaskOnTarget(target);
             }
         }
         threadExecutor.shutdown();
@@ -86,10 +89,11 @@ public class TaskRunner implements Runnable {
         setTaskOutput("Done!");
         setTaskOutput(targetGraph.getStatsInfoString(targetGraph.getResultStatistics()));
         running = false;
-        finished = true;
+        resume();
+        pause.set(false);
     }
 
-    public synchronized void runTaskOnTarget(Target target, Task task) {
+    public synchronized void runTaskOnTarget(Target target) {
         SerialSetController ssc = targetGraph.getSerialSets();
         switch (target.getStatus()) {
             case FROZEN:
@@ -102,10 +106,6 @@ public class TaskRunner implements Runnable {
                     return;
                 }
                 break;
-            case FINISHED:
-                if (target.getResult() == Result.Success || target.getResult() == Result.Warning) {
-                    queue.addAll(targetGraph.whoAreYourDirectDaddies(target.name));
-                }
             default:
                 return;
         }
@@ -134,28 +134,30 @@ public class TaskRunner implements Runnable {
 
         targetGraph.getSerialSets().setBusy(name, false);
 
+        if (!targetGraph.whoAreYourDirectDaddies(target.name).isEmpty()) {
+            setTaskOutput("adding " + targetGraph.whoAreYourDirectDaddies(target.name) + " to waiting queue");
+            queue.addAll(targetGraph.whoAreYourDirectDaddies(target.name));
+        }
+
         if (target.getResult() == Result.Failure) {
             targetGraph.setParentsStatuses(name, Status.SKIPPED, targetsDone);
             targetGraph.whoAreAllYourDaddies(name).forEach(t -> setTaskOutput(t.getName() + " was set to skipped"));
             updateProgress();
         }
-
-        queue.addAll(targetGraph.whoAreYourDirectDaddies(target.name));
     }
 
+    public void resume() {
+        synchronized (targetGraph) {
+            targetGraph.notifyAll();
+        }
+    }
 
     public boolean togglePause() {
         pause.set(!pause.get());
         if (!pause.get()) {
-            synchronized (targetGraph) {
-                targetGraph.notifyAll();
-            }
+            resume();
         }
         return pause.get();
-    }
-
-    private void resetCurrentGraph() {
-        targetGraph.reset();
     }
 
     public synchronized void setTaskOutput(String text) {
@@ -164,10 +166,6 @@ public class TaskRunner implements Runnable {
 
     public SimpleStringProperty getTaskOutput() {
         return taskOutput;
-    }
-
-    public boolean isFinished() {
-        return finished;
     }
 
     public boolean isRunning() {
@@ -180,5 +178,11 @@ public class TaskRunner implements Runnable {
 
     public ReadOnlyDoubleProperty getProgress() {
         return progress;
+    }
+
+    public void reset() {
+        queue.clear();
+        targetsDone.set(targetGraph.size());
+        resume();
     }
 }

@@ -8,7 +8,6 @@ import javafx.stage.Stage;
 
 import java.net.URL;
 
-
 public class Main extends Application {
 
     public static void main(String[] args) {
@@ -25,6 +24,7 @@ public class Main extends Application {
         Scene scene = new Scene(root, 800, 500);
 
         root.setStyle("-fx-background-image: url(/resources/main_background.jpeg);-fx-background-size: cover;");
+
         primaryStage.setScene(scene);
         primaryStage.show();
     }

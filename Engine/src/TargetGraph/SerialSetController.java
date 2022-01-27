@@ -16,11 +16,11 @@ public class SerialSetController {
     }
 
     public synchronized boolean isBusy(String targetName) {
-        return getSetsContainingStream(targetName).parallel().anyMatch(SerialSet::isBusy);
+        return getSetsContainingStream(targetName).anyMatch(SerialSet::isBusy);
     }
 
     public synchronized void setBusy(String targetName, boolean busy) {
-        getSetsContainingStream(targetName).parallel().forEach(serialSet -> serialSet.setBusy(busy));
+        getSetsContainingStream(targetName).forEach(serialSet -> serialSet.setBusy(busy));
     }
 
     public synchronized Stream<SerialSet> getSetsContainingStream(String targetName) {

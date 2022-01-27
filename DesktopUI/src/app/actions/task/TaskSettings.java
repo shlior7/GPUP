@@ -15,6 +15,7 @@ import javafx.stage.Stage;
 import task.Compilation;
 import task.Simulation;
 import task.Task;
+import utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +31,7 @@ public class TaskSettings {
     public File directoryPath = null;
     public Stage settingStage;
     public GraphStage parent;
-
+    public static boolean TaskAlreadyRan;
     @FXML
     private Parent root;
 
@@ -73,7 +74,8 @@ public class TaskSettings {
     public TaskSettings() {
     }
 
-    public static TaskSettings createTaskSettings() {
+    public static TaskSettings createTaskSettings(boolean taskAlreadyRan) {
+        TaskAlreadyRan = taskAlreadyRan;
         FXMLLoader fxmlLoader = new FXMLLoader();
         URL taskUrl = TaskSettings.class.getResource("taskSettings.fxml");
         fxmlLoader.setLocation(taskUrl);
@@ -106,7 +108,8 @@ public class TaskSettings {
         warningProbabilityText = (TextField) scene.lookup("#warningProbabilityText");
         processTimeText = (TextField) scene.lookup("#processTimeText");
         checkBoxRandom = (CheckBox) scene.lookup("#checkBoxRandom");
-
+        SimulationTask = (ToggleButton) scene.lookup("#SimulationTask");
+        compilerTask = (ToggleButton) scene.lookup("#compilerTask");
 
         for (int i = 1; i <= maxThreads; i++) {
             threadsToRunCombo.getItems().add(String.valueOf(i));
@@ -156,6 +159,10 @@ public class TaskSettings {
         }
     }
 
+    @FXML
+    void handleRunFromScratchChange(ActionEvent event) {
+        toggleDisableAll(!runFromScratchBox.isSelected());
+    }
 
     @FXML
     void cancelClicked(ActionEvent event) {
@@ -177,6 +184,21 @@ public class TaskSettings {
         warningProbabilityText.setDisable(disable);
     }
 
+    public void toggleDisableAll(boolean disable) {
+        compilerTask.setDisable(disable);
+        SimulationTask.setDisable(disable);
+        checkBoxRandom.setDisable(disable);
+        ComboTargetsToRun.setDisable(disable);
+        threadsToRunCombo.setDisable(disable);
+        pathToCompilation.setDisable(disable);
+        processTimeText.setDisable(disable);
+        successProbabilityText.setDisable(disable);
+        warningProbabilityText.setDisable(disable);
+        if (!disable) {
+            toggleSimulationProperties(compilerTask.isSelected());
+        }
+    }
+
     @FXML
     void compilerTaskPressed(ActionEvent event) {
         if (compilerTask.isSelected()) {
@@ -191,8 +213,17 @@ public class TaskSettings {
     @FXML
     void submitOnClicked(ActionEvent event) {
         Stage stage = (Stage) cancelButton.getScene().getWindow();
-
         runFromScratch = runFromScratchBox.isSelected();
+        if (!runFromScratch) {
+            if (!TaskAlreadyRan) {
+                Utils.alertWarning("There were no tasks that ran yet...");
+            } else {
+                submitted = true;
+                stage.close();
+                return;
+            }
+        }
+
         if (ComboTargetsToRun.getValue() != null) {
             chooseAll = ComboTargetsToRun.getSelectionModel().getSelectedIndex() == 1;
             if (threadsToRunCombo.getValue() != null) {
@@ -221,7 +252,8 @@ public class TaskSettings {
         }
     }
 
+
     private boolean checkValidTextField(TextField text) {
-        return (text.getStyle() == "" && text.getText() != null);
+        return (text.getStyle() == "" && text.getText() != null && !text.getText().isEmpty());
     }
 }

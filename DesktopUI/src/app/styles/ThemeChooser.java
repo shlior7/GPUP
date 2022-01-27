@@ -1,12 +1,11 @@
-package app.components;
+package app.styles;
 
 import app.GraphStage;
+import app.components.Theme;
 import javafx.collections.FXCollections;
 import javafx.scene.control.ComboBox;
 
 
-import java.io.File;
-import java.net.MalformedURLException;
 import java.util.Arrays;
 
 public class ThemeChooser {
@@ -18,19 +17,26 @@ public class ThemeChooser {
         {
             graphStage.getScene().getStylesheets().remove(getCSSUrl(oldValue));
             graphStage.graphView.getStylesheets().remove(getCSSUrl(oldValue));
-            graphStage.graphView.getStylesheets().add(getCSSUrl(newValue));
             graphStage.getScene().getStylesheets().add(getCSSUrl(newValue));
+            graphStage.graphView.getStylesheets().add(getCSSUrl(newValue));
         });
     }
 
     public String getCSSUrl(String theme) {
-        File f = new File("./DesktopUI/src/app/styles/" + theme + ".css");
         try {
-            return f.toURI().toURL().toExternalForm();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+            String url = ThemeChooser.class.getResource(theme + ".css").toExternalForm();
+            return url;
+        } catch (Exception ignored) {
+
         }
         return "";
+//        File f = new File("./DesktopUI/src/app/styles/" + theme + ".css");
+//        try {
+//            return f.toURI().toURL().toExternalForm();
+//        } catch (MalformedURLException e) {
+//            e.printStackTrace();
+//        }
+//        return "";
     }
 
     public ComboBox<String> getThemeChooser() {

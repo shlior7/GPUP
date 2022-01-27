@@ -1,4 +1,4 @@
-.root {
+* {
     -fx-accent: #1e74c6;
     -fx-focus-color: #1e74c6;
     -fx-base: #373e43;
@@ -19,6 +19,7 @@
     -fx-focus-traversable: false;
 }
 
+אב
 .button:hover {
     -fx-text-fill: white;
 }

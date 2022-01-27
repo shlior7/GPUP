@@ -1,5 +1,7 @@
 package utils;
 
+import javafx.scene.control.Alert;
+
 import java.util.Iterator;
 import java.util.function.BiConsumer;
 
@@ -18,5 +20,12 @@ public class Utils {
             consumer.accept(first, next);
             first = next;
         }
+    }
+
+    public static void alertWarning(String warning) {
+        Alert information = new Alert(Alert.AlertType.WARNING);
+        information.setTitle("Warning");
+        information.setContentText(warning);
+        information.showAndWait();
     }
 }

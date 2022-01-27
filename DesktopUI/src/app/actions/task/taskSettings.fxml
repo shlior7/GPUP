@@ -30,11 +30,11 @@
         <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER"/>
     </rowConstraints>
     <children>
-        <Label text="targets to run on"/>
+        <Label text="targets to run on" GridPane.rowIndex="1"/>
         <CheckBox fx:id="runFromScratchBox" mnemonicParsing="false" selected="true" text="run from scratch"
-                  GridPane.rowIndex="2"/>
-        <ChoiceBox fx:id="threadsToRunCombo" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-        <Label text="threads amount" GridPane.rowIndex="1"/>
+                  GridPane.columnSpan="2" onAction="#handleRunFromScratchChange"/>
+        <ChoiceBox fx:id="threadsToRunCombo" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        <Label text="threads amount" GridPane.rowIndex="2"/>
         <ToggleButton fx:id="SimulationTask" mnemonicParsing="false" onAction="#SimulationTaskPressed" selected="true"
                       text="Simulation Task" GridPane.rowIndex="3"/>
         <TextField fx:id="processTimeText" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
@@ -43,16 +43,16 @@
         <Label text="process time (ms)" GridPane.rowIndex="4"/>
         <Label layoutX="89.0" layoutY="135.0" text="success probability" GridPane.rowIndex="6"/>
         <Label layoutX="89.0" layoutY="165.0" text="warning probability" GridPane.rowIndex="7"/>
-        <Button fx:id="SubmitButton" mnemonicParsing="false" onAction="#submitOnClicked" text="Submit"
-                GridPane.columnIndex="1" GridPane.rowIndex="9"/>
+        <Button fx:id="SubmitButton" mnemonicParsing="false" onAction="#submitOnClicked" text="submit"
+                GridPane.rowIndex="9"/>
         <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#cancelClicked" text="Cancel"
-                GridPane.columnIndex="2" GridPane.rowIndex="9"/>
+                GridPane.columnIndex="1" GridPane.rowIndex="9"/>
         <CheckBox fx:id="checkBoxRandom" mnemonicParsing="false" text="random process time" GridPane.rowIndex="5"/>
         <ToggleButton fx:id="compilerTask" mnemonicParsing="false" onAction="#compilerTaskPressed" text="Compiler Task"
                       GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-        <ChoiceBox fx:id="ComboTargetsToRun" layoutX="178.0" layoutY="55.0" prefWidth="150.0" GridPane.columnIndex="1"/>
-        <Button fx:id="pathToCompilation" disable="true" mnemonicParsing="false"
-                onAction="#onClickedPathToCompilation" text="compilation output directory"
-                GridPane.rowIndex="8"/>
+        <ChoiceBox fx:id="ComboTargetsToRun" layoutX="178.0" layoutY="55.0" prefWidth="150.0" GridPane.columnIndex="1"
+                   GridPane.rowIndex="1"/>
+        <Button fx:id="pathToCompilation" disable="true" mnemonicParsing="false" onAction="#onClickedPathToCompilation"
+                text="path to compilation products" GridPane.rowIndex="8"/>
     </children>
 </GridPane>

@@ -65,7 +65,7 @@ public class GraphPanel<V> extends Pane {
     public final BooleanProperty automaticLayoutProperty;
 
     private final Consumer<V> vertexClickConsumer;
-    private PlacementStrategy placementStrategy;
+    private PlacementStrategy<V> placementStrategy;
 
     public GraphPanel(Graph<V> theGraph, GraphProperties properties, Consumer<V> edgeClickConsumer) {
         this(theGraph, properties, edgeClickConsumer, null);
@@ -281,10 +281,8 @@ public class GraphPanel<V> extends Pane {
             if (cssFile != null) {
                 css = cssFile.toURL().toExternalForm();
             } else {
-                File f = new File("./GraphFx/graph.css");
-                css = f.toURI().toURL().toExternalForm();
+                css = getClass().getResource("graph.css").toExternalForm();
             }
-
             getStylesheets().add(css);
             this.getStyleClass().add("graph");
         } catch (MalformedURLException ignored) {

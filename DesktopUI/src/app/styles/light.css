@@ -1,4 +1,4 @@
-.root {
+* {
     -fx-base: #D9D2CB;
     -fx-control-inner-background: derive(-fx-base, 35%);
     -fx-control-inner-background-alt: derive(-fx-base, 35%);

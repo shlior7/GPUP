@@ -40,15 +40,16 @@ public class Target {
         return
                 "Name: " + name +
                         "\nUser Data: " + userData +
-                        "\nTargetGraph.Status: " + status +
-                        "\nTargetGraph.Result: " + result;
+                        "\nStatus: " + status +
+                        "\nResult: " + result;
 
     }
 
     public void init(String info) {
         this.result = Result.NULL;
         this.status = Status.FROZEN;
-        this.targetInfo = info;
+        if (!info.isEmpty())
+            this.targetInfo = info;
     }
 
     @Override

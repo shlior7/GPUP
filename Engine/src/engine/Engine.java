@@ -1,8 +1,6 @@
 package engine;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import TargetGraph.*;
 import task.*;
@@ -23,7 +21,6 @@ public class Engine {
 
     public static void load(TargetGraph _targetGraph) {
         targetGraph = _targetGraph;
-//        threadExecutor = _targetGraph.threadExecutor;
     }
 
     public static TargetGraph TargetGraph() {
@@ -62,11 +59,6 @@ public class Engine {
         return targetGraph.findCircuit(targetName);
     }
 
-    public LinkedList<List<String>> findPaths(String targetName1, String targetName2, boolean dependsOn) {
-        return targetGraph.findAllPaths(dependsOn ? targetName1 : targetName2, dependsOn ? targetName2 : targetName1);
-    }
-
-
     public static Map<String, List<String>> getStatusesStatistics() {
         return targetGraph.getStatusesStatistics();
     }
@@ -83,29 +75,18 @@ public class Engine {
         return targetGraph.taskAlreadyRan();
     }
 
-    public boolean NoSuchTarget(String targetName) {
-        return targetGraph.NoSuchTarget(targetName);
-    }
-
     public static void setAllFrozensToSkipped() {
         targetGraph.setFrozensToSkipped();
     }
 
-    public void runTask(Task task, int maxParallel, boolean runFromScratch) {
-        taskRunner.initTaskRunner(task, maxParallel, runFromScratch);
+    public void runTask(Task task, int maxParallel) {
+        taskRunner.initTaskRunner(task, maxParallel);
         taskRunner.run();
     }
 
-    public String onTargetClicked(Target target) {
-        return "parents : " + targetGraph.howManyRequireFor(target.name) + "\nChildren : " + targetGraph.howManyDependsOn(target.name);
-    }
-
-    public Map<Target, Status> getTargetsStatus() {
-        return targetGraph.getAllElementMap().values().stream().collect(Collectors.toMap(Function.identity(), Target::getStatus));
-    }
-
-    public Map<Target, Result> getTargetsResult() {
-        return targetGraph.getAllElementMap().values().stream().collect(Collectors.toMap(Function.identity(), Target::getResult));
+    public void runTaskIncrementally() {
+        taskRunner.initIncrementalRun();
+        taskRunner.run();
     }
 
     public Map<String, Target> getAllTargets() {
@@ -129,6 +110,7 @@ public class Engine {
 
     public void reset() {
         targetGraph.reset();
+        taskRunner.reset();
     }
 
     public boolean createNewGraphFromTargetList(Set<Target> targetToRunOn) {

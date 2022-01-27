@@ -7,7 +7,7 @@ import app.actions.SideAction;
 import app.actions.WhatIf;
 import app.actions.task.RunTask;
 import app.components.AnchoredButton;
-import app.components.ThemeChooser;
+import app.styles.ThemeChooser;
 import javafx.event.ActionEvent;
 import javafx.geometry.Bounds;
 import javafx.geometry.Pos;

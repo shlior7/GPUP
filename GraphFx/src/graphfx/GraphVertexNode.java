@@ -111,6 +111,7 @@ public class GraphVertexNode<T> extends Circle implements StyledElement {
     }
 
     public void setVertexStyleToPressed() {
+        this.setStyleClass("vertex");
         this.addStyleClass("vertex_pressed");
         pressed = true;
     }

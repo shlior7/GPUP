@@ -128,7 +128,7 @@ public class TargetGraph implements Graph<Target> {
         }
 
         isVisited.replace(source, true);
-        for (Target targetAdj : originalTargetsGraph.children.get(source)) {
+        for (Target targetAdj : whoAreYourDirectBabies(source)) {
             if (!isVisited.get(targetAdj.name)) {
                 localPathList.add(targetAdj.name);
                 findAllPathsRec(targetAdj.name, destination, isVisited, localPathList, allPaths);
@@ -224,11 +224,11 @@ public class TargetGraph implements Graph<Target> {
     }
 
     public Set<Target> whoAreYourDirectDaddies(String name) {
-        return currentTargetsGraph.parents.get(name);
+        return currentTargetsGraph.parents.getOrDefault(name, new HashSet<>());
     }
 
     public Set<Target> whoAreYourDirectBabies(String name) {
-        return currentTargetsGraph.children.get(name);
+        return currentTargetsGraph.children.getOrDefault(name, new HashSet<>());
     }
 
 
@@ -244,8 +244,8 @@ public class TargetGraph implements Graph<Target> {
     public Type getType(String name) {
         if (!currentTargetsGraph.children.containsKey(name))
             return null;
-        boolean depends = !currentTargetsGraph.children.getOrDefault(name, new HashSet<>()).isEmpty();
-        boolean required = !currentTargetsGraph.children.getOrDefault(name, new HashSet<>()).isEmpty();
+        boolean depends = !whoAreYourDirectBabies(name).isEmpty();
+        boolean required = !whoAreYourDirectDaddies(name).isEmpty();
         if (depends && required) {
             return Type.middle;
         }
@@ -324,7 +324,7 @@ public class TargetGraph implements Graph<Target> {
     }
 
     public void setParentsStatuses(String targetName, Status status, AtomicInteger TargetsDone) {
-        currentTargetsGraph.parents.get(targetName).stream().parallel().forEach((target -> {
+        whoAreYourDirectDaddies(targetName).stream().parallel().forEach((target -> {
             if (target.getStatus() == status)
                 return;
             target.setStatus(status);
@@ -373,7 +373,7 @@ public class TargetGraph implements Graph<Target> {
             case WAITING:
                 return "\n Waiting For " + Duration.between(target.getWaitingTime(), Instant.now()).toMillis();
             case FROZEN:
-                return "\n Waiting For " + whoAreAllYourBabies(target.name).stream().filter(t -> t.getStatus() != Status.FINISHED);
+                return "\n Waiting For " + whoAreAllYourBabies(target.name).stream().filter(t -> t.getStatus() != Status.FINISHED).collect(Collectors.toList());
             case SKIPPED:
                 return "\n Skipped because { " + getWhySkipped(target.name) + " }";
             case IN_PROCESS:
@@ -389,7 +389,7 @@ public class TargetGraph implements Graph<Target> {
         Set<Target> babies = whoAreAllYourBabies(target.name);
 
 
-        String res = "\nTargetGraph.Type: " + getIfNotInGraph(getType(target.name)) +
+        String res = "\nType: " + getIfNotInGraph(getType(target.name)) +
                 "\nDepends on: " + babies.size() + (babies.size() == 0 ? "" : " - " + whoAreAllYourBabies(target.name)) +
                 "\nRequired For: " + parents.size() + (parents.size() == 0 ? "" : " - " + whoAreAllYourDaddies(target.name));
 

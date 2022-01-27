@@ -56,6 +56,15 @@ public class ChoosingController {
         });
     }
 
+    public void chooseTargets(Set<Target> targets) {
+        if (limit != -1)
+            return;
+        targets.forEach(target -> {
+            if (chosen.getOrDefault(target, false))
+                return;
+            manualClick(target);
+        });
+    }
 
     public void setChoosingState(boolean choosingState) {
         setChoosingState(choosingState, -1);
@@ -81,20 +90,26 @@ public class ChoosingController {
     }
 
 
-    private void cancel(ActionEvent actionEvent) {
+    public void cancel(ActionEvent actionEvent) {
         clear(actionEvent);
         graphStage.reset();
+        this.onChoose = (t) -> {
+        };
     }
 
     public synchronized void clear(ActionEvent actionEvent) {
         required = depends = false;
-        getChosenTargets().forEach(this::manualClick);
+        getChosenTargets().forEach(t -> {
+            graphStage.graphView.getGraphVertex(t).setVertexStyleToDefault();
+            chosen.put(t, false);
+            onChoose.accept(t);
+        });
 
         graphStage.graphView.setPressable(true);
     }
 
     public void manualClick(Target target) {
-        if (target == null || getChosenTargets().size() == limit && !getChosenTargets().contains(target))
+        if (target == null || (getChosenTargets().size() == limit && !getChosenTargets().contains(target)))
             return;
         graphStage.graphView.pressOnVertex(target);
     }

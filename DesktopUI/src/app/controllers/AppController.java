@@ -1,6 +1,7 @@
 package app.controllers;
 
 import app.GraphStage;
+import app.components.Theme;
 import app.tools.FileHandler;
 import engine.Engine;
 import javafx.event.ActionEvent;
@@ -12,6 +13,7 @@ import java.io.File;
 
 public class AppController {
     private Engine engine;
+    private GraphStage graphController;
 
     public AppController() {
     }
@@ -38,13 +40,17 @@ public class AppController {
 
     @FXML
     void showGraph(ActionEvent event) {
+        if (graphController != null)
+            return;
+
         if (engine == null) {
             Alert errorMessege = new Alert(Alert.AlertType.ERROR);
             errorMessege.setTitle("Error");
             errorMessege.setContentText("You need to load graph first!");
             errorMessege.show();
         } else {
-            GraphStage graphController = new GraphStage(engine);
+            graphController = new GraphStage(engine);
+            graphController.sideController.getThemeChooser().setTheme(Theme.light);
             graphController.showGraph();
         }
     }

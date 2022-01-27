@@ -38,16 +38,22 @@ In this exercise we added the serial sets and implemented the task run by runnin
     3. the Tasks are Simulation and Compilation both with giving update on all the task running and gives a status and a result in the end
 ```
 
-task.Task running on the graph implementation
+Task running on the graph implementation
 
 ```
-In the TargetGraph.TargetGraph class we have two TargetGraph.AdjacentMap graphs
+In the TargetGraph class we have two TargetGraph.AdjacentMap graphs
 * the Original that was loaded from the xml file
-* the graph that we would be running the task on
+* the Current graph that we would be running the task on
 
 We start from the RunTask button opening a task settings window, and waiting for the corrct task information for the client.
 from there in case the task already ran on the graph and the user can run on it from the last point
 we create a new graph and set the `targetGraphToRunOn` as that or as the original one
+
+Then the user can choose the targets to run on implemented by ChoosingController,
+the listener for the chooser is added in the graph panel with onClicked consumer we send it with its initializing 
+the bottom controller helps you choose all or WhatIf depends or required quickly
+If were not running from scratch that targets get filtered from all the Succesful and Warning targets and run again
+ 
 
 we create a Queue with the leafs and Independent targets of the relevant graph
 then we go through the queue poping targets and checking their status if its waiting or frozen

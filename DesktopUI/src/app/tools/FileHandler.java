@@ -88,7 +88,7 @@ public class FileHandler {
             Target target = new Target(targetNode.getAttributes().getNamedItem("name").getTextContent());
 
 
-            NodeList result = targetNode.getElementsByTagName("TargetGraph.Result");
+            NodeList result = targetNode.getElementsByTagName("Result");
             if (result.getLength() != 0) {
                 target.setResultFromStr(result.item(0).getTextContent());
             }
