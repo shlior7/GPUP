@@ -1,0 +1,12 @@
+[
+  {
+    "threads": 5,
+    "position": "Worker",
+    "userName": "Lior"
+  },
+  {
+    "threads": 5,
+    "position": "Worker",
+    "userName": "Shmuel"
+  }
+]

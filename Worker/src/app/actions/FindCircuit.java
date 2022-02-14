@@ -77,6 +77,7 @@ public class FindCircuit extends SideAction {
     }
 
     public void onChoose(Target target) {
+        System.out.println("choose target to change in comboBox = " + target);
         if (choose) {
             choose = false;
             if (targetChooser.getValue() == target) {

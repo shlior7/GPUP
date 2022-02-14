@@ -118,8 +118,9 @@ public class GraphVertexNode<T> extends Circle implements StyledElement {
 
     public void setPressable(boolean pressable) {
         this.pressable = pressable;
-        if (!pressable)
+        if (!pressable) {
             setStyleClass("vertex");
+        }
     }
 
     public void addAdjacentVertex(GraphVertexNode<T> v, boolean in) {

@@ -122,6 +122,7 @@ public class RunTask extends SideAction {
         runButton.setOnAction((ea) -> taskRun(taskSettings));
         runButton.setText("Start");
         settings.setVisible(true);
+        targetsComboBox.setDisable(false);
     }
 
     public void onChoose(Target target) {
@@ -170,32 +171,28 @@ public class RunTask extends SideAction {
     }
 
     private void BeforeRunning(TaskSettings taskSettings, Set<Target> targetToRunOn) {
-//        boolean taskAlreadyRan = graphStage.engine.didTaskAlreadyRan();
-//        boolean choseTargetThatDidntRunYet = targetToRunOn.stream().anyMatch(t -> t.getStatus() == Status.FROZEN);
-//
-//        if (!taskSettings.runFromScratch && (choseTargetThatDidntRunYet || !taskAlreadyRan)) {
-//            alertWarning(choseTargetThatDidntRunYet ? "You can only choose targets that already ran \n Running from scratch on the targets you chose..." : "There were no task that ran yet\n Running from scratch on the targets you chose...");
-//            taskSettings.runFromScratch = true;
-//        }
-
         if (taskSettings.runFromScratch) {
             graphStage.graphView.reset();
         } else {
             targetToRunOn = targetToRunOn.stream().filter(target -> target.getResult() == Result.Failure || target.getStatus() == Status.SKIPPED).collect(Collectors.toSet());
         }
-
         graphStage.choosingController.clear(null);
         graphStage.choosingController.setChoosingState(false);
-
+        targetsComboBox.setDisable(true);
         graphStage.graphView.hideEdges(targetToRunOn);
         targetToRunOn.forEach(t -> t.init(""));
         graphStage.engine.createNewGraphFromTargetList(targetToRunOn);
-
         graphStage.root.setBottom(taskOutput);
     }
 
+    public void afterRunning() {
+        runButton.setText("Finished!");
+        paused = false;
+        alertWhenDone();
+    }
 
     public void initWorkingThread(TaskSettings taskSettings) {
+        Thread.UncaughtExceptionHandler handler = (th, ex) -> System.out.println("Uncaught exception: " + ex);
         Thread work = new Thread(() -> {
             if (taskSettings.runFromScratch) {
                 graphStage.engine.runTask(taskSettings.task, taskSettings.maxThreads);
@@ -203,10 +200,12 @@ public class RunTask extends SideAction {
                 graphStage.engine.runTaskIncrementally();
             }
         }, "TaskRunner");
+        work.setUncaughtExceptionHandler(handler);
         work.start();
     }
 
     private void initChangingColorThread() {
+        Thread.UncaughtExceptionHandler handler = (th, ex) -> System.out.println("Uncaught exception: " + ex);
         Thread check = new Thread(() -> {
             HashMap<String, AtomicBoolean> flickering = new HashMap<>();
             while (graphStage.engine.isTaskRunning() || graphStage.engine.getTaskRunner() == null) {
@@ -218,13 +217,9 @@ public class RunTask extends SideAction {
                 }
             }
             changeColors(flickering);
-            Platform.runLater(() ->
-            {
-                runButton.setText("Finished!");
-                paused = false;
-                alertWhenDone();
-            });
+            Platform.runLater(this::afterRunning);
         }, "ColorChanger");
+        check.setUncaughtExceptionHandler(handler);
         check.start();
     }
 
