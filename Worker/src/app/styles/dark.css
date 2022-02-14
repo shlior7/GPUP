@@ -19,7 +19,6 @@
     -fx-focus-traversable: false;
 }
 
-אב
 .button:hover {
     -fx-text-fill: white;
 }
