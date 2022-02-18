@@ -244,7 +244,7 @@ public class TaskSettings {
                         information.showAndWait();
                     } else {
                         submitted = true;
-                        task = new Compilation(directoryPath.getPath(), Engine.TargetGraph().getWorkingDir());
+                        task = new Compilation(directoryPath.getPath(), parent.engine.TargetGraph("").getWorkingDir());
                         stage.close();
                     }
                 }

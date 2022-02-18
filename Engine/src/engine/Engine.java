@@ -1,16 +1,32 @@
 package engine;
 
+import java.io.InputStream;
 import java.util.*;
 
 import TargetGraph.*;
-import task.*;
 
-public class Engine {
-    private static TargetGraph targetGraph;
+import Users.UserManager;
+import task.*;
+import types.Admin;
+import types.IUser;
+import types.Worker;
+import utils.FileHandler;
+
+public class Engine implements IEngine {
+    private FileHandler fileHandler;
+    private TargetGraph targetGraph;
     private TaskRunner taskRunner;
+    private final TasksManager tasksManager;
+    private final UserManager userManager;
+    private final Map<String, TargetGraph> allGraphs;
+
 
     public Engine() {
+        allGraphs = new HashMap<>();
+        fileHandler = new FileHandler();
         taskRunner = new TaskRunner(targetGraph);
+        tasksManager = new TasksManager();
+        userManager = new UserManager();
     }
 
     public boolean toggleTaskRunning() {
@@ -19,39 +35,20 @@ public class Engine {
         return false;
     }
 
-    public static void load(TargetGraph _targetGraph) {
+    public TasksManager getTasksManager() {
+        return tasksManager;
+    }
+
+    public void load(TargetGraph _targetGraph) {
         targetGraph = _targetGraph;
     }
 
-    public static TargetGraph TargetGraph() {
-        return targetGraph;
+    public TargetGraph TargetGraph(String name) {
+        return allGraphs.getOrDefault(name, null);
     }
 
-    public static boolean validateGraph() {
-        return targetGraph != null;
-    }
 
-    public static String graphInfo() {
-        if (!validateGraph())
-            return "no target graph found";
-        return targetGraph.toString();
-    }
-
-    public static String targetInfo(String name) {
-        if (!validateGraph())
-            return "no target graph found";
-        return targetGraph.getTargetInfo(name);
-    }
-
-    public static Queue<Target> InitTaskAndGetRunningQueue(boolean startFromLastPoint) {
-        if (startFromLastPoint) {
-            return targetGraph.getQueueFromLastTime();
-        } else {
-            return targetGraph.getQueueFromScratch();
-        }
-    }
-
-    public static String ifNullThenString(Object obj, String instead) {
+    public String ifNullThenString(Object obj, String instead) {
         return obj == null ? instead : obj.toString();
     }
 
@@ -59,7 +56,7 @@ public class Engine {
         return targetGraph.findCircuit(targetName);
     }
 
-    public static Map<String, List<String>> getStatusesStatistics() {
+    public Map<String, List<String>> getStatusesStatistics() {
         return targetGraph.getStatusesStatistics();
     }
 
@@ -67,16 +64,8 @@ public class Engine {
         return targetGraph.getStatsInfoString(targetGraph.getResultStatistics());
     }
 
-    public static boolean taskAlreadyRan() {
-        return targetGraph.taskAlreadyRan();
-    }
-
     public boolean didTaskAlreadyRan() {
         return targetGraph.taskAlreadyRan();
-    }
-
-    public static void setAllFrozensToSkipped() {
-        targetGraph.setFrozensToSkipped();
     }
 
     public void runTask(Task task, int maxParallel) {
@@ -133,6 +122,45 @@ public class Engine {
     public String getGraphInfo() {
         return targetGraph.getInfo();
     }
+
+    public String check() {
+        return "check";
+    }
+
+    public synchronized void signWorkerToTask(String userName, String taskName) throws Exception {
+        Worker user = userManager.getWorker(userName);
+        if (user == null)
+            throw new Exception("Not worker");
+        tasksManager.getTask(taskName).setWorkerOnIt(user);
+    }
+
+    @Override
+    public IUser getUser(String name) {
+        return null;
+    }
+
+    public Set<IUser> getAllUsers() {
+        return new HashSet<>(userManager.getUsers().values());
+    }
+
+    public Collection<TargetGraph> getAllGraphs() {
+        return allGraphs.values();
+    }
+
+    @Override
+    public UserManager getUserManager() {
+        return userManager;
+    }
+
+    @Override
+    public void loadXmlFile(InputStream path, Admin createdBy) throws Exception {
+        targetGraph = fileHandler.loadGPUPXMLFile(path);
+        targetGraph.setCreatedBy(createdBy);
+        allGraphs.put(targetGraph.getGraphsName(), targetGraph);
+        System.out.println(allGraphs.get(targetGraph.getGraphsName()).getGraphsName());
+    }
+
+
 }
 
 

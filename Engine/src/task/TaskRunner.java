@@ -10,13 +10,14 @@ import javafx.beans.property.SimpleStringProperty;
 import lombok.SneakyThrows;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import TargetGraph.SerialSetController;
 
 public class TaskRunner implements Runnable {
     private final TargetGraph targetGraph;
@@ -29,7 +30,6 @@ public class TaskRunner implements Runnable {
     private int numThread;
     private final SimpleStringProperty taskOutput;
     private final SimpleDoubleProperty progress;
-
 
     public TaskRunner(TargetGraph targetGraph) {
         this.targetGraph = targetGraph;
@@ -94,11 +94,10 @@ public class TaskRunner implements Runnable {
     }
 
     public synchronized void runTaskOnTarget(Target target) {
-        SerialSetController ssc = targetGraph.getSerialSets();
         switch (target.getStatus()) {
             case FROZEN:
             case WAITING:
-                if (!targetGraph.didAllChildrenFinish(target.name) || ssc.isBusy(target.name)) {
+                if (!targetGraph.didAllChildrenFinish(target.name)) {
                     if (target.getStatus() == Status.FROZEN)
                         target.setWaitingTime(Instant.now());
                     target.setStatus(Status.WAITING);
@@ -115,7 +114,35 @@ public class TaskRunner implements Runnable {
         }
         threadExecutor.execute(initTask(target));
         targetsDone.incrementAndGet();
-        ssc.setBusy(target.name, true);
+    }
+
+    public synchronized List<Target> sendTargetsToWorker(int amount) {
+        List<Target> targetsToSend = new ArrayList<>();
+
+        for (int i = 0; i < amount && !queue.isEmpty(); i++) {
+            Target target = queue.poll();
+            switch (target.getStatus()) {
+                case FROZEN:
+                case WAITING:
+                    if (!targetGraph.didAllChildrenFinish(target.name)) {
+                        if (target.getStatus() == Status.FROZEN)
+                            target.setWaitingTime(Instant.now());
+                        target.setStatus(Status.WAITING);
+                        queue.add(target);
+                        continue;
+                    }
+                    break;
+                default:
+                    continue;
+            }
+            targetsToSend.add(target);
+        }
+        synchronized (this) {
+            setTaskOutput("running task on target: " + targetsToSend);
+        }
+
+        return targetsToSend;
+
     }
 
     public Task initTask(Target target) {
@@ -131,8 +158,6 @@ public class TaskRunner implements Runnable {
         String name = target.name;
         updateProgress();
         setTaskOutput("finished task " + name + " with the result " + target.getResult() + " time it took to process " + target.getProcessTime().toMillis());
-
-        targetGraph.getSerialSets().setBusy(name, false);
 
         if (!targetGraph.whoAreYourDirectDaddies(target.name).isEmpty()) {
             setTaskOutput("adding " + targetGraph.whoAreYourDirectDaddies(target.name) + " to waiting queue");

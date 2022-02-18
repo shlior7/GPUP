@@ -1,6 +1,5 @@
 package app;
 
-import TargetGraph.Target;
 import app.controllers.ChoosingController;
 import app.controllers.SideController;
 import engine.Engine;
@@ -10,19 +9,20 @@ import graphfx.GraphProperties;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 public class GraphStage extends Stage {
+    private String graphName;
     public final Engine engine;
     public final BorderPane root;
     public final ChoosingController choosingController;
     public final SideController sideController;
     public GraphPanel<Target> graphView;
 
-    public GraphStage(Engine engine) {
+    public GraphStage(Engine engine, String graphName) {
         this.engine = engine;
+        this.graphName = graphName;
         this.choosingController = new ChoosingController(this);
         this.sideController = new SideController(this);
         AnchorPane.setBottomAnchor(sideController, 0.0);
@@ -39,7 +39,7 @@ public class GraphStage extends Stage {
 
     public void createGraph() {
         GraphProperties properties = new GraphProperties("edge.arrow = true\n" + "edge.label = false\n" + "edge.arrowsize = 7\n");
-        graphView = new GraphPanel<>(Engine.TargetGraph(), properties, this::onVertexClicked);
+        graphView = new GraphPanel<>(engine.TargetGraph(graphName), properties, this::onVertexClicked);
         GraphContainer graphContainer = new GraphContainer(graphView);
         root.setCenter(graphContainer);
     }

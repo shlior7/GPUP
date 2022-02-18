@@ -66,7 +66,7 @@ public class MainScreen extends Application {
         }}, 15, TaskStatus.FINISHED, 15, true);
 
         String finalUrl = HttpUrl
-                .parse(Constants.WORKER_REGISTER_PAGE)
+                .parse(Constants.LOGIN_PAGE)
                 .newBuilder()
                 .build()
                 .toString();
@@ -96,4 +96,5 @@ public class MainScreen extends Application {
 //        controller.addTask(task1);
 //        controller.show();
     }
+
 }
