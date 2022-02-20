@@ -9,11 +9,10 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import lombok.SneakyThrows;
 import types.Task;
+import types.Worker;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -21,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class TaskRunner implements Runnable {
+    private Map<Worker, List<Target>> workerListMap;
     private final TargetGraph targetGraph;
     private ExecutorService threadExecutor;
     private Queue<Target> queue;
@@ -33,6 +33,15 @@ public class TaskRunner implements Runnable {
     private final SimpleDoubleProperty progress;
 
     public TaskRunner(TargetGraph targetGraph) {
+        this.targetGraph = targetGraph;
+        this.taskOutput = new SimpleStringProperty("");
+        this.progress = new SimpleDoubleProperty(0);
+        this.numThread = 0;
+    }
+
+    public TaskRunner(TargetGraph targetGraph, Task task) {
+        this.workerListMap = new HashMap<>();
+        this.task = task;
         this.targetGraph = targetGraph;
         this.taskOutput = new SimpleStringProperty("");
         this.progress = new SimpleDoubleProperty(0);
@@ -117,9 +126,9 @@ public class TaskRunner implements Runnable {
         targetsDone.incrementAndGet();
     }
 
-    public synchronized List<Target> sendTargetsToWorker(int amount) {
+    public synchronized List<Task> getTasksForWorker(Worker worker, int amount) {
         List<Target> targetsToSend = new ArrayList<>();
-
+        List<Task> tasksToSend = new ArrayList<>();
         for (int i = 0; i < amount && !queue.isEmpty(); i++) {
             Target target = queue.poll();
             switch (target.getStatus()) {
@@ -137,12 +146,13 @@ public class TaskRunner implements Runnable {
                     continue;
             }
             targetsToSend.add(target);
+            tasksToSend.add(initTask(target));
         }
         synchronized (this) {
             setTaskOutput("running task on target: " + targetsToSend);
         }
-
-        return targetsToSend;
+        workerListMap.put(worker, targetsToSend);
+        return tasksToSend;
 
     }
 

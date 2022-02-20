@@ -9,9 +9,7 @@
         <webroots>
           <root url="file://$MODULE_DIR$/../GPUPServer/web" relative="/" />
         </webroots>
-        <sourceRoots>
-          <root url="file://$MODULE_DIR$/../GPUPServer/src/main/java" />
-        </sourceRoots>
+        <sourceRoots />
       </configuration>
     </facet>
   </component>

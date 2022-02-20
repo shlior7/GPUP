@@ -124,11 +124,11 @@ public class Engine implements IEngine {
         return "check";
     }
 
-    public synchronized void signWorkerToTask(String userName, String taskName) throws Exception {
+    public synchronized List<Task> getTasksForWorker(String userName, String taskName, int threadsAmount) throws Exception {
         Worker user = userManager.getWorker(userName);
         if (user == null)
             throw new Exception("Not worker");
-        tasksManager.getTask(taskName).setWorkerOnIt(user);
+        return tasksManager.getTask(taskName).getTasksForWorker(user, threadsAmount);
     }
 
     @Override
@@ -162,6 +162,12 @@ public class Engine implements IEngine {
         System.out.println(allGraphs.get(targetGraph.getGraphsName()).getGraphsName());
     }
 
+    public void addTask(Task task, String graphName) throws Exception {
+        TargetGraph targetGraph = allGraphs.getOrDefault(graphName, null);
+        if (targetGraph == null)
+            throw new Exception("graph wasn't found");
+        tasksManager.addTask(task, targetGraph);
+    }
 
 }
 

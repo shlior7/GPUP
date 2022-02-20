@@ -2,11 +2,10 @@ package app.dashboard;
 
 import TargetGraph.TargetGraph;
 import TargetGraph.GraphParams;
+import app.components.TaskControllerAdmin;
 import app.utils.Constants;
-import app.utils.FileHandler;
 import app.utils.http.HttpClientUtil;
 import app.utils.http.SimpleCallBack;
-import com.google.gson.JsonObject;
 import graphApp.GraphPane;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -131,29 +130,32 @@ public class Dashboard extends Stage implements Initializable {
 
 
     private void setUserTable(UserInfo[] users) {
-        UsersTable.getItems().addAll(users);
+        Platform.runLater(() -> {
+            UsersTable.getItems().clear();
+            UsersTable.getItems().addAll(users);
+        });
     }
 
     private void createGraphListener() {
         graphComboBox.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
             GraphPane graphPane = graphPanes.getOrDefault(newValue, null);
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Open Resource File");
-            FileChooser.ExtensionFilter xmlfilter = new FileChooser.ExtensionFilter(
-                    "XML Files (*.xml)", "*.xml");
-            fileChooser.getExtensionFilters().add(xmlfilter);
-//            File file = fileChooser.showOpenDialog(null);
-            FileHandler fileHandler = new FileHandler();
             try {
-//                TargetGraph t = fileHandler.loadGPUPXMLFile(file);
                 if (graphPane == null) {
                     getGraph(newValue, (graphJson) -> {
                         try {
                             TargetGraph graph = new TargetGraph(GSON_INSTANCE.fromJson(graphJson, GraphParams.class));
-                            GraphPane gp = new GraphPane(graph, null);
-                            graphPanes.put(newValue, gp);
-                            setGraph(gp);
-                        } catch (Exception ignored) {
+                            GraphPane gPane = new GraphPane(graph);
+                            TaskControllerAdmin taskController = new TaskControllerAdmin(gPane);
+                            gPane.sideController.addTaskControllerAction(taskController);
+                            AnchorPane.setTopAnchor(gPane, 0.0);
+                            AnchorPane.setLeftAnchor(gPane, 0.0);
+                            AnchorPane.setRightAnchor(gPane, 0.0);
+                            AnchorPane.setBottomAnchor(gPane, 0.0);
+                            graphPanes.put(newValue, gPane);
+                            setGraph(gPane);
+                            Platform.runLater(gPane::init);
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
                     });
                 } else {
@@ -162,18 +164,12 @@ public class Dashboard extends Stage implements Initializable {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         });
     }
 
-    private void setGraph(GraphPane graphPane1) {
+    private void setGraph(GraphPane graphPane) {
         graphsRoot.getChildren().clear();
-        AnchorPane.setTopAnchor(graphPane1, 0.0);
-        AnchorPane.setLeftAnchor(graphPane1, 0.0);
-        AnchorPane.setRightAnchor(graphPane1, 0.0);
-        AnchorPane.setBottomAnchor(graphPane1, 0.0);
-        graphsRoot.getChildren().add(graphPane1);
-        Platform.runLater(graphPane1::init);
+        graphsRoot.getChildren().add(graphPane);
     }
 
     public void getGraph(String graphName, Consumer<String> callBack) {

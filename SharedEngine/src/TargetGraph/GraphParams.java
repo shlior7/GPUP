@@ -3,9 +3,8 @@ package TargetGraph;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 @Getter
 @AllArgsConstructor
@@ -16,6 +15,8 @@ public class GraphParams {
     private Collection<Edge> edges;
 
     public GraphParams(TargetGraph targetGraph) {
+        allTargets = new ArrayList<>();
+        edges = new ArrayList<>();
         allTargets = targetGraph.getVerticesMap().values();
         edges = targetGraph.getEdges();
         graphsName = targetGraph.getGraphsName();

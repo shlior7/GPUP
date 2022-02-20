@@ -46,25 +46,25 @@ import java.util.stream.Stream;
 
 public class GraphPanel<V> extends Pane {
 
-    private GraphProperties graphProperties;
-    private Graph<V> theGraph;
-    private Map<Vertex<V>, GraphVertexNode<V>> vertexNodes;
-    private Map<V, Vertex<V>> vertices;
-    private Map<String, Vertex<V>> verticesByName;
-    private Set<GraphEdgeLine<V>> edgeNodes;
-    private Map<V, Map<V, GraphEdgeLine<V>>> graphEdgesMap;
+    private final GraphProperties graphProperties;
+    private final Graph<V> theGraph;
+    private final Map<Vertex<V>, GraphVertexNode<V>> vertexNodes;
+    private final Map<V, Vertex<V>> vertices;
+    private final Map<String, Vertex<V>> verticesByName;
+    private final Set<GraphEdgeLine<V>> edgeNodes;
+    private final Map<V, Map<V, GraphEdgeLine<V>>> graphEdgesMap;
     private boolean initialized = false;
-    private boolean edgesWithArrows;
+    private final boolean edgesWithArrows;
 
-    private AnimationTimer timer;
-    private double repulsionForce;
-    private double attractionForce;
-    private double attractionScale;
+    private final AnimationTimer timer;
+    private final double repulsionForce;
+    private final double attractionForce;
+    private final double attractionScale;
 
     private static final int AUTOMATIC_LAYOUT_ITERATIONS = 1;
     public BooleanProperty automaticLayoutProperty;
 
-    private Consumer<V> vertexClickConsumer;
+    private final Consumer<V> vertexClickConsumer;
     private PlacementStrategy<V> placementStrategy;
 
     public GraphPanel(Graph<V> theGraph, GraphProperties properties, Consumer<V> edgeClickConsumer) {
@@ -94,10 +94,8 @@ public class GraphPanel<V> extends Pane {
 
         initNodes();
         timer = new AnimationTimer() {
-
             @Override
             public void handle(long now) {
-                System.out.println("now = " + now);
                 runLayoutIteration();
             }
         };
@@ -113,15 +111,12 @@ public class GraphPanel<V> extends Pane {
     }
 
     private synchronized void runLayoutIteration() {
-        System.out.println("LayoutIterations");
         for (int i = 0; i < AUTOMATIC_LAYOUT_ITERATIONS; i++) {
-            System.out.print(i + ", ");
             resetForces();
             computeForces();
             updateForces();
         }
         applyForces();
-        System.out.println();
     }
 
 
@@ -135,7 +130,6 @@ public class GraphPanel<V> extends Pane {
         }
 
         placementStrategy = new SmartPlacementStrategy<>();
-        System.out.println(this.widthProperty().doubleValue() + "  " + this.heightProperty().doubleValue());
         placementStrategy.place(this.widthProperty().doubleValue(),
                 this.heightProperty().doubleValue(),
                 this.vertexNodes.values());
@@ -326,27 +320,7 @@ public class GraphPanel<V> extends Pane {
                     continue; //NOP
                 }
 
-                //double k = Math.sqrt(getWidth() * getHeight() / graphVertexMap.size());
-                Point2D vPos = v.getUpdatedPosition();
-                Point2D otherPos = other.getUpdatedPosition();
-
                 Point2D repellingForce = UtilitiesPoint2D.repellingForce(v.getUpdatedPosition(), other.getUpdatedPosition(), this.repulsionForce);
-
-//
-//                for (graphfx.GraphVertexNode<V> diff : vertexNodes.values()) {
-//                    if (diff == v || diff == other)
-//                        continue;
-//                    Point2D diffPos = diff.getUpdatedPosition();
-//                    Point2D closest = getClosestPoint(vPos, otherPos, diffPos);
-//                    if (closest == null)
-//                        continue;
-//
-//                    Point2D repellingForceFromLine = graphfx.UtilitiesPoint2D.repellingForce(diffPos, closest, 0.2);
-//                    Point2D attractiveForce = graphfx.UtilitiesPoint2D.attractiveForce(diffPos, closest,
-//                            vertexNodes.size(), 0.02, 5);
-//
-//                    diff.addForceVector(attractiveForce.getX() + repellingForceFromLine.getX(), attractiveForce.getY() + repellingForceFromLine.getY());
-//                }
 
                 double deltaForceX = 0, deltaForceY = 0;
 

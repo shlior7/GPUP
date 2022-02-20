@@ -5,6 +5,7 @@ import graphApp.actions.FindCircuit;
 import graphApp.actions.FindPath;
 import graphApp.actions.SideAction;
 import graphApp.actions.WhatIf;
+import graphApp.actions.task.TaskController;
 import graphApp.components.AnchoredButton;
 import graphApp.styles.ThemeChooser;
 import javafx.event.ActionEvent;
@@ -19,6 +20,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Popup;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -30,10 +32,11 @@ public class SideController extends VBox {
     private final StackPane settings;
     private ThemeChooser themeChooser;
 
-    public SideController(GraphPane graphPane, SideAction TaskController) {
+    public SideController(GraphPane graphPane) {
         this.graphPane = graphPane;
         settings = new StackPane();
-        this.actionList = Stream.of(new FindPath(graphPane), new FindCircuit(graphPane), new WhatIf(graphPane)).collect(Collectors.toList());
+//        this.actionList = Stream.of(new FindPath(graphPane), new FindCircuit(graphPane), new WhatIf(graphPane)).collect(Collectors.toList());
+        this.actionList = new ArrayList<>();
         this.setSpacing(20);
         this.setPrefWidth(200);
         CreateButtonsVBox();
@@ -41,6 +44,17 @@ public class SideController extends VBox {
         createBottomSettings();
     }
 
+    public void addSideAction(SideAction sideAction) {
+        actionList.add(sideAction);
+        settings.getChildren().add(1, sideAction.getSettings());
+        sideAction.setOnOpenSettings(this::onOpenSettings);
+    }
+
+    public void addTaskControllerAction(TaskController taskController) {
+        actionList.add(taskController);
+        settings.getChildren().add(0, taskController.getSettings());
+        taskController.setOnOpenSettings(this::onOpenSettings);
+    }
 
     public void createBottomSettings() {
         HBox bottomSettings = new HBox(20);
@@ -124,8 +138,8 @@ public class SideController extends VBox {
     }
 
     public void initOnOpenSettings() {
-        actionList.forEach(actionList -> {
-            actionList.setOnOpenSettings(this::onOpenSettings);
+        actionList.forEach(action -> {
+            action.setOnOpenSettings(this::onOpenSettings);
         });
     }
 

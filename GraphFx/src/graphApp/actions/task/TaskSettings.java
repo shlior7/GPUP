@@ -9,6 +9,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -25,7 +26,7 @@ import java.util.ResourceBundle;
 
 public class TaskSettings implements Initializable {
     public Task task;
-    private Stage parent;
+    private Pane parent;
     public boolean runFromScratch;
     public int numThreads;
     public int maxThreads;
@@ -90,9 +91,8 @@ public class TaskSettings implements Initializable {
         return fxmlLoader.getController();
     }
 
-    public void showAndReturn(int maxThreads, Stage parent) {
+    public void showAndReturn(Pane parent) {
         this.submitted = false;
-        this.maxThreads = maxThreads;
         this.parent = parent;
         settingStage = new Stage();
         settingStage.setTitle("Task Settings");

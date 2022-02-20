@@ -3,6 +3,7 @@ package graphApp;
 import TargetGraph.Target;
 import TargetGraph.TargetGraph;
 import graphApp.actions.SideAction;
+import graphApp.actions.task.TaskController;
 import graphApp.controllers.ChoosingController;
 import graphApp.controllers.SideController;
 import graphfx.GraphContainer;
@@ -17,13 +18,11 @@ public class GraphPane extends BorderPane {
     public GraphPanel<Target> graphView;
     public TargetGraph graph;
 
-    public GraphPane(TargetGraph graph, SideAction TaskController) {
+    public GraphPane(TargetGraph graph) {
         super();
-        this.setWidth(2040);
-        this.setHeight(1800);
         this.graph = graph;
         this.choosingController = new ChoosingController(this);
-        this.sideController = new SideController(this, TaskController);
+        this.sideController = new SideController(this);
         createSideController();
         createGraph();
     }
@@ -46,7 +45,6 @@ public class GraphPane extends BorderPane {
 
     public void init() {
         try {
-            System.out.println(this.getWidth() + "  " + this.getHeight());
             graphView.init();
         } catch (Exception e) {
             e.printStackTrace();
