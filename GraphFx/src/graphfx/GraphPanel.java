@@ -37,7 +37,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Popup;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.*;
@@ -47,24 +46,25 @@ import java.util.stream.Stream;
 
 public class GraphPanel<V> extends Pane {
 
-    private final GraphProperties graphProperties;
-    private final Graph<V> theGraph;
-    private final Map<Vertex<V>, GraphVertexNode<V>> vertexNodes;
-    private final Map<V, Vertex<V>> vertices;
-    private final Set<GraphEdgeLine<V>> edgeNodes;
-    private final Map<V, Map<V, GraphEdgeLine<V>>> graphEdgesMap;
+    private GraphProperties graphProperties;
+    private Graph<V> theGraph;
+    private Map<Vertex<V>, GraphVertexNode<V>> vertexNodes;
+    private Map<V, Vertex<V>> vertices;
+    private Map<String, Vertex<V>> verticesByName;
+    private Set<GraphEdgeLine<V>> edgeNodes;
+    private Map<V, Map<V, GraphEdgeLine<V>>> graphEdgesMap;
     private boolean initialized = false;
-    private final boolean edgesWithArrows;
+    private boolean edgesWithArrows;
 
-    private final AnimationTimer timer;
-    private final double repulsionForce;
-    private final double attractionForce;
-    private final double attractionScale;
+    private AnimationTimer timer;
+    private double repulsionForce;
+    private double attractionForce;
+    private double attractionScale;
 
     private static final int AUTOMATIC_LAYOUT_ITERATIONS = 1;
-    public final BooleanProperty automaticLayoutProperty;
+    public BooleanProperty automaticLayoutProperty;
 
-    private final Consumer<V> vertexClickConsumer;
+    private Consumer<V> vertexClickConsumer;
     private PlacementStrategy<V> placementStrategy;
 
     public GraphPanel(Graph<V> theGraph, GraphProperties properties, Consumer<V> edgeClickConsumer) {
@@ -88,6 +88,8 @@ public class GraphPanel<V> extends Pane {
         vertexNodes = new HashMap<>();
         edgeNodes = new HashSet<>();
         vertices = new HashMap<>();
+        verticesByName = new HashMap<>();
+
         graphEdgesMap = new HashMap<>();
 
         initNodes();
@@ -95,6 +97,7 @@ public class GraphPanel<V> extends Pane {
 
             @Override
             public void handle(long now) {
+                System.out.println("now = " + now);
                 runLayoutIteration();
             }
         };
@@ -110,12 +113,15 @@ public class GraphPanel<V> extends Pane {
     }
 
     private synchronized void runLayoutIteration() {
+        System.out.println("LayoutIterations");
         for (int i = 0; i < AUTOMATIC_LAYOUT_ITERATIONS; i++) {
+            System.out.print(i + ", ");
             resetForces();
             computeForces();
             updateForces();
         }
         applyForces();
+        System.out.println();
     }
 
 
@@ -128,7 +134,8 @@ public class GraphPanel<V> extends Pane {
             throw new IllegalStateException("Already initialized. Use update() method instead.");
         }
 
-        placementStrategy = new SmartPlacementStrategy();
+        placementStrategy = new SmartPlacementStrategy<>();
+        System.out.println(this.widthProperty().doubleValue() + "  " + this.heightProperty().doubleValue());
         placementStrategy.place(this.widthProperty().doubleValue(),
                 this.heightProperty().doubleValue(),
                 this.vertexNodes.values());
@@ -137,19 +144,22 @@ public class GraphPanel<V> extends Pane {
     }
 
     private void initNodes() {
-        theGraph.getAllElementMap().forEach((name, element) -> {
+        theGraph.getVerticesMap().forEach((name, element) -> {
             Vertex<V> vertex = new Vertex<>(element);
             vertices.put(element, vertex);
+            verticesByName.put(name, vertex);
             GraphVertexNode<V> vertexAnchor = new GraphVertexNode<V>(vertex, 0, 0, graphProperties.getVertexRadius(), vertexClickConsumer);
             vertexNodes.put(vertex, vertexAnchor);
             addVertex(vertexAnchor);
             setHoverPane(vertexAnchor);
         });
 
-        theGraph.getAllElementMap().forEach((name, element) -> {
+        theGraph.getVerticesMap().forEach((name, element) -> {
             GraphVertexNode<V> graphVertexOut = vertexNodes.get(vertices.get(element));
-            theGraph.getAdjacentNameMap().get(name).forEach(inboundVertex -> {
-                GraphVertexNode<V> graphVertexIn = vertexNodes.get(vertices.get(inboundVertex));
+            theGraph.getAdjacentMap().get(name).forEach(inboundVertex -> {
+                Vertex v = vertices.get(inboundVertex);
+                Vertex v2 = verticesByName.get(inboundVertex.toString());
+                GraphVertexNode<V> graphVertexIn = vertexNodes.get(v);
 
                 graphVertexIn.addAdjacentVertex(graphVertexOut, true);
                 graphVertexOut.addAdjacentVertex(graphVertexIn, false);

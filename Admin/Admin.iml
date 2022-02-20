@@ -12,5 +12,6 @@
     <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.8.9" level="project" />
     <orderEntry type="module" module-name="SharedEngine" />
     <orderEntry type="module" module-name="Graph" />
+    <orderEntry type="module" module-name="GraphFx" />
   </component>
 </module>

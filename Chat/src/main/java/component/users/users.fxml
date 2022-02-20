@@ -11,7 +11,7 @@
     <padding>
         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
     </padding>
-    <Label fx:id="chatUsersLabel" text="Chat Users:">
+    <Label fx:id="chatUsersLabel" text="Chat managers:">
         <font>
             <Font name="System Bold" size="16.0"/>
         </font>

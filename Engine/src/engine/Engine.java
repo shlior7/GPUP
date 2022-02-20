@@ -5,10 +5,11 @@ import java.util.*;
 
 import TargetGraph.*;
 
-import Users.UserManager;
+import managers.UserManager;
 import task.*;
 import types.Admin;
 import types.IUser;
+import types.Task;
 import types.Worker;
 import utils.FileHandler;
 
@@ -79,11 +80,11 @@ public class Engine implements IEngine {
     }
 
     public Map<String, Target> getAllTargets() {
-        return targetGraph.getAllElementMap();
+        return targetGraph.getVerticesMap();
     }
 
     public Map<String, Set<Target>> getAdjacentMap() {
-        return targetGraph.getAdjacentNameMap();
+        return targetGraph.getAdjacentMap();
     }
 
 
@@ -110,10 +111,6 @@ public class Engine implements IEngine {
         return targetGraph.findAllPaths(source, destination);
     }
 
-
-    public int getMaxThreads() {
-        return targetGraph.getMaxThreads();
-    }
 
     public TargetGraph getTargetGraph() {
         return targetGraph;
@@ -145,6 +142,11 @@ public class Engine implements IEngine {
 
     public Collection<TargetGraph> getAllGraphs() {
         return allGraphs.values();
+    }
+
+    @Override
+    public Map<String, TargetGraph> getGraphManager() {
+        return allGraphs;
     }
 
     @Override

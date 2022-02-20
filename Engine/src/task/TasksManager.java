@@ -1,6 +1,7 @@
 package task;
 
 import TargetGraph.TargetGraph;
+import types.Task;
 
 import java.util.HashMap;
 

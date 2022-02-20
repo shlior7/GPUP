@@ -8,6 +8,7 @@
         <option value="$PROJECT_DIR$/Admin/pom.xml" />
         <option value="$PROJECT_DIR$/Worker/pom.xml" />
         <option value="$PROJECT_DIR$/Chat/pom.xml" />
+        <option value="$PROJECT_DIR$/GPUPServer/pom.xml" />
       </list>
     </option>
   </component>

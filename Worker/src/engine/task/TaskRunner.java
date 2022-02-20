@@ -89,11 +89,10 @@ public class TaskRunner implements Runnable {
     }
 
     public synchronized void runTaskOnTarget(Target target) {
-        SerialSetController ssc = targetGraph.getSerialSets();
         switch (target.getStatus()) {
             case FROZEN:
             case WAITING:
-                if (!targetGraph.didAllChildrenFinish(target.name) || ssc.isBusy(target.name)) {
+                if (!targetGraph.didAllChildrenFinish(target.name)) {
                     if (target.getStatus() == Status.FROZEN)
                         target.setWaitingTime(Instant.now());
                     target.setStatus(Status.WAITING);
@@ -110,7 +109,6 @@ public class TaskRunner implements Runnable {
         }
         threadExecutor.execute(initTask(target));
         targetsDone.incrementAndGet();
-        ssc.setBusy(target.name, true);
     }
 
     public Task initTask(Target target) {
@@ -126,8 +124,6 @@ public class TaskRunner implements Runnable {
         String name = target.name;
         updateProgress();
         setTaskOutput("finished task " + name + " with the result " + target.getResult() + " time it took to process " + target.getProcessTime().toMillis());
-
-        targetGraph.getSerialSets().setBusy(name, false);
 
         if (!targetGraph.whoAreYourDirectDaddies(target.name).isEmpty()) {
             setTaskOutput("adding " + targetGraph.whoAreYourDirectDaddies(target.name) + " to waiting queue");

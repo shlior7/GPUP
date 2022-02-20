@@ -49,7 +49,7 @@ public class FileHandler {
         Map<String, List> targets = readTargets(document);
 
         int parallelism = Integer.parseInt(config.get("parallelism"));
-        return new TargetGraph(config.get("name"), config.get("directory"), parallelism, targets.get("targets"), targets.get("edges"));
+        return new TargetGraph(config.get("name"), config.get("directory"), targets.get("targets"), targets.get("edges"));
     }
 
 

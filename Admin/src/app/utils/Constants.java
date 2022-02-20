@@ -13,14 +13,17 @@ public class Constants {
     public static final String CONTEXT_PATH = "/app";
     public static final String USERNAME = "username";
     public static final String ROLE = "role";
+    public static final String GRAPHNAME = "graphName";
 
     // Server resources locations
     public final static String BASE_DOMAIN = "localhost";
+
     private final static String FULL_SERVER_PATH = "http://" + BASE_DOMAIN + ":8080" + CONTEXT_PATH;
     public final static String LOGIN_PATH = FULL_SERVER_PATH + "/login";
     public final static String UPLOAD_XML_PATH = FULL_SERVER_PATH + "/upload";
     public final static String GET_GRAPHS_ALL = FULL_SERVER_PATH + "/graphs/all";
     public static final String GET_USERS_ALL = FULL_SERVER_PATH + "/users/all";
+    public static final String GET_GRAPH = FULL_SERVER_PATH + "/graphs/one";
 
     public final static Gson GSON_INSTANCE = new Gson();
 

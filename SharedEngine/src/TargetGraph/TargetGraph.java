@@ -1,5 +1,6 @@
 package TargetGraph;
 
+import com.google.gson.annotations.Expose;
 import graph.Graph;
 import types.Admin;
 
@@ -16,22 +17,27 @@ import java.util.stream.Stream;
 
 public class TargetGraph implements Graph<Target> {
     private Admin createdBy;
-    private String GraphsName;
-    private String WorkingDir;
-    private int maxThreads;
+    private Map<String, Target> allTargets;
+    private String graphsName;
+    private String workingDir;
+    private Collection<Edge> edges;
     private AdjacentMap originalTargetsGraph;
     private AdjacentMap currentTargetsGraph;
-    private Map<String, Target> allTargets;
     private Map<Type, Integer> typesStatistics;
+
 
     public TargetGraph() {
     }
 
-    public TargetGraph(String GraphsName, String WorkingDir, int maxThreads, List<Target> targets, List<Edge> edges) throws Exception {
+    public TargetGraph(GraphParams graphParams) throws Exception {
+        this(graphParams.getGraphsName(), graphParams.getWorkingDir(), graphParams.getAllTargets(), graphParams.getEdges());
+    }
+
+    public TargetGraph(String graphsName, String workingDir, Collection<Target> targets, Collection<Edge> edges) throws Exception {
         validateGraph(targets, edges);
-        this.GraphsName = GraphsName;
-        this.WorkingDir = WorkingDir;
-        this.maxThreads = maxThreads;
+        this.edges = edges;
+        this.graphsName = graphsName;
+        this.workingDir = workingDir;
         this.allTargets = new HashMap<>();
         this.originalTargetsGraph = new AdjacentMap();
         this.currentTargetsGraph = new AdjacentMap();
@@ -50,7 +56,7 @@ public class TargetGraph implements Graph<Target> {
         this.typesStatistics = getCurrentTypesStatistics();
     }
 
-    public void connect(List<Edge> targetsEdges) {
+    public void connect(Collection<Edge> targetsEdges) {
         for (Edge e : targetsEdges) {
             originalTargetsGraph.children.get(e.out).add(allTargets.get(e.in));
             originalTargetsGraph.parents.get(e.in).add(allTargets.get(e.out));
@@ -325,12 +331,12 @@ public class TargetGraph implements Graph<Target> {
 
 
     @Override
-    public Map<String, Set<Target>> getAdjacentNameMap() {
-        return currentTargetsGraph.children;
+    public Map<String, Set<Target>> getAdjacentMap() {
+        return originalTargetsGraph.children;
     }
 
     @Override
-    public Map<String, Target> getAllElementMap() {
+    public Map<String, Target> getVerticesMap() {
         return allTargets;
     }
 
@@ -432,21 +438,16 @@ public class TargetGraph implements Graph<Target> {
                 .collect(Collectors.joining("\n"));
     }
 
-
-    public int getMaxThreads() {
-        return maxThreads;
-    }
-
     public String getWorkingDir() {
-        return WorkingDir;
+        return workingDir;
     }
 
-    public void validateGraph(List<Target> targets, List<Edge> edges) throws Exception {
+    public void validateGraph(Collection<Target> targets, Collection<Edge> edges) throws Exception {
         checkEqualTargets(targets);
         validateEdges(targets, edges);
     }
 
-    public void validateEdges(List<Target> targets, List<Edge> edges) throws Exception {
+    public void validateEdges(Collection<Target> targets, Collection<Edge> edges) throws Exception {
         AtomicBoolean validIn = new AtomicBoolean(false);
         AtomicBoolean validOut = new AtomicBoolean(false);
         for (Edge edge : edges) {
@@ -470,7 +471,7 @@ public class TargetGraph implements Graph<Target> {
         }
     }
 
-    public void checkConflictBetweenDependencies(Edge edge, List<Edge> edges) throws Exception {
+    public void checkConflictBetweenDependencies(Edge edge, Collection<Edge> edges) throws Exception {
         for (Edge edge1 : edges) {
             if (edge.in.equals(edge1.out) && edge.out.equals(edge1.in)) {
                 throw new Exception("There is a conflict between dependencies of " + edge.in + " and " + edge.out);
@@ -479,7 +480,7 @@ public class TargetGraph implements Graph<Target> {
     }
 
 
-    public void checkEqualTargets(List<Target> targets) throws Exception {
+    public void checkEqualTargets(Collection<Target> targets) throws Exception {
         Map<String, Integer> duplicates = new HashMap<>();
         targets.stream().map(Target::getName).forEach(name ->
                 duplicates.put(name, duplicates.getOrDefault(name, 0) + 1)
@@ -493,7 +494,7 @@ public class TargetGraph implements Graph<Target> {
     }
 
     public String getGraphsName() {
-        return GraphsName;
+        return graphsName;
     }
 
     public void setCreatedBy(Admin createdBy) {
@@ -510,7 +511,7 @@ public class TargetGraph implements Graph<Target> {
         return typesStatistics;
     }
 
-    public void setTypesStatistics(Map<Type, Integer> typesStatistics) {
-        this.typesStatistics = typesStatistics;
+    public Collection<Edge> getEdges() {
+        return edges;
     }
 }

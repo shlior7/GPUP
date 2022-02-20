@@ -18,7 +18,7 @@ public class GraphContainer extends BorderPane {
     private static final double MIN_SCALE = 1;
     private static final double MAX_SCALE = 5;
     private static final double SCROLL_DELTA = 0.25;
-    private GraphPanel graphView;
+    private final GraphPanel graphView;
 
     public GraphContainer(GraphPanel graphView) {
         this.graphView = graphView;
@@ -75,4 +75,7 @@ public class GraphContainer extends BorderPane {
         return paneSlider;
     }
 
+    public GraphPanel getGraphView() {
+        return graphView;
+    }
 }

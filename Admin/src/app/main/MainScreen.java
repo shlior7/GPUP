@@ -43,14 +43,12 @@ public class MainScreen extends Application {
         System.out.println(name_worker.getText());
 
         Dashboard controller = Dashboard.createDashboard();
-        Admin user1 = new Admin(name_worker.getText());
-        controller.show();
-
+        Admin user = new Admin(name_worker.getText());
         String finalUrl = HttpUrl
                 .parse(Constants.LOGIN_PATH)
                 .newBuilder()
-                .addQueryParameter(Constants.USERNAME, user1.getName())
-                .addQueryParameter(Constants.ROLE, user1.getRole())
+                .addQueryParameter(Constants.USERNAME, user.getName())
+                .addQueryParameter(Constants.ROLE, user.getRole())
                 .build()
                 .toString();
         System.out.println("finalUrl " + finalUrl);

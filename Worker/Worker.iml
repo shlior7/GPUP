@@ -16,5 +16,6 @@
     <orderEntry type="module" module-name="Engine" />
     <orderEntry type="module" module-name="GraphFx" />
     <orderEntry type="module" module-name="Graph" />
+    <orderEntry type="module" module-name="SharedEngine" />
   </component>
 </module>

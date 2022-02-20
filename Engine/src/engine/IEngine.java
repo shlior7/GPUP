@@ -1,12 +1,13 @@
 package engine;
 
 import TargetGraph.TargetGraph;
-import Users.UserManager;
+import managers.UserManager;
 import types.Admin;
 import types.IUser;
 
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 public interface IEngine {
@@ -15,6 +16,8 @@ public interface IEngine {
     Set<IUser> getAllUsers();
 
     Collection<TargetGraph> getAllGraphs();
+
+    Map<String, TargetGraph> getGraphManager();
 
     UserManager getUserManager();
 

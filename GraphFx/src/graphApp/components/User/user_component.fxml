@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<fx:root alignment="TOP_CENTER" spacing="3.0" type="VBox" xmlns="http://javafx.com/javafx/8.0.171"
+         xmlns:fx="http://javafx.com/fxml/1">
+    <HBox alignment="CENTER">
+        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Name: " textAlignment="CENTER" HBox.hgrow="ALWAYS">
+            <font>
+                <Font name="Tahoma Bold" size="14.0"/>
+            </font>
+        </Text>
+        <Text fx:id="user_name" strokeType="OUTSIDE" strokeWidth="0.0" text="Shit" textAlignment="CENTER"
+              HBox.hgrow="ALWAYS">
+            <font>
+                <Font name="Tahoma Bold" size="14.0"/>
+            </font>
+        </Text>
+    </HBox>
+    <HBox alignment="CENTER">
+        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Position: ">
+            <font>
+                <Font name="Tahoma Bold" size="14.0"/>
+            </font>
+        </Text>
+        <Text fx:id="user_position" strokeType="OUTSIDE" strokeWidth="0.0" text="Simulation">
+            <font>
+                <Font name="Tahoma Bold" size="14.0"/>
+            </font>
+        </Text>
+    </HBox>
+</fx:root>

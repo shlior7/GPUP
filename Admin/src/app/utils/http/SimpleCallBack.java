@@ -6,12 +6,14 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
 public class SimpleCallBack implements Callback {
 
     Consumer<String> onFail;
     Consumer<String> onSuccess;
+    public CountDownLatch countDownLatch = new CountDownLatch(1);
 
     public SimpleCallBack() {
     }
@@ -28,8 +30,10 @@ public class SimpleCallBack implements Callback {
     @Override
 
     public void onFailure(Call call, IOException e) {
+        countDownLatch.countDown();
         Platform.runLater(() ->
                 {
+                    countDownLatch.countDown();
                     System.out.println("Something went wrong: " + e.getMessage());
                     if (onFail != null) onFail.accept(e.getMessage());
                 }
@@ -38,6 +42,7 @@ public class SimpleCallBack implements Callback {
 
     @Override
     public void onResponse(Call call, Response response) throws IOException {
+        countDownLatch.countDown();
         String responseBody = response.body().string();
         {
             if (response.code() != 200) {

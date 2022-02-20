@@ -8,6 +8,7 @@ import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import lombok.SneakyThrows;
+import types.Task;
 
 import java.time.Instant;
 import java.util.ArrayList;
