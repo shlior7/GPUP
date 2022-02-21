@@ -1,9 +1,10 @@
 package TargetGraph;
 
+import com.sun.istack.internal.Nullable;
 import graph.Graph;
 import types.Admin;
 
-import types.Task;
+import types.TaskType;
 import utils.RecursiveConsumer;
 import utils.Utils;
 
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class TargetGraph implements Graph<Target> {
-    private Map<Class<? extends Task>, Integer> prices;
+    private Map<TaskType, Integer> prices;
     private Admin createdBy;
     private Map<String, Target> allTargets;
     private String graphsName;
@@ -34,10 +35,9 @@ public class TargetGraph implements Graph<Target> {
     }
 
 
-    public TargetGraph(String graphsName, Collection<Target> targets, Collection<Edge> edges, Map<Class<? extends Task>, Integer> prices) throws Exception {
+    public TargetGraph(String graphsName, Collection<Target> targets, Collection<Edge> edges, Map<TaskType, Integer> prices) throws Exception {
         validateGraph(targets, edges);
         this.prices = prices;
-
         this.edges = edges;
         this.graphsName = graphsName;
         this.allTargets = new HashMap<>();
@@ -81,13 +81,17 @@ public class TargetGraph implements Graph<Target> {
         allTargets.get(targetName).setStatus(status);
     }
 
-    public Optional<Target> getTarget(String name) {
+    public Optional<Target> getOptionalTarget(String name) {
         return Optional.ofNullable(allTargets.getOrDefault(name, null));
     }
 
+    @Nullable
+    public Target getTarget(String name) {
+        return allTargets.getOrDefault(name, null);
+    }
 
     public boolean NoSuchTarget(String targetName) {
-        return !getTarget(targetName).isPresent();
+        return !getOptionalTarget(targetName).isPresent();
     }
 
     public LinkedList<List<String>> findAllPaths(String source, String destination) {
@@ -323,7 +327,7 @@ public class TargetGraph implements Graph<Target> {
     }
 
     public String getTargetInfo(String targetName) {
-        Optional<Target> target = getTarget(targetName);
+        Optional<Target> target = getOptionalTarget(targetName);
         return target.map(value -> value + "\nTargetGraph.Status=" + getStatus(targetName)).orElseGet(() -> targetName + " is not a target!");
     }
 
@@ -505,8 +509,6 @@ public class TargetGraph implements Graph<Target> {
     }
 
     public Map<Type, Integer> getTypesStatistics() {
-        System.out.println(typesStatistics);
-        System.out.println(getCurrentTypesStatistics());
         return typesStatistics;
     }
 
@@ -514,11 +516,18 @@ public class TargetGraph implements Graph<Target> {
         return edges;
     }
 
-    public Map<Class<? extends Task>, Integer> getPrices() {
+    public Map<TaskType, Integer> getPrices() {
         return prices;
     }
 
-    public void setPrices(Map<Class<? extends Task>, Integer> prices) {
-        this.prices = prices;
+    public void updateTarget(Target target) {
+        Target t = getTarget(target.getName());
+        t.updateData(target);
+    }
+
+    public void updateAllTarget(Target[] targets) {
+        for (Target t : targets) {
+            updateTarget(t);
+        }
     }
 }

@@ -2,6 +2,7 @@ package engine;
 
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import TargetGraph.*;
 
@@ -69,8 +70,8 @@ public class Engine implements IEngine {
         return targetGraph.taskAlreadyRan();
     }
 
-    public void runTask(Task task, int maxParallel) {
-        taskRunner.initTaskRunner(task, maxParallel);
+    public void runTask(Task task) {
+        taskRunner.initTaskRunner(task);
         taskRunner.run();
     }
 
@@ -124,12 +125,19 @@ public class Engine implements IEngine {
         return "check";
     }
 
-    public synchronized List<Task> getTasksForWorker(String userName, String taskName, int threadsAmount) throws Exception {
+    @Override
+    public synchronized List<Task> getTasksForWorker(String userName, String[] tasksNames, int threadsAmount) throws Exception {
         Worker user = userManager.getWorker(userName);
         if (user == null)
             throw new Exception("Not worker");
-        return tasksManager.getTask(taskName).getTasksForWorker(user, threadsAmount);
+
+        LinkedList<TaskRunner> tasks = Arrays.asList(tasksNames).stream().map(tasksManager::getTask).collect(Collectors.toCollection(LinkedList::new));
+        return tasksManager.getTasksForWorker(user, tasks, threadsAmount);
     }
+
+//    public synchronized void onFinishTaskOnTarget(String userName, String taskName) {
+//        tasksManager.onFinishTaskOnTarget(userName, taskName,target);
+//    }
 
     @Override
     public IUser getUser(String name) {
@@ -163,8 +171,9 @@ public class Engine implements IEngine {
     }
 
     @Override
-    public void addTask(Task task, String graphName, Admin createdBy) throws Exception {
+    public void addTask(Task task, String graphName, Admin createdBy, Set<Target> targets) throws Exception {
         TargetGraph targetGraph = allGraphs.getOrDefault(graphName, null);
+        targetGraph.createNewGraphFromTargetList(targets);
         if (targetGraph == null)
             throw new Exception("graph wasn't found");
         tasksManager.addTask(task, targetGraph, createdBy);

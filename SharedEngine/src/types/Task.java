@@ -9,11 +9,12 @@ public abstract class Task implements Runnable {
     protected String taskName;
     protected Target targetToRunOn;
     protected Worker workerOnIt;
-    protected Consumer<Target> onFinished;
     protected Consumer<String> outputText;
+    protected String type;
 
-    public Task(String taskName) {
+    public Task(String taskName, Class<? extends Task> type) {
         this.taskName = taskName;
+        this.type = type.getName();
     }
 
     public abstract Task copy();
@@ -26,9 +27,6 @@ public abstract class Task implements Runnable {
         this.targetToRunOn = targetToRunOn;
     }
 
-    public void setFuncOnFinished(Consumer<Target> onFinished) {
-        this.onFinished = onFinished;
-    }
 
     public void setOutputText(Consumer<String> outputText) {
         this.outputText = outputText;
@@ -42,5 +40,9 @@ public abstract class Task implements Runnable {
 
     public void setPricePerTarget(int pricePerTarget) {
         this.pricePerTarget = pricePerTarget;
+    }
+
+    public Target getTarget() {
+        return targetToRunOn;
     }
 }

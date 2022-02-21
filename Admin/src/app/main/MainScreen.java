@@ -2,7 +2,6 @@ package app.main;
 
 
 import app.dashboard.Dashboard;
-import app.utils.Constants;
 import app.utils.http.HttpClientUtil;
 import app.utils.http.SimpleCallBack;
 import javafx.application.Application;
@@ -15,6 +14,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import okhttp3.HttpUrl;
 import types.Admin;
+import utils.Constants;
 
 import java.io.IOException;
 

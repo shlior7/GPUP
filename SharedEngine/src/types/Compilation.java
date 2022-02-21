@@ -18,14 +18,14 @@ public class Compilation extends Task {
     private String javaFilesPath;
 
     public Compilation(String taskName, String outFolder, String workingDir) {
-        super(taskName);
+        super(taskName, Compilation.class);
         this.workingDir = workingDir;
         this.outFolder = outFolder;
         new File(outFolder).mkdir();
     }
 
     public Compilation(Compilation task) {
-        super(task.taskName);
+        super(task.taskName, Compilation.class);
         this.outFolder = task.outFolder;
         this.workingDir = task.workingDir;
     }
@@ -67,7 +67,6 @@ public class Compilation extends Task {
         Instant after = Instant.now();
         targetToRunOn.setProcessTime(Duration.between(before, after));
         targetToRunOn.setResult(exitCode == 0 ? Result.Success : Result.Failure);
-        onFinished.accept(targetToRunOn);
     }
 
 }

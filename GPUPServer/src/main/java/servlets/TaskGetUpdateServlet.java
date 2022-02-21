@@ -1,55 +1,55 @@
 package servlets;
 
+import TargetGraph.Target;
+import com.google.gson.JsonObject;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import managers.UserManager;
 import task.TaskRunner;
-import types.*;
+import types.Task;
+import types.TaskStatus;
+import types.Worker;
 import utils.ServletUtils;
 import utils.SessionUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static utils.Constants.GSON_INSTANCE;
+import static utils.Constants.TASKNAME;
 
-@WebServlet(name = "UserListServlet", urlPatterns = {"/users/all"})
-public class TasksListServlet extends HttpServlet {
-
-    private List<TaskInfo> generateJSONFromTaskCollection(Collection<TaskRunner> taskCollection) {
-        List<TaskInfo> tasksList = new ArrayList<>();
-        taskCollection.forEach(taskRunner -> new TaskInfo(taskRunner.getTaskData()));
-        return tasksList;
-    }
+@WebServlet(name = "TaskGetUpdateServlet", urlPatterns = {"/task/update/get"})
+public class TaskGetUpdateServlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        response.setContentType("application/json");
+        response.setContentType("text/plain;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             String usernameFromSession = SessionUtils.getUsername(request);
-            if (usernameFromSession == null) {
-                out.println("{\"message\": \"No User in session \"}");
-                response.setStatus(401);
-                return;
+            UserManager userManager = ServletUtils.getUserManager(getServletContext());
+            Worker worker = userManager.getWorker(usernameFromSession);
+            if (worker != null) {
+                String taskName = request.getParameter(TASKNAME);
+                TaskRunner taskRunner = ServletUtils.getEngine(getServletContext()).getTaskManager().getTask(taskName);
+
+                Set<Target> targets = taskRunner.getGraph().getCurrentTargets();
+                String taskOutput = taskRunner.getTaskOutput().toString();
+                Double progress = taskRunner.getProgress().get();
+                TaskStatus taskStatus = taskRunner.getTaskData().getStatus();
+
+            } else {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                out.println("Request is not from a worker");
+                out.flush();
             }
-            Admin uploadedBy = ServletUtils.getEngine(getServletContext()).getUserManager().getAdmin(usernameFromSession);
-            if (uploadedBy == null) {
-                out.println("{\"message\": \"User in session is not Admin \"}");
-                response.setStatus(401);
-                return;
-            }
-            Collection<TaskRunner> allTasks = ServletUtils.getEngine(getServletContext()).getTaskManager().getAllTasks();
-            String json = GSON_INSTANCE.toJson(generateJSONFromTaskCollection(allTasks));
-            out.println(json);
-            out.flush();
         } catch (Exception e) {
             e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         }
 
     }

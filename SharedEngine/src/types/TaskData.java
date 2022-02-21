@@ -19,6 +19,10 @@ public class TaskData {
     protected TargetGraph targetGraph;
     @NonNull
     protected Admin createdBy;
-    private TaskStatus status;
+    private TaskStatus status = TaskStatus.UNSTARTED;
     private Map<Worker, List<Target>> workerListMap = new HashMap<>();
+
+    public void setWorkersTargets(Worker worker, List<Target> targets) {
+        workerListMap.put(worker, targets);
+    }
 }

@@ -3,13 +3,13 @@ package app.dashboard;
 import TargetGraph.TargetGraph;
 import TargetGraph.GraphParams;
 import app.components.TaskControllerAdmin;
-import app.utils.Constants;
 import app.utils.http.HttpClientUtil;
 import app.utils.http.SimpleCallBack;
 import graphApp.GraphPane;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -26,6 +26,7 @@ import okhttp3.RequestBody;
 import types.GraphInfo;
 import types.TaskInfo;
 import types.UserInfo;
+import utils.Constants;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,12 +36,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static app.utils.Constants.GSON_INSTANCE;
+import static utils.Constants.GSON_INSTANCE;
 
 public class Dashboard extends Stage implements Initializable {
     GraphInfo[] graphInfos = new GraphInfo[0];
     Map<String, GraphPane> graphPanes = new HashMap<>();
-
+    Timer taskTimer;
 
     @FXML
     public TableView<UserInfo> UsersTable;
@@ -61,6 +62,7 @@ public class Dashboard extends Stage implements Initializable {
         dashboard.createGraphListener();
         dashboard.getUsers();
         dashboard.getGraphs();
+        dashboard.initTimers();
         return dashboard;
     }
 
@@ -69,6 +71,16 @@ public class Dashboard extends Stage implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
     }
 
+    public void initTimers() {
+        taskTimer = new Timer();
+//
+//        taskTimer.schedule(new TimerTask() {
+//            public void run() {
+//                System.out.println("run");
+//                getTasks();
+//            }
+//        }, 0, 30 * 1000);
+    }
 
     public void loadXml(ActionEvent actionEvent) {
         FileChooser fileChooser = new FileChooser();
@@ -77,7 +89,8 @@ public class Dashboard extends Stage implements Initializable {
                 "XML Files (*.xml)", "*.xml");
         fileChooser.getExtensionFilters().add(xmlfilter);
         File file = fileChooser.showOpenDialog(null);
-
+        if (file == null)
+            return;
         String finalUrl = HttpUrl
                 .parse(Constants.UPLOAD_XML_PATH)
                 .newBuilder()
@@ -185,5 +198,30 @@ public class Dashboard extends Stage implements Initializable {
         HttpClientUtil.runAsync(finalUrl, new SimpleCallBack(callBack));
     }
 
+    private void getTasks() {
+        String finalUrl = HttpUrl
+                .parse(Constants.GET_TASK_ALL)
+                .newBuilder()
+                .build()
+                .toString();
+        System.out.println("finalUrl " + finalUrl);
 
+        HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((tasksJson) -> {
+            System.out.println(tasksJson);
+            TaskInfo[] tasks = GSON_INSTANCE.fromJson(tasksJson, TaskInfo[].class);
+            System.out.println(Arrays.toString(tasks));
+            if (tasks != null) setTaskTable(tasks);
+        }));
+    }
+
+    private void setTaskTable(TaskInfo[] tasks) {
+        Platform.runLater(() -> {
+            taskTable.getItems().clear();
+            taskTable.getItems().addAll(tasks);
+        });
+    }
+
+    public void OnDashboardTabSelectionChanged(Event event) {
+        getTasks();
+    }
 }

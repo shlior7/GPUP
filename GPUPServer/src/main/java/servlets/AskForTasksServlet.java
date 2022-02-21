@@ -10,22 +10,21 @@ import jakarta.servlet.http.HttpServletResponse;
 import managers.UserManager;
 import types.Admin;
 import types.Task;
-import utils.Constants;
+import types.Worker;
 import utils.ServletUtils;
 import utils.SessionUtils;
-import types.Worker;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static utils.Constants.*;
 
-@WebServlet(name = "TaskUploadServlet", urlPatterns = {"/task/upload"})
-public class TaskUploadServlet extends HttpServlet {
+@WebServlet(name = "AskForTasksServlet", urlPatterns = {"/task/work"})
+public class AskForTasksServlet extends HttpServlet {
 
     // urls that starts with forward slash '/' are considered absolute
     // urls that doesn't start with forward slash '/' are considered relative to the place where this servlet request comes from
@@ -45,33 +44,27 @@ public class TaskUploadServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         try (PrintWriter out = response.getWriter()) {
-            response.setContentType("text/plain;charset=UTF-8");
+            response.setContentType("application/json");
             String usernameFromSession = SessionUtils.getUsername(request);
             UserManager userManager = ServletUtils.getUserManager(getServletContext());
-            Admin admin = userManager.getAdmin(usernameFromSession);
-            if (admin != null) {
+            Worker worker = userManager.getWorker(usernameFromSession);
+            if (worker != null) {
                 synchronized (this) {
-                    String graphName = request.getParameter(GRAPHNAME);
-//                    boolean fromScratch = Boolean.parseBoolean(request.getParameter(FROM_SCRATCH));
-                    String requestData = request.getReader().lines().collect(Collectors.joining());
-                    System.out.println("requestData = " + requestData);
-                    JsonObject json = GSON_INSTANCE.fromJson(requestData, JsonObject.class);
-                    JsonObject taskJson = json.get("task").getAsJsonObject();
-                    Task task = GSON_INSTANCE.fromJson(requestData, (Class<? extends Task>) Class.forName(taskJson.get("type").getAsString()));
+                    String[] tasksNames = GSON_INSTANCE.fromJson(request.getReader().lines().collect(Collectors.joining()), String[].class);
+                    int threads = Integer.parseInt(request.getParameter(THREADS));
 
-                    JsonObject targetsJson = json.get("targets").getAsJsonObject();
-                    Set<Target> targets = Arrays.stream(GSON_INSTANCE.fromJson(targetsJson, Target[].class)).collect(Collectors.toSet());
-
-
-                    ServletUtils.getEngine(getServletContext()).addTask(task, graphName, admin, targets);
-
-                    response.setStatus(HttpServletResponse.SC_OK);
+                    List<Task> tasks = ServletUtils.getEngine(getServletContext()).getTasksForWorker(worker.getName(), tasksNames, threads);
+                    out.println(GSON_INSTANCE.toJson(tasks));
+                    out.flush();
                 }
             } else {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                out.println("Request is not from a worker");
+                out.flush();
             }
         } catch (Exception e) {
             e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
     }
 

@@ -44,53 +44,27 @@ public class LoginServlet extends HttpServlet {
             String roleFromParameter = request.getParameter(ROLE);
 
             if (usernameFromParameter == null || usernameFromParameter.isEmpty() || roleFromParameter == null) {
-                //no username in session and no username in parameter -
-                //redirect back to the index page
-                //this return an HTTP code back to the browser telling it to load
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad Request: wrong parameters");
             } else {
-                //normalize the username value
                 usernameFromParameter = usernameFromParameter.trim();
-                /*
-                One can ask why not enclose all the synchronizations inside the userManager object ?
-                Well, the atomic action we need to perform here includes both the question (isUserExists) and (potentially) the insertion
-                of a new user (addUser). These two actions needs to be considered atomic, and synchronizing only each one of them, solely, is not enough.
-                (of course there are other more sophisticated and performable means for that (atomic objects etc) but these are not in our scope)
-
-                The synchronized is on this instance (the servlet).
-                As the servlet is singleton - it is promised that all threads will be synchronized on the very same instance (crucial here)
-
-                A better code would be to perform only as little and as necessary things we need here inside the synchronized block and avoid
-                do here other not related actions (such as request dispatcher\redirection etc. this is shown here in that manner just to stress this issue
-                 */
                 synchronized (this) {
                     if (userManager.isUserExists(usernameFromParameter)) {
                         String errorMessage = "Username " + usernameFromParameter + " already exists. Please enter a different username.";
-                        // username already exists, forward the request back to index.jsp
-                        // with a parameter that indicates that an error should be displayed
-                        // the request dispatcher obtained from the servlet context is one that MUST get an absolute path (starting with'/')
-                        // and is relative to the web app root
-                        // see this link for more details:
-                        // http://timjansen.github.io/jarfiller/guide/servlet25/requestdispatcher.xhtml
                         response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                         response.getOutputStream().print(errorMessage);
-//                        request.setAttribute(Constants.USER_NAME_ERROR, errorMessage);
-
-//                        getServletContext().getRequestDispatcher(LOGIN_ERROR_URL).forward(request, response);
                     } else {
-                        userManager.addUser(usernameFromParameter, roleFromParameter.equals("Admin"));
-                        //set the username in a session so it will be available on each request
-                        //the true parameter means that if a session object does not exists yet
-                        //create a new one
-                        request.getSession(true).setAttribute(Constants.USERNAME, usernameFromParameter);
+                        if (roleFromParameter.equals("Worker")) {
+                        
+                        } else {
 
-                        //redirect the request to the chat room - in order to actually change the URL
+                        }
+                        userManager.addUser(usernameFromParameter, roleFromParameter.equals("Admin"));
+                        request.getSession(true).setAttribute(Constants.USERNAME, usernameFromParameter);
                         response.setStatus(HttpServletResponse.SC_OK);
                     }
                 }
             }
         } else {
-            //user is already logged in
             response.setStatus(HttpServletResponse.SC_OK);
         }
     }

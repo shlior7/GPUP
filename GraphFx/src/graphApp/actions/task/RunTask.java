@@ -181,7 +181,7 @@
 //            String fill = target.getResult().getColor();
 //            if (status == Status.FINISHED)
 //                stroke = fill;
-//            if (status == Status.IN_PROCESS) {
+//            if (status == Status.IN_PROC01ESS) {
 //                flickering.putIfAbsent(name, new AtomicBoolean(false));
 //                stroke = flickering.get(name).get() ? "yellow" : "gold";
 //                flickering.get(name).set(!flickering.get(name).get());

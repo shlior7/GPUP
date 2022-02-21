@@ -3,6 +3,7 @@ package TargetGraph;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import types.Task;
+import types.TaskType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,7 +16,7 @@ public class GraphParams {
     private String graphsName;
     private String workingDir;
     private Collection<Edge> edges;
-    private Map<Class<? extends Task>, Integer> prices;
+    private Map<TaskType, Integer> prices;
 
     public GraphParams(TargetGraph targetGraph) {
         allTargets = new ArrayList<>();

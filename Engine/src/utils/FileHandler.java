@@ -9,6 +9,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import types.Task;
+import types.TaskType;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -55,7 +56,7 @@ public class FileHandler {
         Map<String, List> targets = readTargets(document);
 
 
-        return new TargetGraph(String.valueOf(config.get("name")), targets.get("targets"), targets.get("edges"), (Map<Class<? extends Task>, Integer>) config.get("prices"));
+        return new TargetGraph(String.valueOf(config.get("name")), targets.get("targets"), targets.get("edges"), (Map<TaskType, Integer>) config.get("prices"));
     }
 
 
@@ -66,24 +67,33 @@ public class FileHandler {
 
         Element config = (Element) configurations.item(0);
         String GraphsName = validateTextContent(config, "GPUP-Graph-Name");
-        List<Element> taskPrices = nodeListToElements(config.getElementsByTagName("GPUP-GPUP-Pricing"));
-        Map<Class<? extends Task>, Integer> TaskPrices = new HashMap<>();
+        NodeList taskPricesElement = config.getElementsByTagName("GPUP-Pricing");
+        if (taskPricesElement.getLength() == 0 || taskPricesElement.item(0).getNodeType() != Node.ELEMENT_NODE)
+            throw new Exception("no task prices");
+
+        Element taskPrices = (Element) taskPricesElement.item(0);
+        List<Element> prices = nodeListToElements(taskPrices.getElementsByTagName("GPUP-Task"));
+
+        Map<TaskType, Integer> TaskPrices = new HashMap<>();
         List<String> errors = new ArrayList<>();
-        taskPrices.forEach(taskPrice -> {
+        prices.forEach(taskPrice -> {
+            String name = "", price;
             try {
-                String name = taskPrice.getAttributes().getNamedItem("name").getTextContent();
-                Class<? extends Task> taskClass = (Class<? extends Task>) Class.forName(name);
-                String price = taskPrice.getAttributes().getNamedItem("price-per-target").getTextContent();
+                name = taskPrice.getAttributes().getNamedItem("name").getTextContent();
+                price = taskPrice.getAttributes().getNamedItem("price-per-target").getTextContent();
                 TaskPrices.put(
-                        taskClass,
+                        TaskType.valueOf(name),
                         Integer.parseInt(price));
 
             } catch (NumberFormatException e) {
                 errors.add("price-per-target was not a number");
-            } catch (ClassNotFoundException e) {
-                errors.add("task class name is not a known task");
+            } catch (IllegalArgumentException e) {
+                errors.add("Task " + name + "is not a valid type of task");
             }
         });
+        if (errors.size() > 0) {
+            throw new Exception(String.join("\n", errors));
+        }
         return new HashMap<String, Object>() {{
             put("name", GraphsName);
             put("prices", TaskPrices);

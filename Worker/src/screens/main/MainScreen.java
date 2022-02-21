@@ -24,6 +24,7 @@ import utils.http.HttpClientUtil;
 import java.io.IOException;
 import java.util.HashMap;
 
+import static utils.Constants.GSON_INSTANCE;
 import static utils.Utils.alertWarning;
 
 public class MainScreen extends Application {
@@ -49,17 +50,16 @@ public class MainScreen extends Application {
     }
 
 
-    private boolean checkValidRegistration(){
+    private boolean checkValidRegistration() {
         //check if name is valid
         try {
             int num = Integer.parseInt(num_threads.getText());
-            if(num <= 5 && num >= 1) {
+            if (num <= 5 && num >= 1) {
                 return true;
-            }
-            else{
+            } else {
                 alertWarning("The number of threads should be a number between 1 to 5.");
             }
-        } catch(NumberFormatException e){
+        } catch (NumberFormatException e) {
             alertWarning("The number of threads should be a number between 1 to 5.");
         }
         return false;
@@ -70,40 +70,19 @@ public class MainScreen extends Application {
         System.out.println(name_worker.getText());
         System.out.println(num_threads.getText());
 
-        if(checkValidRegistration()) {
-            Worker user1 = new Worker(name_worker.getText());
-            user1.setThreads(Integer.parseInt(num_threads.getText()));
-            Dashboard controller = Dashboard.createDashboard(user1);
+//        if (checkValidRegistration()) {
+//            Worker user = new Worker(name_worker.getText());
+//            user.setThreads(Integer.parseInt(num_threads.getText()));
+//            Dashboard controller = Dashboard.createDashboard(user);
 //            String finalUrl = HttpUrl
 //                    .parse(Constants.LOGIN_PAGE)
 //                    .newBuilder()
 //                    .build()
 //                    .toString();
 //            System.out.println("finalUrl " + finalUrl);
-//            HttpClientUtil.runAsyncBody(finalUrl, GSON_INSTANCE.toJson(user1), new Callback() {
-//                @Override
-//                public void onFailure(@NotNull Call call, @NotNull IOException e) {
-//                    Platform.runLater(() ->
-//                            System.out.println("Something went wrong: " + e.getMessage())
-//                    );
-//                }
-//
-//                @Override
-//                public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-//                    String responseBody = response.body().string();
-//                    if (response.code() != 200) {
-//                        Platform.runLater(() ->
-//                                System.out.println("Something went wrong: " + responseBody)
-//                        );
-//                    } else {
-//                        Platform.runLater(() -> {
-//                            System.out.println("OK " + responseBody);
-//                        });
-//                    }
-//                }
-//            });
-            controller.show();
-        }
+//            HttpClientUtil.runAsyncBody(finalUrl, GSON_INSTANCE.toJson(user) );
+//            controller.show();
+//        }
 //        controller.addTask(task1);
 //        controller.show();
     }

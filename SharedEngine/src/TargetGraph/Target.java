@@ -11,9 +11,9 @@ import java.time.Instant;
 public class Target {
     public String name;
     private String targetInfo;
+    private String userData;
     private Result result;
     private Status status;
-    private String userData;
     private Duration processTime;
     private Instant startedTime;
     private Instant waitingTime;
@@ -24,6 +24,14 @@ public class Target {
         this.result = Result.NULL;
     }
 
+    public void updateData(Target target) {
+        this.status = target.status;
+        this.result = target.result;
+        this.processTime = target.processTime;
+        this.startedTime = target.startedTime;
+        this.waitingTime = target.waitingTime;
+        this.targetInfo = target.targetInfo;
+    }
 
     public void setResultFromStr(String result) {
         if (result == null) {

@@ -23,7 +23,7 @@
 <TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="839.0"
          prefWidth="1594.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8.0.171"
          xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.dashboard.Dashboard">
-    <Tab text="Dashboard">
+    <Tab text="Dashboard" onSelectionChanged="#OnDashboardTabSelectionChanged">
         <AnchorPane>
             <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
                       prefHeight="773.0" prefWidth="1413.0" AnchorPane.rightAnchor="0" AnchorPane.leftAnchor="0"
@@ -61,22 +61,71 @@
                            GridPane.rowIndex="1">
                     <columns>
                         <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0"
-                                     prefWidth="64.0" text="selected"/>
+                                     prefWidth="108.0" text=" Task name">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="taskName"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn maxWidth="1.7976931348623157E308" prefWidth="84.0" text="Created by">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="type"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn maxWidth="1.7976931348623157E308" prefWidth="84.0" text="Type">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="createdBy"/>
+                            </cellValueFactory>
+                        </TableColumn>
                         <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0"
-                                     prefWidth="108.0" text=" task name"/>
+                                     prefWidth="100.0" text="Graph name">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="graphName"/>
+                            </cellValueFactory>
+                        </TableColumn>
                         <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0"
-                                     prefWidth="100.0" text="Graph name"/>
-                        <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="70.0" text="leaves"/>
+                                     prefWidth="100.0" text="Targets">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="targets"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="70.0" text="leaves">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="Leaves"/>
+                            </cellValueFactory>
+                        </TableColumn>
                         <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="105.0"
-                                     text="Independents"/>
-                        <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="83.0" text="middles"/>
-                        <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="62.0" text="roots"/>
+                                     text="Independents">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="independents"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="83.0" text="Middles">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="middles"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="62.0" text="Roots">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="roots"/>
+                            </cellValueFactory>
+                        </TableColumn>
                         <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="108.0"
-                                     text="price per task"/>
+                                     text="Price per task">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="creditPerTarget"/>
+                            </cellValueFactory>
+                        </TableColumn>
                         <TableColumn maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="110.0"
-                                     text=" task status"/>
-                        <TableColumn maxWidth="1.7976931348623157E308" prefWidth="120.0" text="workers on task"/>
-                        <TableColumn maxWidth="1.7976931348623157E308" prefWidth="84.0" text="created by"/>
+                                     text="Task status">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="taskStatus"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn maxWidth="1.7976931348623157E308" prefWidth="120.0" text="Workers on task">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="workers"/>
+                            </cellValueFactory>
+                        </TableColumn>
                     </columns>
                 </TableView>
                 <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308"

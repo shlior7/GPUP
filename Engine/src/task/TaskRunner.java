@@ -8,10 +8,7 @@ import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import lombok.SneakyThrows;
-import types.Admin;
-import types.Task;
-import types.TaskData;
-import types.Worker;
+import types.*;
 
 import java.time.Instant;
 import java.util.*;
@@ -32,6 +29,7 @@ public class TaskRunner implements Runnable {
     private boolean running = false;
     private int numThread;
     private final SimpleStringProperty taskOutput;
+    private final List<String> taskOutputTotal;
     private final SimpleDoubleProperty progress;
     private TaskData taskData;
 
@@ -39,7 +37,8 @@ public class TaskRunner implements Runnable {
         this.targetGraph = targetGraph;
         this.taskOutput = new SimpleStringProperty("");
         this.progress = new SimpleDoubleProperty(0);
-        this.numThread = 0;
+        this.numThread = 1;
+        this.taskOutputTotal = new LinkedList<>();
     }
 
     public TaskRunner(TargetGraph targetGraph, Task task, Admin createdBy) {
@@ -48,23 +47,22 @@ public class TaskRunner implements Runnable {
         this.targetGraph = targetGraph;
         this.taskOutput = new SimpleStringProperty("");
         this.progress = new SimpleDoubleProperty(0);
-        this.numThread = 0;
+        this.numThread = 1;
         this.taskData = new TaskData(task, targetGraph, createdBy);
+        this.taskOutputTotal = new LinkedList<>();
     }
 
     public Task getTask() {
         return task;
     }
 
-    public void initTaskRunner(Task task, int maxParallelism) {
-        initTask(task, maxParallelism);
-        numThread = maxParallelism;
+    public void initTaskRunner(Task task) {
+        initTask(task);
         initIncrementalRun();
     }
 
-    public void initTask(Task task, int maxParallelism) {
+    public void initTask(Task task) {
         this.task = task;
-        this.numThread = maxParallelism;
     }
 
     public void initIncrementalRun() {
@@ -76,6 +74,16 @@ public class TaskRunner implements Runnable {
         setTaskOutput("");
     }
 
+    public void start() {
+        queue = taskData.getTargetGraph().initQueue();
+        taskData.setStatus(TaskStatus.ACTIVE);
+    }
+
+    public void stop() {
+        running = false;
+        taskData.setStatus(TaskStatus.STOPPED);
+        pause.set(false);
+    }
 
     @SneakyThrows
     @Override
@@ -107,9 +115,9 @@ public class TaskRunner implements Runnable {
         setTaskOutput("Done!");
         setTaskOutput(targetGraph.getStatsInfoString(targetGraph.getResultStatistics()));
         running = false;
-        resume();
         pause.set(false);
     }
+
 
     public synchronized void runTaskOnTarget(Target target) {
         switch (target.getStatus()) {
@@ -135,6 +143,9 @@ public class TaskRunner implements Runnable {
     }
 
     public synchronized List<Task> getTasksForWorker(Worker worker, int amount) {
+        if (pause.get())
+            return new ArrayList<>();
+        List<Target> targetsToWait = new ArrayList<>();
         List<Target> targetsToSend = new ArrayList<>();
         List<Task> tasksToSend = new ArrayList<>();
         for (int i = 0; i < amount && !queue.isEmpty(); i++) {
@@ -146,7 +157,7 @@ public class TaskRunner implements Runnable {
                         if (target.getStatus() == Status.FROZEN)
                             target.setWaitingTime(Instant.now());
                         target.setStatus(Status.WAITING);
-                        queue.add(target);
+                        targetsToWait.add(target);
                         continue;
                     }
                     break;
@@ -156,23 +167,35 @@ public class TaskRunner implements Runnable {
             targetsToSend.add(target);
             tasksToSend.add(initTask(target));
         }
+        queue.addAll(targetsToWait);
         synchronized (this) {
-            setTaskOutput("running task on target: " + targetsToSend);
+            setTaskOutput("sending the targets " + targetsToSend + "to the worker " + worker.getName());
         }
+        taskData.setWorkersTargets(worker, targetsToSend);
         workerListMap.put(worker, targetsToSend);
         return tasksToSend;
-
     }
 
     public Task initTask(Target target) {
         Task newTask = task.copy();
         newTask.setTarget(target);
-        newTask.setFuncOnFinished(this::OnFinish);
         newTask.setOutputText(this::setTaskOutput);
         return newTask;
     }
 
-    public synchronized void OnFinish(Target target) {
+    public void updateOnTaskStatus(Task task) {
+
+    }
+
+    public void getUpdateOnTaskStatus(Task task) {
+
+    }
+
+    public synchronized void OnFinish(String targetName) throws Exception {
+        Target target = taskData.getTargetGraph().getTarget(targetName);
+        if (target == null)
+            throw new Exception("No such target");
+
         target.setStatus(Status.FINISHED);
         String name = target.name;
         updateProgress();
@@ -198,10 +221,20 @@ public class TaskRunner implements Runnable {
 
     public boolean togglePause() {
         pause.set(!pause.get());
-        if (!pause.get()) {
-            resume();
+        if (pause.get()) {
+            taskData.setStatus(TaskStatus.PAUSED);
+        } else {
+            taskData.setStatus(TaskStatus.ACTIVE);
         }
         return pause.get();
+    }
+
+    public synchronized void addTaskLog(String[] text) {
+        taskOutputTotal.addAll(Arrays.asList(text));
+    }
+
+    public List<String> getAllTaskOutput() {
+        return taskOutputTotal;
     }
 
     public synchronized void setTaskOutput(String text) {
@@ -227,7 +260,6 @@ public class TaskRunner implements Runnable {
     public void reset() {
         queue.clear();
         targetsDone.set(targetGraph.size());
-        resume();
     }
 
     public TargetGraph getGraph() {

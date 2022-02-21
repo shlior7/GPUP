@@ -18,7 +18,7 @@ public class Simulation extends Task {
     private final float successWithWarningProbability;
 
     public Simulation(String taskName, int timeToProcess, boolean isRandom, float successProbability, float successWithWarningProbability) {
-        super(taskName);
+        super(taskName, Simulation.class);
         this.timeToProcess = timeToProcess;
         this.isRandom = isRandom;
         this.successProbability = successProbability;
@@ -26,7 +26,7 @@ public class Simulation extends Task {
     }
 
     public Simulation(Simulation simulation) {
-        super(simulation.getTaskName());
+        super(simulation.getTaskName(), Simulation.class);
         this.timeToProcess = simulation.timeToProcess;
         this.isRandom = simulation.isRandom;
         this.successProbability = simulation.successProbability;
@@ -53,11 +53,6 @@ public class Simulation extends Task {
     }
 
     @Override
-    public void setFuncOnFinished(Consumer<Target> onFinished) {
-        this.onFinished = onFinished;
-    }
-
-    @Override
     public String getName() {
         return "Simulation";
     }
@@ -80,6 +75,5 @@ public class Simulation extends Task {
         Instant after = Instant.now();
         targetToRunOn.setProcessTime(Duration.between(before, after));
         targetToRunOn.setResult(getResult(rand));
-        onFinished.accept(targetToRunOn);
     }
 }

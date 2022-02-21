@@ -3,9 +3,9 @@ package app.components;
 import TargetGraph.Result;
 import TargetGraph.Status;
 import TargetGraph.Target;
-import app.utils.Constants;
 import app.utils.http.HttpClientUtil;
 import app.utils.http.SimpleCallBack;
+import com.google.gson.JsonObject;
 import graphApp.GraphPane;
 import graphApp.actions.SideAction;
 import graphApp.actions.task.TaskController;
@@ -25,6 +25,7 @@ import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import types.Task;
 import types.UserInfo;
+import utils.Constants;
 
 import java.io.IOException;
 import java.net.URL;
@@ -36,7 +37,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import static app.utils.Constants.GSON_INSTANCE;
+import static utils.Constants.GSON_INSTANCE;
 
 public class TaskControllerAdmin extends TaskController {
     private final TargetsCheckComboBox<String> targetsComboBox;
@@ -124,19 +125,22 @@ public class TaskControllerAdmin extends TaskController {
         targetToRunOn.forEach(t -> t.init(""));
         graphPane.graph.createNewGraphFromTargetList(targetToRunOn);
         graphPane.setBottom(taskOutput);
-        uploadTask(taskSettings.task);
+        uploadTask(taskSettings.task, targetToRunOn, taskSettings.runFromScratch);
     }
 
-    public void uploadTask(Task task) {
+    public void uploadTask(Task task, Set<Target> targetToRunOn, boolean fromScratch) {
         String finalUrl = HttpUrl
                 .parse(Constants.TASK_UPLOAD)
                 .newBuilder()
                 .addQueryParameter(Constants.GRAPHNAME, graphPane.graph.getGraphsName())
+                .addQueryParameter(Constants.FROM_SCRATCH, String.valueOf(fromScratch))
                 .build()
                 .toString();
         System.out.println("finalUrl " + finalUrl);
-
-        HttpClientUtil.runAsyncBody(finalUrl, RequestBody.create(MediaType.parse("text/json"), GSON_INSTANCE.toJson(task)), new SimpleCallBack());
+        JsonObject json = new JsonObject();
+        json.addProperty("task", GSON_INSTANCE.toJson(task));
+        json.addProperty("targets", GSON_INSTANCE.toJson(targetToRunOn));
+        HttpClientUtil.runAsyncBody(finalUrl, RequestBody.create(MediaType.parse("text/json"), String.valueOf(json)), new SimpleCallBack());
     }
 
     public void taskRun(TaskSettings taskSettings) {
