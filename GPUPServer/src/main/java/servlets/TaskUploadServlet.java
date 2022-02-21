@@ -6,12 +6,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import managers.UserManager;
-import types.Admin;
-import types.Task;
 import utils.Constants;
 import utils.ServletUtils;
 import utils.SessionUtils;
-import types.Worker;
 
 import java.io.IOException;
 
@@ -36,22 +33,71 @@ public class TaskUploadServlet extends HttpServlet {
      * @throws IOException      if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws Exception {
+            throws ServletException, IOException {
         response.setContentType("text/plain;charset=UTF-8");
         String usernameFromSession = SessionUtils.getUsername(request);
         UserManager userManager = ServletUtils.getUserManager(getServletContext());
-        Admin admin = userManager.getAdmin(usernameFromSession);
-        if (admin != null) {
-            synchronized (this) {
-                String graphName = request.getParameter(GRAPHNAME);
-                Task task = GSON_INSTANCE.fromJson(request.getReader(), Task.class);
-                ServletUtils.getEngine(getServletContext()).addTask(task, graphName, admin);
-                response.setStatus(HttpServletResponse.SC_OK);
+
+        if (usernameFromSession == null) {
+            String usernameFromParameter = request.getParameter(USERNAME);
+            String roleFromParameter = request.getParameter(ROLE);
+
+            if (usernameFromParameter == null || usernameFromParameter.isEmpty() || roleFromParameter == null) {
+                //no username in session and no username in parameter -
+                //redirect back to the index page
+                //this return an HTTP code back to the browser telling it to load
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad Request: wrong parameters");
+            } else {
+                //normalize the username value
+                usernameFromParameter = usernameFromParameter.trim();
+                /*
+                One can ask why not enclose all the synchronizations inside the userManager object ?
+                Well, the atomic action we need to perform here includes both the question (isUserExists) and (potentially) the insertion
+                of a new user (addUser). These two actions needs to be considered atomic, and synchronizing only each one of them, solely, is not enough.
+                (of course there are other more sophisticated and performable means for that (atomic objects etc) but these are not in our scope)
+
+                The synchronized is on this instance (the servlet).
+                As the servlet is singleton - it is promised that all threads will be synchronized on the very same instance (crucial here)
+
+                A better code would be to perform only as little and as necessary things we need here inside the synchronized block and avoid
+                do here other not related actions (such as request dispatcher\redirection etc. this is shown here in that manner just to stress this issue
+                 */
+                synchronized (this) {
+                    if (userManager.isUserExists(usernameFromParameter)) {
+                        String errorMessage = "Username " + usernameFromParameter + " already exists. Please enter a different username.";
+                        // username already exists, forward the request back to index.jsp
+                        // with a parameter that indicates that an error should be displayed
+                        // the request dispatcher obtained from the servlet context is one that MUST get an absolute path (starting with'/')
+                        // and is relative to the web app root
+                        // see this link for more details:
+                        // http://timjansen.github.io/jarfiller/guide/servlet25/requestdispatcher.xhtml
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.getOutputStream().print(errorMessage);
+//                        request.setAttribute(Constants.USER_NAME_ERROR, errorMessage);
+
+//                        getServletContext().getRequestDispatcher(LOGIN_ERROR_URL).forward(request, response);
+                    } else {
+                        if(roleFromParameter.equals("Worker")){
+                            String threadsFromParameter = request.getParameter(THREADS);
+                            userManager.addWorker(usernameFromParameter,Integer.parseInt(threadsFromParameter));
+                        }
+                        else {
+                            userManager.addAdmin(usernameFromParameter);
+                        }
+                        //set the username in a session so it will be available on each request
+                        //the true parameter means that if a session object does not exists yet
+                        //create a new one
+                        request.getSession(true).setAttribute(Constants.USERNAME, usernameFromParameter);
+
+                        //redirect the request to the chat room - in order to actually change the URL
+                        response.setStatus(HttpServletResponse.SC_OK);
+                    }
+                }
             }
         } else {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            //user is already logged in
+            response.setStatus(HttpServletResponse.SC_OK);
         }
-
     }
 
 // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -67,11 +113,7 @@ public class TaskUploadServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        try {
-            processRequest(request, response);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        processRequest(request, response);
     }
 
     /**
@@ -85,11 +127,7 @@ public class TaskUploadServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        try {
-            processRequest(request, response);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        processRequest(request, response);
     }
 
     /**

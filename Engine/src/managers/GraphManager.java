@@ -15,14 +15,12 @@ public class GraphManager {
         userNameToUser = new HashMap<>();
     }
 
-    public synchronized void addUser(String username, boolean isAdmin) {
-        IUser newUser;
-        if (isAdmin) {
-            newUser = new Admin(username);
-        } else {
-            newUser = new Worker(username);
-        }
-        userNameToUser.put(username, newUser);
+    public synchronized void addAdmin(String username) {
+        userNameToUser.put(username, new Admin(username));
+    }
+
+    public synchronized void addWorker(String username,int threads) {
+        userNameToUser.put(username, new Worker(username,threads));
     }
 
 //    public synchronized void removeUser(String username) {

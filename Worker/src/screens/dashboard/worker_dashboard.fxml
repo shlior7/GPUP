@@ -15,7 +15,6 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 
-
 <ScrollPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="screens.dashboard.Dashboard">
    <content>
       <TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="756.0" prefWidth="1489.0" tabClosingPolicy="UNAVAILABLE">
@@ -53,19 +52,64 @@
                               <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                            </columnResizePolicy>
                         </TableView>
-                        <TableView fx:id="taskTable" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <TableView fx:id="graphTable" prefHeight="288.0" prefWidth="918.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                            <columns>
                               <TableColumn fx:id="selectedListMissions" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="64.0" text="selected" />
-                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="88.0" text="Task name" />
-                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="93.0" text="Graph name" />
-                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="75.0" text="Leaves" />
-                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="109.0" text="Independents" />
-                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="75.0" text="Middles" />
-                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="63.0" text="Roots" />
-                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="133.0" text="Price per target" />
-                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="110.0" text="Mission status" />
-                              <TableColumn maxWidth="1.7976931348623157E308" prefWidth="123.0" text="Workers on task" />
-                              <TableColumn maxWidth="1.7976931348623157E308" prefWidth="77.0" text="Task type" />
+                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="88.0" text="Task name">
+                                 <cellValueFactory>
+                                    <PropertyValueFactory property="taskName" />
+                                 </cellValueFactory>
+                              </TableColumn>
+                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="93.0" text="Graph name">
+                                 <cellValueFactory>
+                                    <PropertyValueFactory property="graphName" />
+                                 </cellValueFactory>
+                              </TableColumn>
+                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="75.0" text="Leaves">
+                                 <cellValueFactory>
+                                    <PropertyValueFactory property="leaves" />
+                                 </cellValueFactory>
+                              </TableColumn>
+                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="109.0" text="Independents">
+                                 <cellValueFactory>
+                                    <PropertyValueFactory property="independents" />
+                                 </cellValueFactory>
+                              </TableColumn>
+                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="75.0" text="Middles">
+                                 <cellValueFactory>
+                                    <PropertyValueFactory property="middles" />
+                                 </cellValueFactory>
+                              </TableColumn>
+                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="63.0" text="Roots">
+                                 <cellValueFactory>
+                                    <PropertyValueFactory property="roots" />
+                                 </cellValueFactory>
+                              </TableColumn>
+                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="133.0" text="Price per target">
+                                 <cellValueFactory>
+                                    <PropertyValueFactory property="pricePerTarget" />
+                                 </cellValueFactory>
+                              </TableColumn>
+                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="110.0" text="Task status">
+                                 <cellValueFactory>
+                                    <PropertyValueFactory property="taskStatus" />
+                                 </cellValueFactory>
+                              </TableColumn>
+                              <TableColumn maxWidth="1.7976931348623157E308" prefWidth="123.0" text="Workers on task">
+                                 <cellValueFactory>
+                                    <PropertyValueFactory property="workersOnTask" />
+                                 </cellValueFactory>
+                              </TableColumn>
+                              <TableColumn maxWidth="1.7976931348623157E308" prefWidth="77.0" text="Task type">
+                                 <cellValueFactory>
+                                    <PropertyValueFactory property="taskType" />
+                                 </cellValueFactory>
+                              </TableColumn>
+                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="96.0" text="Created by">
+                              <cellValueFactory>
+                                 <PropertyValueFactory property="createdBy" />
+                              </cellValueFactory>
+                              </TableColumn>
                            </columns>
                         </TableView>
                         <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" text="Users" textAlignment="JUSTIFY">
@@ -79,7 +123,7 @@
                            </font>
                         </Label>
                         <ListView fx:id="missionsList" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3" />
-                        <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" text="My missions" textAlignment="JUSTIFY" GridPane.rowIndex="2">
+                        <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" text="My tasks" textAlignment="JUSTIFY" GridPane.rowIndex="2">
                            <font>
                               <Font name="Candara Bold" size="19.0" />
                            </font>
@@ -102,7 +146,22 @@
                   </GridPane>
                </content>
           </Tab>
-          <Tab text="Graph info" />
+          <Tab text="Graph info">
+               <content>
+                  <Pane prefHeight="200.0" prefWidth="200.0">
+                     <children>
+                        <TableView fx:id="taskTable" prefHeight="693.0" prefWidth="881.0">
+                           <columns>
+                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="194.99996948242188" text="Task name" />
+                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="178.00003051757812" text="Workers on task" />
+                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="151.0" text="Progress" />
+                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="163.0" text="Targets finished" />
+                              <TableColumn maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="194.0" text="Credits" />
+                           </columns>
+                        </TableView>
+                     </children>
+                  </Pane>
+               </content></Tab>
             <Tab text="Targets information">
                <content>
                   <Pane prefHeight="200.0" prefWidth="200.0">
