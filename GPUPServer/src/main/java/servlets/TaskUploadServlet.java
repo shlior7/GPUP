@@ -59,8 +59,8 @@ public class TaskUploadServlet extends HttpServlet {
                     JsonObject taskJson = json.get("task").getAsJsonObject();
                     Task task = GSON_INSTANCE.fromJson(requestData, (Class<? extends Task>) Class.forName(taskJson.get("type").getAsString()));
 
-                    JsonObject targetsJson = json.get("task").getAsJsonObject();
-                    Set<Target> targets = Arrays.stream(GSON_INSTANCE.fromJson(requestData, Target[].class)).collect(Collectors.toSet());
+                    JsonObject targetsJson = json.get("targets").getAsJsonObject();
+                    Set<Target> targets = Arrays.stream(GSON_INSTANCE.fromJson(targetsJson, Target[].class)).collect(Collectors.toSet());
 
 
                     ServletUtils.getEngine(getServletContext()).addTask(task, graphName, admin, targets);
