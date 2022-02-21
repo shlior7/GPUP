@@ -7,30 +7,19 @@ import lombok.ToString;
 import java.util.Map;
 
 @ToString
-public class GraphInfo {
-    private final String graphName;
-    private final String createdBy;
-    private final String totalTargets;
-    private final String leaves;
-    private final String middles;
-    private final String independents;
-    private final String roots;
+public class TargetsInfo {
     private final String taskName;
-    private final String pricePerTarget;
-    private final String priceForTask;
-    private String taskStatus;
+    private final String targetName;
     private String taskType;
-    private String workersOnTask;
+    private String totalPrice;
+    private String targetStatus;
+    private String logs;
 
-    public GraphInfo(TargetGraph graph) {
-        this.graphName = (graph.getGraphsName());
-        ///////taskName;
-        ///////task status;
-        ///task type
-        ///////price per target
-        ////price for task;
-        //this.priceForTask = String.valueOf(Integer.valueOf(pricePerTarget)*graph.totalSize());
-        ///get workers this.workersOnTask = graph.
+
+    public TargetsInfo(Task task,Target target) {
+        this.taskName = task.getName();
+        this.targetName = target.toString();
+
         this.priceForTask = "";
         this.pricePerTarget = "";
         this.taskName = "";

@@ -11,9 +11,12 @@ public class Constants {
     public final static int REFRESH_RATE = 2000;
     public final static String CHAT_LINE_FORMATTING = "%tH:%tM:%tS | %.10s: %s%n";
     public static final String CONTEXT_PATH = "/app";
+
+    //Query Parameters
     public static final String USERNAME = "username";
     public static final String ROLE = "role";
     public static final String GRAPHNAME = "graphName";
+    public static final String THREADS = "threads";
 
     // Server resources locations
     public final static String BASE_DOMAIN = "localhost";

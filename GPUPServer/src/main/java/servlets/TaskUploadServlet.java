@@ -1,5 +1,7 @@
 package servlets;
 
+import TargetGraph.Target;
+import com.google.gson.JsonObject;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,6 +16,11 @@ import utils.SessionUtils;
 import types.Worker;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static utils.Constants.*;
 
@@ -37,21 +44,35 @@ public class TaskUploadServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        response.setContentType("text/plain;charset=UTF-8");
-        String usernameFromSession = SessionUtils.getUsername(request);
-        UserManager userManager = ServletUtils.getUserManager(getServletContext());
-        Admin admin = userManager.getAdmin(usernameFromSession);
-        if (admin != null) {
-            synchronized (this) {
-                String graphName = request.getParameter(GRAPHNAME);
-                Task task = GSON_INSTANCE.fromJson(request.getReader(), Task.class);
-                ServletUtils.getEngine(getServletContext()).addTask(task, graphName, admin);
-                response.setStatus(HttpServletResponse.SC_OK);
-            }
-        } else {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-        }
+        try (PrintWriter out = response.getWriter()) {
+            response.setContentType("text/plain;charset=UTF-8");
+            String usernameFromSession = SessionUtils.getUsername(request);
+            UserManager userManager = ServletUtils.getUserManager(getServletContext());
+            Admin admin = userManager.getAdmin(usernameFromSession);
+            if (admin != null) {
+                synchronized (this) {
+                    String graphName = request.getParameter(GRAPHNAME);
+//                    boolean fromScratch = Boolean.parseBoolean(request.getParameter(FROM_SCRATCH));
+                    String requestData = request.getReader().lines().collect(Collectors.joining());
+                    System.out.println("requestData = " + requestData);
+                    JsonObject json = GSON_INSTANCE.fromJson(requestData, JsonObject.class);
+                    JsonObject taskJson = json.get("task").getAsJsonObject();
+                    Task task = GSON_INSTANCE.fromJson(requestData, (Class<? extends Task>) Class.forName(taskJson.get("type").getAsString()));
 
+                    JsonObject targetsJson = json.get("targets").getAsJsonObject();
+                    Set<Target> targets = Arrays.stream(GSON_INSTANCE.fromJson(targetsJson, Target[].class)).collect(Collectors.toSet());
+
+
+                    ServletUtils.getEngine(getServletContext()).addTask(task, graphName, admin, targets);
+
+                    response.setStatus(HttpServletResponse.SC_OK);
+                }
+            } else {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

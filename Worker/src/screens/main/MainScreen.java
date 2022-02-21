@@ -1,28 +1,22 @@
 package screens.main;
 
-import utils.Utils;
 import javafx.application.Application;
-import javafx.application.Platform;
+import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.HttpUrl;
-import okhttp3.Response;
-import org.jetbrains.annotations.NotNull;
 import screens.dashboard.Dashboard;
 import types.Worker;
 import utils.Constants;
 import utils.http.HttpClientUtil;
+import utils.http.SimpleCallBack;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 import static utils.Utils.alertWarning;
 
@@ -50,7 +44,6 @@ public class MainScreen extends Application {
 
 
     private boolean checkValidRegistration(){
-        //check if name is valid
         try {
             int num = Integer.parseInt(num_threads.getText());
             if(num <= 5 && num >= 1) {
@@ -71,41 +64,19 @@ public class MainScreen extends Application {
         System.out.println(num_threads.getText());
 
         if(checkValidRegistration()) {
-            Worker user1 = new Worker(name_worker.getText());
-            user1.setThreads(Integer.parseInt(num_threads.getText()));
-            Dashboard controller = Dashboard.createDashboard(user1);
-//            String finalUrl = HttpUrl
-//                    .parse(Constants.LOGIN_PAGE)
-//                    .newBuilder()
-//                    .build()
-//                    .toString();
-//            System.out.println("finalUrl " + finalUrl);
-//            HttpClientUtil.runAsyncBody(finalUrl, GSON_INSTANCE.toJson(user1), new Callback() {
-//                @Override
-//                public void onFailure(@NotNull Call call, @NotNull IOException e) {
-//                    Platform.runLater(() ->
-//                            System.out.println("Something went wrong: " + e.getMessage())
-//                    );
-//                }
-//
-//                @Override
-//                public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-//                    String responseBody = response.body().string();
-//                    if (response.code() != 200) {
-//                        Platform.runLater(() ->
-//                                System.out.println("Something went wrong: " + responseBody)
-//                        );
-//                    } else {
-//                        Platform.runLater(() -> {
-//                            System.out.println("OK " + responseBody);
-//                        });
-//                    }
-//                }
-//            });
-            controller.show();
+            Worker user = new Worker(name_worker.getText(), Integer.parseInt(num_threads.getText()));
+            Dashboard controller = Dashboard.createDashboard(user);
+            String finalUrl = HttpUrl
+                    .parse(Constants.LOGIN_PAGE)
+                    .newBuilder()
+                    .addQueryParameter(Constants.USERNAME, user.getName())
+                    .addQueryParameter(Constants.ROLE, user.getRole())
+                    .addQueryParameter(Constants.THREADS, String.valueOf(user.getThreads()))
+                    .build()
+                    .toString();
+            System.out.println("finalUrl " + finalUrl);
+            HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((s) -> controller.show()));
         }
-//        controller.addTask(task1);
-//        controller.show();
     }
 
 }
