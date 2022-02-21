@@ -8,16 +8,19 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import types.Task;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.DataFormatException;
 
 public class FileHandler {
 //    private Document document;
@@ -50,28 +53,42 @@ public class FileHandler {
     }
 
     private TargetGraph extractTargetGraph(Document document) throws Exception {
-        Map<String, String> config = readConfigurations(document);
+        Map<String, Object> config = readConfigurations(document);
         Map<String, List> targets = readTargets(document);
 
-        int parallelism = Integer.parseInt(config.get("parallelism"));
-        return new TargetGraph(config.get("name"), config.get("directory"), targets.get("targets"), targets.get("edges"));
+
+        return new TargetGraph(String.valueOf(config.get("name")), targets.get("targets"), targets.get("edges"), (Map<Class<? extends Task>, Integer>) config.get("prices"));
     }
 
 
-    private Map<String, String> readConfigurations(Document document) throws Exception {
+    private Map<String, Object> readConfigurations(Document document) throws Exception {
         NodeList configurations = document.getElementsByTagName("GPUP-Configuration");
         if (configurations.getLength() == 0 || configurations.item(0).getNodeType() != Node.ELEMENT_NODE)
             throw new Exception("no configurations");
 
         Element config = (Element) configurations.item(0);
         String GraphsName = validateTextContent(config, "GPUP-Graph-Name");
-        String WorkingDir = validateTextContent(config, "GPUP-Working-Directory");
-        String maxParallelism = validateTextContent(config, "GPUP-Max-Parallelism");
+        List<Element> taskPrices = nodeListToElements(config.getElementsByTagName("GPUP-GPUP-Pricing"));
+        Map<Class<? extends Task>, Integer> TaskPrices = new HashMap<>();
+        List<String> errors = new ArrayList<>();
+        taskPrices.forEach(taskPrice -> {
+            try {
+                String name = taskPrice.getAttributes().getNamedItem("name").getTextContent();
+                Class<? extends Task> taskClass = (Class<? extends Task>) Class.forName(name);
+                String price = taskPrice.getAttributes().getNamedItem("price-per-target").getTextContent();
+                TaskPrices.put(
+                        taskClass,
+                        Integer.parseInt(price));
 
-        return new HashMap<String, String>() {{
+            } catch (NumberFormatException e) {
+                errors.add("price-per-target was not a number");
+            } catch (ClassNotFoundException e) {
+                errors.add("task class name is not a known task");
+            }
+        });
+        return new HashMap<String, Object>() {{
             put("name", GraphsName);
-            put("directory", WorkingDir);
-            put("parallelism", maxParallelism);
+            put("prices", TaskPrices);
         }};
     }
 

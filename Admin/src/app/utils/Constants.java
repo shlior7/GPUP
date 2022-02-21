@@ -24,6 +24,7 @@ public class Constants {
     public final static String GET_GRAPHS_ALL = FULL_SERVER_PATH + "/graphs/all";
     public static final String GET_USERS_ALL = FULL_SERVER_PATH + "/users/all";
     public static final String GET_GRAPH = FULL_SERVER_PATH + "/graphs/one";
+    public static final String TASK_UPLOAD = FULL_SERVER_PATH + "/task/upload";
 
     public final static Gson GSON_INSTANCE = new Gson();
 

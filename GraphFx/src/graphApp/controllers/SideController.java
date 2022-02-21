@@ -46,13 +46,15 @@ public class SideController extends VBox {
 
     public void addSideAction(SideAction sideAction) {
         actionList.add(sideAction);
-        settings.getChildren().add(1, sideAction.getSettings());
+        this.getChildren().add(1, sideAction.getActionButton());
+        settings.getChildren().add(sideAction.getSettings());
         sideAction.setOnOpenSettings(this::onOpenSettings);
     }
 
     public void addTaskControllerAction(TaskController taskController) {
         actionList.add(taskController);
-        settings.getChildren().add(0, taskController.getSettings());
+        this.getChildren().add(0, taskController.getActionButton());
+        settings.getChildren().add(taskController.getSettings());
         taskController.setOnOpenSettings(this::onOpenSettings);
     }
 

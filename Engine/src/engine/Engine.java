@@ -14,20 +14,20 @@ import types.Worker;
 import utils.FileHandler;
 
 public class Engine implements IEngine {
-    private FileHandler fileHandler;
+    FileHandler fileHandler;
     private TargetGraph targetGraph;
     private TaskRunner taskRunner;
-    private final TasksManager tasksManager;
+    private final TaskManager tasksManager;
     private final UserManager userManager;
     private final Map<String, TargetGraph> allGraphs;
 
 
     public Engine() {
         allGraphs = new HashMap<>();
-        fileHandler = new FileHandler();
         taskRunner = new TaskRunner(targetGraph);
-        tasksManager = new TasksManager();
+        tasksManager = new TaskManager();
         userManager = new UserManager();
+        fileHandler = new FileHandler();
     }
 
     public boolean toggleTaskRunning() {
@@ -36,7 +36,7 @@ public class Engine implements IEngine {
         return false;
     }
 
-    public TasksManager getTasksManager() {
+    public TaskManager getTasksManager() {
         return tasksManager;
     }
 
@@ -162,11 +162,17 @@ public class Engine implements IEngine {
         System.out.println(allGraphs.get(targetGraph.getGraphsName()).getGraphsName());
     }
 
-    public void addTask(Task task, String graphName) throws Exception {
+    @Override
+    public void addTask(Task task, String graphName, Admin createdBy) throws Exception {
         TargetGraph targetGraph = allGraphs.getOrDefault(graphName, null);
         if (targetGraph == null)
             throw new Exception("graph wasn't found");
-        tasksManager.addTask(task, targetGraph);
+        tasksManager.addTask(task, targetGraph, createdBy);
+    }
+
+    @Override
+    public TaskManager getTaskManager() {
+        return tasksManager;
     }
 
 }

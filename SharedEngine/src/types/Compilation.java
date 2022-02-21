@@ -17,20 +17,21 @@ public class Compilation extends Task {
     private final String workingDir;
     private String javaFilesPath;
 
-    public Compilation(String outFolder, String workingDir) {
+    public Compilation(String taskName, String outFolder, String workingDir) {
+        super(taskName);
         this.workingDir = workingDir;
         this.outFolder = outFolder;
         new File(outFolder).mkdir();
-
     }
 
     public Compilation(Compilation task) {
+        super(task.taskName);
         this.outFolder = task.outFolder;
         this.workingDir = task.workingDir;
     }
 
     public String getName() {
-        return "compilation";
+        return "Compilation";
     }
 
     public void setTarget(Target target) {

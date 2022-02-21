@@ -5,10 +5,16 @@ import TargetGraph.Target;
 import java.util.function.Consumer;
 
 public abstract class Task implements Runnable {
+    protected int pricePerTarget;
+    protected String taskName;
     protected Target targetToRunOn;
     protected Worker workerOnIt;
     protected Consumer<Target> onFinished;
     protected Consumer<String> outputText;
+
+    public Task(String taskName) {
+        this.taskName = taskName;
+    }
 
     public abstract Task copy();
 
@@ -29,4 +35,12 @@ public abstract class Task implements Runnable {
     }
 
     public abstract String getName();
+
+    public String getTaskName() {
+        return taskName;
+    }
+
+    public void setPricePerTarget(int pricePerTarget) {
+        this.pricePerTarget = pricePerTarget;
+    }
 }

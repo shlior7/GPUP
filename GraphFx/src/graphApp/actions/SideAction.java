@@ -2,6 +2,7 @@ package graphApp.actions;
 
 
 import graphApp.GraphPane;
+import graphApp.components.AnchoredButton;
 import graphApp.components.AnchoredNode;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -11,7 +12,7 @@ import javafx.scene.layout.VBox;
 
 public abstract class SideAction {
     protected final GraphPane graphPane;
-    protected Button actionButton;
+    protected AnchoredButton actionButton;
     protected VBox settings;
     protected Runnable onOpenSettings;
 
@@ -22,7 +23,7 @@ public abstract class SideAction {
 
     public SideAction(String label, GraphPane graphPane) {
         this.graphPane = graphPane;
-        this.actionButton = new Button(label);
+        this.actionButton = new AnchoredButton(label);
         this.settings = new VBox(10);
         this.settings.setVisible(false);
     }
@@ -39,7 +40,7 @@ public abstract class SideAction {
         return new AnchoredNode(actionButton);
     }
 
-    public Button getActionButton() {
+    public AnchoredButton getActionButton() {
         return actionButton;
     }
 

@@ -8,7 +8,9 @@ import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import lombok.SneakyThrows;
+import types.Admin;
 import types.Task;
+import types.TaskData;
 import types.Worker;
 
 import java.time.Instant;
@@ -31,6 +33,7 @@ public class TaskRunner implements Runnable {
     private int numThread;
     private final SimpleStringProperty taskOutput;
     private final SimpleDoubleProperty progress;
+    private TaskData taskData;
 
     public TaskRunner(TargetGraph targetGraph) {
         this.targetGraph = targetGraph;
@@ -39,13 +42,18 @@ public class TaskRunner implements Runnable {
         this.numThread = 0;
     }
 
-    public TaskRunner(TargetGraph targetGraph, Task task) {
+    public TaskRunner(TargetGraph targetGraph, Task task, Admin createdBy) {
         this.workerListMap = new HashMap<>();
         this.task = task;
         this.targetGraph = targetGraph;
         this.taskOutput = new SimpleStringProperty("");
         this.progress = new SimpleDoubleProperty(0);
         this.numThread = 0;
+        this.taskData = new TaskData(task, targetGraph, createdBy);
+    }
+
+    public Task getTask() {
+        return task;
     }
 
     public void initTaskRunner(Task task, int maxParallelism) {
@@ -220,5 +228,13 @@ public class TaskRunner implements Runnable {
         queue.clear();
         targetsDone.set(targetGraph.size());
         resume();
+    }
+
+    public TargetGraph getGraph() {
+        return targetGraph;
+    }
+
+    public TaskData getTaskData() {
+        return taskData;
     }
 }

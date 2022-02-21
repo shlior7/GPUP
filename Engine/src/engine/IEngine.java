@@ -2,8 +2,10 @@ package engine;
 
 import TargetGraph.TargetGraph;
 import managers.UserManager;
+import task.TaskManager;
 import types.Admin;
 import types.IUser;
+import types.Task;
 
 import java.io.InputStream;
 import java.util.Collection;
@@ -23,4 +25,7 @@ public interface IEngine {
 
     void loadXmlFile(InputStream path, Admin createdBy) throws Exception;
 
+    void addTask(Task task, String graphName, Admin createdBy) throws Exception;
+
+    TaskManager getTaskManager();
 }

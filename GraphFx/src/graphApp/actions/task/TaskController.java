@@ -112,7 +112,7 @@ public class TaskController extends SideAction {
 
     public void createColorMap() {
         FXMLLoader fxmlLoader = new FXMLLoader();
-        URL taskUrl = TaskSettings.class.getResource("map.fxml");
+        URL taskUrl = TaskController.class.getResource("map.fxml");
         fxmlLoader.setLocation(taskUrl);
         try {
             GridPane map = fxmlLoader.load(taskUrl.openStream());

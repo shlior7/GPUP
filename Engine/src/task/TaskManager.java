@@ -1,23 +1,28 @@
 package task;
 
 import TargetGraph.TargetGraph;
+import types.Admin;
 import types.Task;
 
+import java.util.Collection;
 import java.util.HashMap;
 
-public class TasksManager {
-    private final HashMap<Task, TargetGraph> graphs;
+public class TaskManager {
     private final HashMap<String, TaskRunner> tasksRunners;
 
-    public TasksManager() {
+    public TaskManager() {
         tasksRunners = new HashMap<>();
-        graphs = new HashMap<>();
     }
 
-    public synchronized void addTask(Task task, TargetGraph graph) {
-        graphs.putIfAbsent(task, graph);
+    public synchronized void addTask(Task task, TargetGraph graph, Admin createdBy) {
+        TaskRunner taskRunner = new TaskRunner(graph, task, createdBy);
+        tasksRunners.putIfAbsent(task.getTaskName(), taskRunner);
+
     }
 
+    public Collection<TaskRunner> getAllTasks() {
+        return tasksRunners.values();
+    }
 
     public synchronized void startTask() {
     }

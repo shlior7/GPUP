@@ -3,10 +3,12 @@ package app.components;
 import TargetGraph.Result;
 import TargetGraph.Status;
 import TargetGraph.Target;
+import app.utils.Constants;
+import app.utils.http.HttpClientUtil;
+import app.utils.http.SimpleCallBack;
 import graphApp.GraphPane;
 import graphApp.actions.SideAction;
 import graphApp.actions.task.TaskController;
-import graphApp.actions.task.TaskSettings;
 import graphApp.components.ActionButton;
 import graphApp.components.AnchoredNode;
 import graphApp.components.TargetsCheckComboBox;
@@ -18,15 +20,23 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import types.Task;
+import types.UserInfo;
 
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+
+import static app.utils.Constants.GSON_INSTANCE;
 
 public class TaskControllerAdmin extends TaskController {
     private final TargetsCheckComboBox<String> targetsComboBox;
@@ -70,7 +80,7 @@ public class TaskControllerAdmin extends TaskController {
         if (graphPane.choosingController.isChoosing() || paused)
             return;
         TaskSettings taskSettings = TaskSettings.createTaskSettings(graphPane.graph);
-        taskSettings.showAndReturn(graphPane);
+        taskSettings.showAndReturn();
 
         if (!taskSettings.submitted)
             return;
@@ -88,7 +98,7 @@ public class TaskControllerAdmin extends TaskController {
         if (taskSettings.chooseAll)
             graphPane.choosingController.all(null);
 
-//        runButton.setOnAction((ea) -> taskRun(taskSettings));
+        runButton.setOnAction((ea) -> taskRun(taskSettings));
         runButton.setText("Start");
         settings.setVisible(true);
         targetsComboBox.setDisable(false);
@@ -114,23 +124,38 @@ public class TaskControllerAdmin extends TaskController {
         targetToRunOn.forEach(t -> t.init(""));
         graphPane.graph.createNewGraphFromTargetList(targetToRunOn);
         graphPane.setBottom(taskOutput);
+        uploadTask(taskSettings.task);
     }
-//
-//    public void taskRun(TaskSettings taskSettings) {
-//        Set<Target> targetToRunOn = graphPane.choosingController.getChosenTargets();
-//        if (targetToRunOn.size() == 0) {
-//            alertWarning("No Targets Chosen");
-//            return;
-//        }
-//
-//        BeforeRunning(taskSettings, targetToRunOn);
+
+    public void uploadTask(Task task) {
+        String finalUrl = HttpUrl
+                .parse(Constants.TASK_UPLOAD)
+                .newBuilder()
+                .addQueryParameter(Constants.GRAPHNAME, graphPane.graph.getGraphsName())
+                .build()
+                .toString();
+        System.out.println("finalUrl " + finalUrl);
+
+        HttpClientUtil.runAsyncBody(finalUrl, RequestBody.create(MediaType.parse("text/json"), GSON_INSTANCE.toJson(task)), new SimpleCallBack());
+    }
+
+    public void taskRun(TaskSettings taskSettings) {
+        Set<Target> targetToRunOn = graphPane.choosingController.getChosenTargets();
+        if (targetToRunOn.size() == 0) {
+            alertWarning("No Targets Chosen");
+            return;
+        }
+
+        BeforeRunning(taskSettings, targetToRunOn);
 //        initWorkingThread(taskSettings);
 //        initChangingColorThread();
-//
-//        runButton.setText("Pause");
+
+        runButton.setText("Pause");
 //        runButton.setOnAction(this::pauseResume);
-//    }
-//
+    }
+
+
+    //
 //    ///Admin
 //    public void initWorkingThread(TaskSettings taskSettings) {
 //        Thread.UncaughtExceptionHandler handler = (th, ex) -> System.out.println("Uncaught exception: " + ex);

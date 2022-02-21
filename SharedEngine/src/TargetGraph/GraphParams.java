@@ -2,9 +2,11 @@ package TargetGraph;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import types.Task;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 
 @Getter
 @AllArgsConstructor
@@ -13,6 +15,7 @@ public class GraphParams {
     private String graphsName;
     private String workingDir;
     private Collection<Edge> edges;
+    private Map<Class<? extends Task>, Integer> prices;
 
     public GraphParams(TargetGraph targetGraph) {
         allTargets = new ArrayList<>();
@@ -20,6 +23,6 @@ public class GraphParams {
         allTargets = targetGraph.getVerticesMap().values();
         edges = targetGraph.getEdges();
         graphsName = targetGraph.getGraphsName();
-        workingDir = targetGraph.getWorkingDir();
+        prices = targetGraph.getPrices();
     }
 }

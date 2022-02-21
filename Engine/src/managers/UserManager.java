@@ -34,7 +34,7 @@ public class UserManager {
     }
 
     public synchronized Worker getWorker(String userName) {
-        if (userNameToUser.get(userName) instanceof Worker) {
+        if (userNameToUser.getOrDefault(userName, null) instanceof Worker) {
             return (Worker) userNameToUser.get(userName);
         } else {
             return null;
@@ -42,7 +42,7 @@ public class UserManager {
     }
 
     public synchronized Admin getAdmin(String userName) {
-        if (userNameToUser.get(userName) instanceof Admin) {
+        if (userNameToUser.getOrDefault(userName, null) instanceof Admin) {
             return (Admin) userNameToUser.get(userName);
         } else {
             return null;

@@ -17,7 +17,8 @@ public class Simulation extends Task {
     private final float successProbability;
     private final float successWithWarningProbability;
 
-    public Simulation(int timeToProcess, boolean isRandom, float successProbability, float successWithWarningProbability) {
+    public Simulation(String taskName, int timeToProcess, boolean isRandom, float successProbability, float successWithWarningProbability) {
+        super(taskName);
         this.timeToProcess = timeToProcess;
         this.isRandom = isRandom;
         this.successProbability = successProbability;
@@ -25,6 +26,7 @@ public class Simulation extends Task {
     }
 
     public Simulation(Simulation simulation) {
+        super(simulation.getTaskName());
         this.timeToProcess = simulation.timeToProcess;
         this.isRandom = simulation.isRandom;
         this.successProbability = simulation.successProbability;
@@ -57,7 +59,7 @@ public class Simulation extends Task {
 
     @Override
     public String getName() {
-        return "simulation";
+        return "Simulation";
     }
 
     @Override

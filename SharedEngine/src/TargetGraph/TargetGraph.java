@@ -1,9 +1,9 @@
 package TargetGraph;
 
-import com.google.gson.annotations.Expose;
 import graph.Graph;
 import types.Admin;
 
+import types.Task;
 import utils.RecursiveConsumer;
 import utils.Utils;
 
@@ -16,10 +16,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class TargetGraph implements Graph<Target> {
+    private Map<Class<? extends Task>, Integer> prices;
     private Admin createdBy;
     private Map<String, Target> allTargets;
     private String graphsName;
-    private String workingDir;
     private Collection<Edge> edges;
     private AdjacentMap originalTargetsGraph;
     private AdjacentMap currentTargetsGraph;
@@ -30,14 +30,16 @@ public class TargetGraph implements Graph<Target> {
     }
 
     public TargetGraph(GraphParams graphParams) throws Exception {
-        this(graphParams.getGraphsName(), graphParams.getWorkingDir(), graphParams.getAllTargets(), graphParams.getEdges());
+        this(graphParams.getGraphsName(), graphParams.getAllTargets(), graphParams.getEdges(), graphParams.getPrices());
     }
 
-    public TargetGraph(String graphsName, String workingDir, Collection<Target> targets, Collection<Edge> edges) throws Exception {
+
+    public TargetGraph(String graphsName, Collection<Target> targets, Collection<Edge> edges, Map<Class<? extends Task>, Integer> prices) throws Exception {
         validateGraph(targets, edges);
+        this.prices = prices;
+
         this.edges = edges;
         this.graphsName = graphsName;
-        this.workingDir = workingDir;
         this.allTargets = new HashMap<>();
         this.originalTargetsGraph = new AdjacentMap();
         this.currentTargetsGraph = new AdjacentMap();
@@ -399,7 +401,7 @@ public class TargetGraph implements Graph<Target> {
         return getCurrentTargets().stream().anyMatch(t -> t.getStatus() != Status.FROZEN);
     }
 
-    public Object getIfNotInGraph(Object object) {
+    public Object getIfNotInGraph(Type object) {
         return Utils.getIfNullDefault(object, "NOT_IN_GRAPH");
     }
 
@@ -438,9 +440,6 @@ public class TargetGraph implements Graph<Target> {
                 .collect(Collectors.joining("\n"));
     }
 
-    public String getWorkingDir() {
-        return workingDir;
-    }
 
     public void validateGraph(Collection<Target> targets, Collection<Edge> edges) throws Exception {
         checkEqualTargets(targets);
@@ -513,5 +512,13 @@ public class TargetGraph implements Graph<Target> {
 
     public Collection<Edge> getEdges() {
         return edges;
+    }
+
+    public Map<Class<? extends Task>, Integer> getPrices() {
+        return prices;
+    }
+
+    public void setPrices(Map<Class<? extends Task>, Integer> prices) {
+        this.prices = prices;
     }
 }

@@ -1,4 +1,4 @@
-package graphApp.actions.task;
+package app.components;
 
 import TargetGraph.TargetGraph;
 import javafx.collections.FXCollections;
@@ -9,14 +9,12 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import types.Compilation;
 import types.Simulation;
 import types.Task;
-import utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,24 +24,24 @@ import java.util.ResourceBundle;
 
 public class TaskSettings implements Initializable {
     public Task task;
-    private Pane parent;
     public boolean runFromScratch;
     public int numThreads;
     public int maxThreads;
     public boolean submitted;
     public boolean chooseAll;
-    public File directoryPath = null;
+    public File compilationOutputPath = null;
+    public File workingDirectory = null;
     public Stage settingStage;
     public static TargetGraph TasksGraph;
+
+    @FXML
+    public TextField taskName;
 
     @FXML
     private Parent root;
 
     @FXML
     private CheckBox runFromScratchBox;
-
-    @FXML
-    private ChoiceBox<String> threadsToRunCombo;
 
     @FXML
     private ToggleButton SimulationTask;
@@ -91,9 +89,8 @@ public class TaskSettings implements Initializable {
         return fxmlLoader.getController();
     }
 
-    public void showAndReturn(Pane parent) {
+    public void showAndReturn() {
         this.submitted = false;
-        this.parent = parent;
         settingStage = new Stage();
         settingStage.setTitle("Task Settings");
         Scene scene = new Scene(root);
@@ -109,7 +106,6 @@ public class TaskSettings implements Initializable {
     }
 
     private void initialize(Scene scene) {
-        threadsToRunCombo = (ChoiceBox<String>) scene.lookup("#threadsToRunCombo");
         ComboTargetsToRun = (ChoiceBox<String>) scene.lookup("#ComboTargetsToRun");
         successProbabilityText = (TextField) scene.lookup("#successProbabilityText");
         warningProbabilityText = (TextField) scene.lookup("#warningProbabilityText");
@@ -118,9 +114,6 @@ public class TaskSettings implements Initializable {
         SimulationTask = (ToggleButton) scene.lookup("#SimulationTask");
         compilerTask = (ToggleButton) scene.lookup("#compilerTask");
 
-        for (int i = 1; i <= maxThreads; i++) {
-            threadsToRunCombo.getItems().add(String.valueOf(i));
-        }
         ComboTargetsToRun.setItems(FXCollections.observableArrayList("Choose targets", "All targets"));
         addListenerToProbability(successProbabilityText);
         addListenerToProbability(warningProbabilityText);
@@ -180,7 +173,7 @@ public class TaskSettings implements Initializable {
     @FXML
     void onClickedPathToCompilation(ActionEvent event) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryPath = directoryChooser.showDialog(settingStage);
+        compilationOutputPath = directoryChooser.showDialog(settingStage);
     }
 
     public void toggleSimulationProperties(boolean disable) {
@@ -196,7 +189,6 @@ public class TaskSettings implements Initializable {
         SimulationTask.setDisable(disable);
         checkBoxRandom.setDisable(disable);
         ComboTargetsToRun.setDisable(disable);
-        threadsToRunCombo.setDisable(disable);
         pathToCompilation.setDisable(disable);
         processTimeText.setDisable(disable);
         successProbabilityText.setDisable(disable);
@@ -227,29 +219,26 @@ public class TaskSettings implements Initializable {
             return;
         }
 
-        if (ComboTargetsToRun.getValue() != null) {
+        if (ComboTargetsToRun.getValue() != null && checkValidTextField(taskName)) {
             chooseAll = ComboTargetsToRun.getSelectionModel().getSelectedIndex() == 1;
-            if (threadsToRunCombo.getValue() != null) {
-                numThreads = threadsToRunCombo.getSelectionModel().getSelectedIndex() + 1;
 
-                if (SimulationTask.isSelected()) {
-                    if (checkValidTextField(processTimeText) && checkValidTextField(warningProbabilityText) && checkValidTextField(successProbabilityText)) {
-                        submitted = true;
-                        task = new Simulation(Integer.parseInt(processTimeText.getText()), checkBoxRandom.isSelected(), Float.parseFloat(successProbabilityText.getText()), Float.parseFloat(warningProbabilityText.getText()));
-                        stage.close();
-                    }
+            if (SimulationTask.isSelected()) {
+                if (checkValidTextField(processTimeText) && checkValidTextField(warningProbabilityText) && checkValidTextField(successProbabilityText)) {
+                    submitted = true;
+                    task = new Simulation(taskName.getText(), Integer.parseInt(processTimeText.getText()), checkBoxRandom.isSelected(), Float.parseFloat(successProbabilityText.getText()), Float.parseFloat(warningProbabilityText.getText()));
+                    stage.close();
                 }
-                if (compilerTask.isSelected()) {
-                    if (directoryPath == null) {
-                        Alert information = new Alert(Alert.AlertType.WARNING);
-                        information.setTitle("Warning");
-                        information.setContentText("You need to choose path to compilation products!");
-                        information.showAndWait();
-                    } else {
-                        submitted = true;
-                        task = new Compilation(directoryPath.getPath(), TasksGraph.getWorkingDir());
-                        stage.close();
-                    }
+            }
+            if (compilerTask.isSelected()) {
+                if (compilationOutputPath == null) {
+                    Alert information = new Alert(Alert.AlertType.WARNING);
+                    information.setTitle("Warning");
+                    information.setContentText("You need to choose path to compilation products!");
+                    information.showAndWait();
+                } else {
+                    submitted = true;
+                    task = new Compilation(taskName.getText(), compilationOutputPath.getPath(), workingDirectory.getPath());
+                    stage.close();
                 }
             }
         }
@@ -257,5 +246,10 @@ public class TaskSettings implements Initializable {
 
     private boolean checkValidTextField(TextField text) {
         return (Objects.equals(text.getStyle(), "") && text.getText() != null && !text.getText().isEmpty());
+    }
+
+    public void onClickedPathToWorkingDIr(ActionEvent actionEvent) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        workingDirectory = directoryChooser.showDialog(settingStage);
     }
 }
