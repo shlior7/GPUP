@@ -12,8 +12,7 @@ import utils.SessionUtils;
 
 import java.io.IOException;
 
-import static utils.Constants.USERNAME;
-import static utils.Constants.ROLE;
+import static utils.Constants.*;
 
 @WebServlet(name = "Login", urlPatterns = {"/login"})
 public class LoginServlet extends HttpServlet {
@@ -35,37 +34,41 @@ public class LoginServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/plain;charset=UTF-8");
-        String usernameFromSession = SessionUtils.getUsername(request);
-        UserManager userManager = ServletUtils.getUserManager(getServletContext());
+        try {
+            response.setContentType("text/plain;charset=UTF-8");
+            String usernameFromSession = SessionUtils.getUsername(request);
+            UserManager userManager = ServletUtils.getUserManager(getServletContext());
 
-        if (usernameFromSession == null) {
-            String usernameFromParameter = request.getParameter(USERNAME);
-            String roleFromParameter = request.getParameter(ROLE);
+            if (usernameFromSession == null) {
+                String usernameFromParameter = request.getParameter(USERNAME);
+                String roleFromParameter = request.getParameter(ROLE);
 
-            if (usernameFromParameter == null || usernameFromParameter.isEmpty() || roleFromParameter == null) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad Request: wrong parameters");
-            } else {
-                usernameFromParameter = usernameFromParameter.trim();
-                synchronized (this) {
-                    if (userManager.isUserExists(usernameFromParameter)) {
-                        String errorMessage = "Username " + usernameFromParameter + " already exists. Please enter a different username.";
-                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-                        response.getOutputStream().print(errorMessage);
-                    } else {
-                        if (roleFromParameter.equals("Worker")) {
-                        
+                if (usernameFromParameter == null || usernameFromParameter.isEmpty() || roleFromParameter == null) {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad Request: wrong parameters");
+                } else {
+                    usernameFromParameter = usernameFromParameter.trim();
+                    synchronized (this) {
+                        if (userManager.isUserExists(usernameFromParameter)) {
+                            String errorMessage = "Username " + usernameFromParameter + " already exists. Please enter a different username.";
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getOutputStream().print(errorMessage);
                         } else {
-
+                            if (roleFromParameter.equals("Worker")) {
+                                String threadsFromParameter = request.getParameter(THREADS);
+                                userManager.addWorker(usernameFromParameter, Integer.parseInt(threadsFromParameter));
+                            } else {
+                                userManager.addAdmin(usernameFromParameter);
+                            }
+                            request.getSession(true).setAttribute(Constants.USERNAME, usernameFromParameter);
+                            response.setStatus(HttpServletResponse.SC_OK);
                         }
-                        userManager.addUser(usernameFromParameter, roleFromParameter.equals("Admin"));
-                        request.getSession(true).setAttribute(Constants.USERNAME, usernameFromParameter);
-                        response.setStatus(HttpServletResponse.SC_OK);
                     }
                 }
+            } else {
+                response.setStatus(HttpServletResponse.SC_OK);
             }
-        } else {
-            response.setStatus(HttpServletResponse.SC_OK);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

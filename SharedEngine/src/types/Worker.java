@@ -6,14 +6,16 @@ public class Worker implements IUser {
 
     private int threads;
 
-    public Worker(String name) {
+    public Worker(String name, int threads) {
         this.name = name;
-    }
-    public void setThreads(int threads){
         this.threads = threads;
     }
 
-    public int getThreads(){
+    public void setThreads(int threads) {
+        this.threads = threads;
+    }
+
+    public int getThreads() {
         return this.threads;
     }
 
