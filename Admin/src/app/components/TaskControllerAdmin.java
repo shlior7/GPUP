@@ -7,34 +7,18 @@ import app.utils.http.HttpClientUtil;
 import app.utils.http.SimpleCallBack;
 import com.google.gson.JsonObject;
 import graphApp.GraphPane;
-import graphApp.actions.SideAction;
 import graphApp.actions.task.TaskController;
-import graphApp.components.ActionButton;
 import graphApp.components.AnchoredNode;
 import graphApp.components.TargetsCheckComboBox;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.GridPane;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import types.Task;
-import types.UserInfo;
 import utils.Constants;
 
-import java.io.IOException;
-import java.net.URL;
-import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static utils.Constants.GSON_INSTANCE;
@@ -47,7 +31,6 @@ public class TaskControllerAdmin extends TaskController {
 
     public TaskControllerAdmin(GraphPane graphPane) {
         super(graphPane);
-
         //Admin
         this.targetsComboBox = new TargetsCheckComboBox<>(graphPane.graph.getVerticesMap().values().stream().map(Target::getName).collect(Collectors.toList()), this::onAdd, this::onRemove);
         this.settings.getChildren().addAll(new AnchoredNode(runButton), new AnchoredNode(targetsComboBox));
@@ -125,6 +108,7 @@ public class TaskControllerAdmin extends TaskController {
         targetToRunOn.forEach(t -> t.init(""));
         graphPane.graph.createNewGraphFromTargetList(targetToRunOn);
         graphPane.setBottom(taskOutput);
+
         uploadTask(taskSettings.task, targetToRunOn, taskSettings.runFromScratch);
     }
 

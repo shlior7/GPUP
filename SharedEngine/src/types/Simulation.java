@@ -17,6 +17,14 @@ public class Simulation extends Task {
     private final float successProbability;
     private final float successWithWarningProbability;
 
+    public Simulation(String name) {
+        super(name, Simulation.class);
+        this.timeToProcess = 1;
+        this.isRandom = false;
+        this.successProbability = 1;
+        this.successWithWarningProbability = 1;
+    }
+
     public Simulation(String taskName, int timeToProcess, boolean isRandom, float successProbability, float successWithWarningProbability) {
         super(taskName, Simulation.class);
         this.timeToProcess = timeToProcess;

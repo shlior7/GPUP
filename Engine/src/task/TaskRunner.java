@@ -269,4 +269,8 @@ public class TaskRunner implements Runnable {
     public TaskData getTaskData() {
         return taskData;
     }
+
+    public int getTargetWorkingOn(Worker worker){
+        return taskData.getWorkerListMap().getOrDefault(worker,new ArrayList<>()).size();
+    }
 }

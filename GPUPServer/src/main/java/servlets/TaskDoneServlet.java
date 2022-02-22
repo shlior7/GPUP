@@ -7,23 +7,16 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import managers.UserManager;
-import task.TaskRunner;
-import types.Admin;
-import types.TaskInfo;
 import types.Worker;
 import utils.ServletUtils;
 import utils.SessionUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static utils.Constants.*;
 
-@WebServlet(name = "TaskDoneServlet", urlPatterns = {"/task/done"})
+@WebServlet(name = "TaskDoneServlet", urlPatterns = {"/task/target/done"})
 public class TaskDoneServlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
@@ -37,14 +30,13 @@ public class TaskDoneServlet extends HttpServlet {
                 String taskName = request.getParameter(TASKNAME);
                 String targetName = request.getParameter(TARGETNAME);
 
-                String res = ServletUtils.getEngine(getServletContext()).getTaskManager().onFinishTaskOnTarget(worker.getName(), taskName, targetName);
-                out.println(res);
-                out.flush();
+                int res = ServletUtils.getEngine(getServletContext()).getTaskManager().onFinishTaskOnTarget(taskName, targetName);
+                response.setStatus(res);
             } else {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                 out.println("Request is not from a worker");
-                out.flush();
             }
+            out.flush();
         } catch (Exception e) {
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());

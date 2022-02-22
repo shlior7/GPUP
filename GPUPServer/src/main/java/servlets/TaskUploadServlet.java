@@ -1,7 +1,9 @@
 package servlets;
 
 import TargetGraph.Target;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -54,17 +56,17 @@ public class TaskUploadServlet extends HttpServlet {
                     String graphName = request.getParameter(GRAPHNAME);
 //                    boolean fromScratch = Boolean.parseBoolean(request.getParameter(FROM_SCRATCH));
                     String requestData = request.getReader().lines().collect(Collectors.joining());
-                    System.out.println("requestData = " + requestData);
+                        System.out.println("requestData = " + requestData);
                     JsonObject json = GSON_INSTANCE.fromJson(requestData, JsonObject.class);
-                    JsonObject taskJson = json.get("task").getAsJsonObject();
-                    Task task = GSON_INSTANCE.fromJson(requestData, (Class<? extends Task>) Class.forName(taskJson.get("type").getAsString()));
+                    String taskString = json.get("task").getAsString().replaceAll("\\s","");
+                        System.out.println(taskString);
+                    JsonObject taskJson = GSON_INSTANCE.fromJson(taskString,JsonObject.class);
+                    Task task = GSON_INSTANCE.fromJson(taskString, (Class<? extends Task>) Class.forName(taskJson.get("type").getAsString()));
 
-                    JsonObject targetsJson = json.get("targets").getAsJsonObject();
-                    Set<Target> targets = Arrays.stream(GSON_INSTANCE.fromJson(targetsJson, Target[].class)).collect(Collectors.toSet());
-
+                    String targetString = json.get("targets").getAsString().replaceAll("\\s","");
+                    Set<Target> targets = Arrays.stream(GSON_INSTANCE.fromJson(targetString, Target[].class)).collect(Collectors.toSet());
 
                     ServletUtils.getEngine(getServletContext()).addTask(task, graphName, admin, targets);
-
                     response.setStatus(HttpServletResponse.SC_OK);
                 }
             } else {

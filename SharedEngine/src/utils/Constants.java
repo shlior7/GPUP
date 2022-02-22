@@ -24,6 +24,7 @@ public class Constants {
 
     // Server resources locations
     public final static String BASE_DOMAIN = "localhost";
+    public static final String SIGNTO = "signUp";
     private final static String FULL_SERVER_PATH = "http://" + BASE_DOMAIN + ":8080" + CONTEXT_PATH;
     public final static String LOGIN_PATH = FULL_SERVER_PATH + "/login";
     public final static String UPLOAD_XML_PATH = FULL_SERVER_PATH + "/upload";
@@ -32,6 +33,19 @@ public class Constants {
     public static final String GET_GRAPH = FULL_SERVER_PATH + "/graphs/one";
     public static final String TASK_UPLOAD = FULL_SERVER_PATH + "/task/upload";
     public static final String GET_TASK_ALL = FULL_SERVER_PATH + "/task/all";
+    public static final String TASK_SIGN = FULL_SERVER_PATH+ "/task/sign";
+    public static final String TARGETDONE = FULL_SERVER_PATH+ "/task/target/done";
+    public static final String GET_TARGETS = FULL_SERVER_PATH+ "/task/target/get";;
+
+
+
+
+
+
+
+
+
+
 
 
     public final static Gson GSON_INSTANCE = new Gson();

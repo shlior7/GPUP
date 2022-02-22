@@ -19,7 +19,7 @@ import java.io.IOException;
 
 import static utils.Utils.alertWarning;
 
-public class MainScreen extends Application {
+public class WorkerApp extends Application {
     @FXML
     public TextField name_worker;
     @FXML
@@ -40,7 +40,6 @@ public class MainScreen extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
     }
-
 
     private boolean checkValidRegistration() {
         try {

@@ -25,4 +25,11 @@ public class TaskData {
     public void setWorkersTargets(Worker worker, List<Target> targets) {
         workerListMap.put(worker, targets);
     }
+
+    public void removeWorker(Worker worker){
+        try {
+            workerListMap.remove(worker);
+        }
+        catch (Exception ignored){}
+    }
 }

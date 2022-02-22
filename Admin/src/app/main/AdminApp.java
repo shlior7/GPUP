@@ -18,7 +18,7 @@ import utils.Constants;
 
 import java.io.IOException;
 
-public class MainScreen extends Application {
+public class AdminApp extends Application {
     @FXML
     public TextField name_worker;
 

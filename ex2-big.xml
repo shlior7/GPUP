@@ -1,6 +1,6 @@
 <GPUP-Descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="G.P.U.P-V2.xsd">
     <GPUP-Configuration>
-        <GPUP-Graph-Name>Womans Gradle</GPUP-Graph-Name>
+        <GPUP-Graph-Name>big</GPUP-Graph-Name>
         <GPUP-Pricing>
             <GPUP-Task name="Simulation" price-per-target="5"/>
         </GPUP-Pricing>

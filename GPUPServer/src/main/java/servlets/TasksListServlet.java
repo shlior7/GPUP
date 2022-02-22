@@ -19,11 +19,11 @@ import java.util.List;
 import static utils.Constants.GSON_INSTANCE;
 
 @WebServlet(name = "TaskListServlet", urlPatterns = {"/task/all"})
-public class TaskListServlet extends HttpServlet {
+public class TasksListServlet extends HttpServlet {
 
-    private List<TaskInfo> generateJSONFromTaskCollection(Collection<TaskRunner> taskCollection) {
+    private List<TaskInfo> generateJSONFromTaskCollection(Collection<TaskRunner> taskCollection,Worker worker) {
         List<TaskInfo> tasksList = new ArrayList<>();
-        taskCollection.forEach(taskRunner -> tasksList.add(new TaskInfo(taskRunner.getTaskData())));
+        taskCollection.forEach(taskRunner -> tasksList.add(new TaskInfo(taskRunner.getTaskData(),worker)));
         return tasksList;
     }
 
@@ -31,21 +31,11 @@ public class TaskListServlet extends HttpServlet {
             throws ServletException, IOException {
 
         response.setContentType("application/json");
+        String usernameFromSession = SessionUtils.getUsername(request);
+        Worker worker = ServletUtils.getUserManager(getServletContext()).getWorker(usernameFromSession);
         try (PrintWriter out = response.getWriter()) {
-            String usernameFromSession = SessionUtils.getUsername(request);
-            if (usernameFromSession == null) {
-                out.println("{\"message\": \"No User in session \"}");
-                response.setStatus(401);
-                return;
-            }
-            Admin uploadedBy = ServletUtils.getEngine(getServletContext()).getUserManager().getAdmin(usernameFromSession);
-            if (uploadedBy == null) {
-                out.println("{\"message\": \"User in session is not Admin \"}");
-                response.setStatus(401);
-                return;
-            }
             Collection<TaskRunner> allTasks = ServletUtils.getEngine(getServletContext()).getTaskManager().getAllTasks();
-            String json = GSON_INSTANCE.toJson(generateJSONFromTaskCollection(allTasks));
+            String json = GSON_INSTANCE.toJson(generateJSONFromTaskCollection(allTasks,worker));
             System.out.println("response = " + json);
             out.println(json);
             out.flush();

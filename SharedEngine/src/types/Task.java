@@ -8,8 +8,8 @@ public abstract class Task implements Runnable {
     protected int pricePerTarget;
     protected String taskName;
     protected Target targetToRunOn;
-    protected Worker workerOnIt;
     protected Consumer<String> outputText;
+    protected Consumer<Target> onFuncFinished;
     protected String type;
 
     public Task(String taskName, Class<? extends Task> type) {
@@ -18,10 +18,6 @@ public abstract class Task implements Runnable {
     }
 
     public abstract Task copy();
-
-    public void setWorkerOnIt(Worker workerOnIt) {
-        this.workerOnIt = workerOnIt;
-    }
 
     public void setTarget(Target targetToRunOn) {
         this.targetToRunOn = targetToRunOn;
@@ -44,5 +40,9 @@ public abstract class Task implements Runnable {
 
     public Target getTarget() {
         return targetToRunOn;
+    }
+
+    public void setFuncOnFinished(Consumer<Target> onFuncFinished){
+        this.onFuncFinished = onFuncFinished;
     }
 }

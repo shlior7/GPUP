@@ -1,5 +1,6 @@
 package engine;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -8,10 +9,7 @@ import TargetGraph.*;
 
 import managers.UserManager;
 import task.*;
-import types.Admin;
-import types.IUser;
-import types.Task;
-import types.Worker;
+import types.*;
 import utils.FileHandler;
 
 public class Engine implements IEngine {
@@ -22,13 +20,22 @@ public class Engine implements IEngine {
     private final UserManager userManager;
     private final Map<String, TargetGraph> allGraphs;
 
-
     public Engine() {
         allGraphs = new HashMap<>();
         taskRunner = new TaskRunner(targetGraph);
         tasksManager = new TaskManager();
         userManager = new UserManager();
         fileHandler = new FileHandler();
+        userManager.addAdmin("admin");
+        try {
+            File file = new File("/Users/liorsht/IdeaProjects/GPUP/ex2-big.xml");
+            loadXmlFile(file, userManager.getAdmin("admin"));
+            addTask(new Simulation("1"),"big",userManager.getAdmin("admin"));
+            addTask(new Simulation("2"),"big",userManager.getAdmin("admin"));
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public boolean toggleTaskRunning() {
@@ -167,13 +174,26 @@ public class Engine implements IEngine {
         targetGraph = fileHandler.loadGPUPXMLFile(path);
         targetGraph.setCreatedBy(createdBy);
         allGraphs.put(targetGraph.getGraphsName(), targetGraph);
+    }
+
+    public void loadXmlFile(File path, Admin createdBy) throws Exception {
+        targetGraph = fileHandler.loadGPUPXMLFile(path);
+        targetGraph.setCreatedBy(createdBy);
+        allGraphs.put(targetGraph.getGraphsName(), targetGraph);
         System.out.println(allGraphs.get(targetGraph.getGraphsName()).getGraphsName());
     }
 
     @Override
     public void addTask(Task task, String graphName, Admin createdBy, Set<Target> targets) throws Exception {
         TargetGraph targetGraph = allGraphs.getOrDefault(graphName, null);
+        if (targetGraph == null)
+            throw new Exception("graph wasn't found");
         targetGraph.createNewGraphFromTargetList(targets);
+        tasksManager.addTask(task, targetGraph, createdBy);
+    }
+
+    public void addTask(Task task, String graphName, Admin createdBy) throws Exception {
+        TargetGraph targetGraph = allGraphs.getOrDefault(graphName, null);
         if (targetGraph == null)
             throw new Exception("graph wasn't found");
         tasksManager.addTask(task, targetGraph, createdBy);

@@ -7,6 +7,7 @@ import app.utils.http.HttpClientUtil;
 import app.utils.http.SimpleCallBack;
 import graphApp.GraphPane;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -30,6 +31,7 @@ import utils.Constants;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -42,6 +44,7 @@ public class Dashboard extends Stage implements Initializable {
     GraphInfo[] graphInfos = new GraphInfo[0];
     Map<String, GraphPane> graphPanes = new HashMap<>();
     Timer taskTimer;
+    Timer userTimer;
 
     @FXML
     public TableView<UserInfo> UsersTable;
@@ -62,10 +65,10 @@ public class Dashboard extends Stage implements Initializable {
         dashboard.createGraphListener();
         dashboard.getUsers();
         dashboard.getGraphs();
+        dashboard.getTasks();
         dashboard.initTimers();
         return dashboard;
     }
-
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -73,13 +76,19 @@ public class Dashboard extends Stage implements Initializable {
 
     public void initTimers() {
         taskTimer = new Timer();
-//
-//        taskTimer.schedule(new TimerTask() {
-//            public void run() {
-//                System.out.println("run");
-//                getTasks();
-//            }
-//        }, 0, 30 * 1000);
+
+        taskTimer.schedule(new TimerTask() {
+            public void run() {
+                getTasks();
+            }
+        }, 0, 10 * 1000);
+
+        userTimer = new Timer();
+        userTimer.schedule(new TimerTask() {
+            public void run() {
+                getUsers();
+            }
+        }, 0, 10 * 1000);
     }
 
     public void loadXml(ActionEvent actionEvent) {
@@ -208,7 +217,8 @@ public class Dashboard extends Stage implements Initializable {
 
         HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((tasksJson) -> {
             System.out.println(tasksJson);
-            TaskInfo[] tasks = GSON_INSTANCE.fromJson(tasksJson, TaskInfo[].class);
+            TaskInfo[] tasks = GSON_INSTANCE.newBuilder().excludeFieldsWithModifiers(Modifier.PRIVATE).create()
+                    .fromJson(tasksJson, TaskInfo[].class);
             System.out.println(Arrays.toString(tasks));
             if (tasks != null) setTaskTable(tasks);
         }));
