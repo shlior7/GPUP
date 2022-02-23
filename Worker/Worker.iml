@@ -8,14 +8,24 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Maven: com.squareup.okhttp3:okhttp:3.12.10" level="project" />
-    <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.8.9" level="project" />
-    <orderEntry type="library" name="Maven: com.squareup.okio:okio:1.15.0" level="project" />
     <orderEntry type="library" name="Maven: org.controlsfx:controlsfx:8.40.18" level="project" />
-    <orderEntry type="library" name="Maven: org.jetbrains:annotations:23.0.0" level="project" />
     <orderEntry type="library" name="Maven: org.projectlombok:lombok:1.18.22" level="project" />
     <orderEntry type="module" module-name="Engine" />
     <orderEntry type="module" module-name="GraphFx" />
     <orderEntry type="module" module-name="Graph" />
     <orderEntry type="module" module-name="SharedEngine" />
+    <orderEntry type="module" module-name="SharedEngine" />
+    <orderEntry type="module" module-name="GPUPServer" />
+    <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.9.0" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/annotations/20.1.0/annotations-20.1.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="Maven: com.squareup.okio:okio:1.17.5" level="project" />
   </component>
 </module>

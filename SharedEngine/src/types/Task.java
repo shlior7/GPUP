@@ -27,6 +27,7 @@ public abstract class Task implements Runnable {
         this.targetToRunOn = targetToRunOn;
     }
 
+    public Worker getWorkerOnIt(){return workerOnIt;}
 
     public void setOutputText(Consumer<String> outputText) {
         this.outputText = outputText;
@@ -41,6 +42,12 @@ public abstract class Task implements Runnable {
     public void setPricePerTarget(int pricePerTarget) {
         this.pricePerTarget = pricePerTarget;
     }
+
+    public int getPricePerTarget() {
+        return pricePerTarget;
+    }
+
+    public String getType(){return type;}
 
     public Target getTarget() {
         return targetToRunOn;

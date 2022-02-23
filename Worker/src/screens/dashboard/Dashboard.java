@@ -1,46 +1,27 @@
 package screens.dashboard;
 
 import TargetGraph.TargetGraph;
-//import app.utils.Constants;
-//import app.utils.http.HttpClientUtil;
-//import app.utils.http.SimpleCallBack;
-import com.google.gson.reflect.TypeToken;
-import graphApp.GraphPane;
+import TargetGraph.Target;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import okhttp3.HttpUrl;
-import okhttp3.MediaType;
-import okhttp3.RequestBody;
-import types.GraphInfo;
-import types.TaskInfo;
-import types.UserInfo;
-import types.Worker;
+import types.*;
 import utils.Constants;
 import utils.http.HttpClientUtil;
 import utils.http.SimpleCallBack;
-
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
 import static utils.Constants.GSON_INSTANCE;
-
-//import static app.utils.Constants.GSON_INSTANCE;
 
 
 public class Dashboard extends Stage implements Initializable {
@@ -53,11 +34,13 @@ public class Dashboard extends Stage implements Initializable {
 
     Map<String, TargetGraph> TargetGraphs = new HashMap<>();
 
-    @FXML
-    private Label numberOfCredits;
+    List<TargetInfo> TargetsInfo = new ArrayList<>();
 
     @FXML
-    private TableView<?> targetsTable;
+    private TableView<TargetInfo> targetsTable;
+
+    @FXML
+    private Label numberOfCredits;
 
     @FXML
     private Label availableThreads;
@@ -72,7 +55,7 @@ public class Dashboard extends Stage implements Initializable {
     public TableView<UserInfo> usersTable;
 
     @FXML
-    private TableView<?> taskTable;
+    private TableView<GraphInfoWorker> taskTable;
 
     @FXML
     public TableView<GraphInfo> graphTable;
@@ -113,8 +96,10 @@ public class Dashboard extends Stage implements Initializable {
     }
 
     private void setGraphTable(GraphInfo[] graphs) {
-        graphTable.getItems().clear();
-        graphTable.getItems().addAll(graphs);
+        Platform.runLater(() -> {
+            graphTable.getItems().clear();
+            graphTable.getItems().addAll(graphs);
+        });
     }
 
     public void getUsers() {
@@ -153,4 +138,26 @@ public class Dashboard extends Stage implements Initializable {
         });
     }
 
+    public void setTargetsTable(ObservableList targetsInfo) {
+        Platform.runLater(() -> {
+            targetsTable.getItems().clear();
+            targetsTable.getItems().addAll(targetsInfo);
+        });
+    }
+
+    public synchronized void addTargetInfo(Task task, Target target){
+        if(task.getWorkerOnIt().getName().equals(worker.getName())) {
+            this.TargetsInfo.add(new TargetInfo(task, target));
+            setTargetsTable(FXCollections.observableList(TargetsInfo));
+        }
+    }
+
+    public synchronized void changeTargetInfo(Task task, Target target){
+        if(task.getWorkerOnIt().getName().equals(worker.getName())) {
+            TargetsInfo.removeIf(targetInfo -> targetInfo.getTargetName().equals(target.getName()) &&
+                    targetInfo.getTaskName().equals(task.getTaskName()));
+            this.TargetsInfo.add(new TargetInfo(task, target));
+            setTargetsTable(FXCollections.observableList(TargetsInfo));
+        }
+    }
 }
