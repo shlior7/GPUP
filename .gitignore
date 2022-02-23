@@ -1,6 +1,10 @@
 *.class
-.idea/
+idea/
 .gitignore
 *.log
 out/
 *.iml
+misc.xml
+
+.DS_Store
+target/
