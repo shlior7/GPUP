@@ -11,6 +11,6 @@
     <orderEntry type="module" module-name="SharedEngine" />
     <orderEntry type="library" name="Maven: org.controlsfx:controlsfx:8.40.18" level="project" />
     <orderEntry type="library" name="Maven: com.squareup.okhttp3:okhttp:3.12.10" level="project" />
-    <orderEntry type="library" name="Maven: com.squareup.okio:okio:1.15.0" level="project" />
+    <orderEntry type="library" name="Maven: com.squareup.okio:okio:1.17.5" level="project" />
   </component>
 </module>
