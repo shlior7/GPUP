@@ -1,12 +1,15 @@
 package screens.dashboard;
 
 import TargetGraph.TargetGraph;
+import TargetGraph.Target;
 //import app.utils.Constants;
 //import app.utils.http.HttpClientUtil;
 //import app.utils.http.SimpleCallBack;
 import com.google.gson.JsonObject;
 import engine.TaskProcessor;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -17,6 +20,7 @@ import javafx.stage.Stage;
 import okhttp3.HttpUrl;
 import types.*;
 import utils.Constants;
+import utils.Utils;
 import utils.http.HttpClientUtil;
 import utils.http.SimpleCallBack;
 
@@ -36,15 +40,19 @@ public class Dashboard extends Stage implements Initializable {
     private TaskProcessor taskProcessor;
     private Worker worker;
     private TaskInfo[] taskInfos;
+    private Map<String, Task> mySignedTasks;
     private int credits = 0;
     Timer taskTimer;
     Timer userTimer;
+
+
+    List<TargetInfo> TargetsInfo = new ArrayList<>();
 
     @FXML
     private Label numberOfCredits;
 
     @FXML
-    private TableView<?> targetsTable;
+    private TableView<TargetInfo> targetsTable;
 
     @FXML
     private Label availableThreads;
@@ -59,17 +67,17 @@ public class Dashboard extends Stage implements Initializable {
     private TableView<TaskInfo> taskTable;
 
     @FXML
-    public TableColumn<TaskInfo,Boolean> registerColumn;
+    public TableColumn<TaskInfo, Boolean> registerColumn;
 
     public static Dashboard createDashboard(Worker worker) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(Dashboard.class.getResource("worker_dashboard.fxml"));
         ScrollPane root = fxmlLoader.load();
         Dashboard dashboard = fxmlLoader.getController();
-        dashboard.init(root,worker);
+        dashboard.init(root, worker);
         return dashboard;
     }
 
-    public void init(ScrollPane root, Worker worker){
+    public void init(ScrollPane root, Worker worker) {
         this.worker = worker;
         this.availableThreads.setText(String.valueOf(worker.getThreads()));
         this.numberOfCredits.setText(String.valueOf(this.credits));
@@ -86,7 +94,7 @@ public class Dashboard extends Stage implements Initializable {
             public void run() {
                 getTasks();
             }
-        }, 10*1000, 5 * 60 * 1000);
+        }, 10 * 1000, 5 * 60 * 1000);
 
         userTimer = new Timer();
         userTimer.schedule(new TimerTask() {
@@ -95,7 +103,6 @@ public class Dashboard extends Stage implements Initializable {
             }
         }, 0, 5 * 60 * 1000);
     }
-
 
 
     public void getUsers() {
@@ -142,25 +149,24 @@ public class Dashboard extends Stage implements Initializable {
                 .toString();
         System.out.println("finalUrl " + finalUrl);
 
-        Platform.runLater(()->{
-        HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((tasksJson) -> {
-            System.out.println(tasksJson);
-            TaskInfo[] tasks = GSON_INSTANCE.newBuilder().excludeFieldsWithModifiers(Modifier.PRIVATE).create().fromJson(tasksJson, TaskInfo[].class);
-            System.out.println(Arrays.toString(tasks));
-            if (tasks != null && !Arrays.equals(tasks,taskInfos)) setTaskTable(tasks);
-        }));});
+        Platform.runLater(() -> {
+            HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((tasksJson) -> {
+                System.out.println(tasksJson);
+                TaskInfo[] tasks = GSON_INSTANCE.newBuilder().excludeFieldsWithModifiers(Modifier.PRIVATE).create().fromJson(tasksJson, TaskInfo[].class);
+                System.out.println(Arrays.toString(tasks));
+                if (tasks != null && !Arrays.equals(tasks, taskInfos)) setTaskTable(tasks);
+            }));
+        });
     }
 
     private void setTaskTable(TaskInfo[] tasks) {
         Platform.runLater(() -> {
             taskInfos = tasks;
-            Arrays.stream(tasks).forEach(task->{
+            Arrays.stream(tasks).forEach(task -> {
                 task.getRegisteredProperty().addListener(((observable, oldValue, newValue) -> {
                     ////Worker pressed on checkbox
-
                     System.out.println("task = " + task.getTaskName() + " old " + oldValue + " new " + newValue);
-
-
+                    signToTasks(task.getTaskName(), newValue);
                 }));
             });
             taskTable.getItems().clear();
@@ -168,7 +174,7 @@ public class Dashboard extends Stage implements Initializable {
         });
     }
 
-    private synchronized void signToTasks(String taskName,boolean signTo){
+    private synchronized void signToTasks(String taskName, boolean signTo) {
         String finalUrl = HttpUrl
                 .parse(Constants.TASK_SIGN)
                 .newBuilder()
@@ -178,22 +184,29 @@ public class Dashboard extends Stage implements Initializable {
                 .toString();
         System.out.println("finalUrl " + finalUrl);
 
-        Platform.runLater(()->{
-            HttpClientUtil.runAsync(finalUrl,  new SimpleCallBack((tasksJson) -> {
-                try {
-                    System.out.println(tasksJson);
-                    if (signTo) {
-                        JsonObject taskJson = GSON_INSTANCE.fromJson(tasksJson, JsonObject.class);
-                        Task task = GSON_INSTANCE.fromJson(tasksJson, (Class<? extends Task>) Class.forName(taskJson.get("type").getAsString()));
-                        taskProcessor.pushTask(task);
-                    }
-                    else{
-
-                    }
-                }catch (ClassNotFoundException e){
-                    e.printStackTrace();
+        Platform.runLater(() -> {
+            HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((tasksJson) -> {
+                System.out.println(tasksJson);
+                if (signTo) {
+                    Task task = Utils.getTaskFromJson(tasksJson);
+                    mySignedTasks.put(taskName, task);
+                } else {
+                    taskProcessor.removeTask(taskName);
                 }
-            }));});
+            }));
+        });
+    }
+
+    public void setTargetsTable(ObservableList<TargetInfo> targetsInfo) {
+        Platform.runLater(() -> {
+            targetsTable.getItems().clear();
+            targetsTable.getItems().addAll(targetsInfo);
+        });
+    }
+
+    public synchronized void addTargetInfo(Task task) {
+        this.TargetsInfo.add(new TargetInfo(task));
+        setTargetsTable(FXCollections.observableList(TargetsInfo));
     }
 
     @Override

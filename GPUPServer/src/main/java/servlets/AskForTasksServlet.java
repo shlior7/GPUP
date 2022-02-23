@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 import static utils.Constants.*;
 
-@WebServlet(name = "AskForTasksServlet", urlPatterns = {"/task/sign"})
+@WebServlet(name = "AskForTasksServlet", urlPatterns = {"/task/target/ask"})
 public class AskForTasksServlet extends HttpServlet {
 
     // urls that starts with forward slash '/' are considered absolute

@@ -99,15 +99,15 @@ public class TaskManager {
         return 200;
     }
 
-    public int signUserToTask(Worker worker, String taskName, boolean signTo) {
+    public Task signUserToTask(Worker worker, String taskName, boolean signTo) {
         TaskRunner taskRunner = getTask(taskName);
         if (taskRunner == null)
-            return 500;
+            return null;
 
         workersTasks.putIfAbsent(worker,new HashSet<>());
         if(signTo)  workersTasks.get(worker).add(taskName);
         else workersTasks.get(worker).remove(taskName);
 
-        return 200;
+        return taskRunner.getTask();
     }
 }

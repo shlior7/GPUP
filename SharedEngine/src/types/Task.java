@@ -16,13 +16,17 @@ public abstract class Task implements Runnable {
         this.taskName = taskName;
         this.type = type.getName();
     }
-
     public abstract Task copy();
 
     public void setTarget(Target targetToRunOn) {
         this.targetToRunOn = targetToRunOn;
     }
 
+    public int getPricePerTarget() {
+        return pricePerTarget;
+    }
+
+    public String getType(){return type;}
 
     public void setOutputText(Consumer<String> outputText) {
         this.outputText = outputText;

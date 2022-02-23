@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import managers.UserManager;
+import types.Task;
 import types.Worker;
 import utils.ServletUtils;
 import utils.SessionUtils;
@@ -15,14 +16,8 @@ import java.io.PrintWriter;
 
 import static utils.Constants.*;
 
-@WebServlet(name = "AskForTasksServlet", urlPatterns = {"/task/sign"})
+@WebServlet(name = "SignToTaskServlet", urlPatterns = {"/task/sign"})
 public class SignToTaskServlet extends HttpServlet {
-
-    // urls that starts with forward slash '/' are considered absolute
-    // urls that doesn't start with forward slash '/' are considered relative to the place where this servlet request comes from
-    // you can use absolute paths, but then you need to build them from scratch, starting from the context path
-    // ( can be fetched from request.getContextPath() ) and then the 'absolute' path from it.
-    // Each method with it's pros and cons...
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -44,9 +39,12 @@ public class SignToTaskServlet extends HttpServlet {
                 synchronized (this) {
                     String taskName = request.getParameter(TASKNAME);
                     boolean signTo = Boolean.parseBoolean(request.getParameter(SIGNTO));
-
-                    int res = ServletUtils.getEngine(getServletContext()).getTaskManager().signUserToTask(worker,taskName,signTo);
-                    response.setStatus(res);
+                    if (signTo) {
+                        Task task = ServletUtils.getEngine(getServletContext()).getTaskManager().signUserToTask(worker, taskName, signTo);
+                        out.println(GSON_INSTANCE.toJson(task));
+                    }
+                    out.flush();
+                    response.setStatus(HttpServletResponse.SC_OK);
                 }
             } else {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED);

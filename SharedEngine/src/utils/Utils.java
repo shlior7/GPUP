@@ -1,9 +1,13 @@
 package utils;
 
+import com.google.gson.JsonObject;
 import javafx.scene.control.Alert;
+import types.Task;
 
 import java.util.Iterator;
 import java.util.function.BiConsumer;
+
+import static utils.Constants.GSON_INSTANCE;
 
 public class Utils {
     public static Object getIfNullDefault(Object maybeNull, Object defaultObj) {
@@ -27,5 +31,16 @@ public class Utils {
         information.setTitle("Warning");
         information.setContentText(warning);
         information.showAndWait();
+    }
+
+    public static Task getTaskFromJson(String taskJson) {
+        Task task;
+        try {
+            JsonObject json = GSON_INSTANCE.fromJson(taskJson, JsonObject.class);
+            task = GSON_INSTANCE.fromJson(taskJson, (Class<? extends Task>) Class.forName(json.get("type").getAsString()));
+        } catch (ClassNotFoundException e) {
+            task = null;
+        }
+        return task;
     }
 }

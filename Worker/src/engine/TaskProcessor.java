@@ -38,15 +38,20 @@ public class TaskProcessor {
 
     public TaskProcessor(int numThread){
         this.numThread = numThread;
-        this.threadExecutor = Executors.newFixedThreadPool(numThread);
         this.targetsDone = new AtomicInteger(0);
     }
 
     public void pushTask(Task task){
         tasks.put(task.getTaskName(),task);
     }
+
     public void removeTask(String taskName){
-        tasks.put(taskName, null);
+        try {
+            tasks.remove(taskName);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void pushTarget(Target target,String taskName){
@@ -55,6 +60,10 @@ public class TaskProcessor {
     }
 
     public void start() throws InterruptedException {
+        if(running)
+            return;
+        running = true;
+        this.threadExecutor = Executors.newFixedThreadPool(numThread);
         while (tasks.size()>0 || !queue.isEmpty()) {
             if (pause.get()) {
                 try {
@@ -73,13 +82,10 @@ public class TaskProcessor {
             }
         }
         threadExecutor.shutdown();
-
         while (!threadExecutor.isTerminated()) {
             Thread.sleep(1000);
         }
 
-        setTaskOutput("Done!");
-//        setTaskOutput(targetGraph.getStatsInfoString(targetGraph.getResultStatistics()));
         running = false;
         pause.set(false);
     }
@@ -107,13 +113,13 @@ public class TaskProcessor {
     }
 
     public Task initTask(Target target) {
-
         Task newTask = tasks.get(targetsToTaskName.get(target)).copy();
         newTask.setTarget(target);
         newTask.setFuncOnFinished(this::OnFinish);
         newTask.setOutputText(this::setTaskOutput);
         return newTask;
     }
+
     public synchronized void setTaskOutput(String text) {
 //        taskOutput.set(text);
     }
