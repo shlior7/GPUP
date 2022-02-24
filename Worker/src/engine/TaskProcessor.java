@@ -1,70 +1,88 @@
 package engine;
 
-import TargetGraph.Result;
-import TargetGraph.Status;
 import TargetGraph.Target;
+import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
 import okhttp3.HttpUrl;
 import types.Task;
-import types.TaskInfo;
-import types.TaskStatus;
 import utils.Constants;
+import utils.ObservableAtomicInteger;
 import utils.http.HttpClientUtil;
 import utils.http.SimpleCallBack;
+import utils.Utils;
 
-import java.lang.reflect.Modifier;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static utils.Constants.GSON_INSTANCE;
 
 public class TaskProcessor {
-    private int numThread;
+    private final Map<String, List<Target>> tasksTargets;
+    private final Map<Target, String> targetsToTaskName;
+    private final ObservableAtomicInteger targetsDone;
+    public final Object pauseLock = new Object();  /* delete? */
+    private final Map<String, Task> tasks;
+    private final Queue<Target> queue;
+    public final AtomicBoolean pause;
+    private final int numThread;
+    private boolean running;
+
     private ExecutorService threadExecutor;
-    private final AtomicInteger targetsDone;
-    private Map<String,Task> tasks;
-    private Map<Target,String> targetsToTaskName;
-    private Queue<Target> queue;
-    public final AtomicBoolean pause = new AtomicBoolean(false);
-    public Object pauseLock = new Object();
-    private boolean running = false;
 
-
-    public TaskProcessor(int numThread){
+    public TaskProcessor(int numThread) {
+        this.targetsDone = new ObservableAtomicInteger(0);
+        this.pause = new AtomicBoolean(false);
+        this.targetsToTaskName = new HashMap<>();
+        this.queue = new LinkedList<>();
+        this.tasks = new HashMap<>();
+        this.tasksTargets = new HashMap<>();
         this.numThread = numThread;
-        this.targetsDone = new AtomicInteger(0);
+        this.running = false;
     }
 
-    public void pushTask(Task task){
-        tasks.put(task.getTaskName(),task);
+    public synchronized ObservableAtomicInteger availableThreads() {
+        return targetsDone;
     }
 
-    public void removeTask(String taskName){
+    public void pushTask(Task task) {
+        tasks.put(task.getTaskName(), task);
+    }
+
+    public void removeTask(String taskName) {
         try {
             tasks.remove(taskName);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void pushTarget(Target target,String taskName){
-        targetsToTaskName.put(target,taskName);
+    public void pushTargets(Map<String, List<Target>> targetsMap) throws InterruptedException {
+        targetsMap.forEach((taskName, targets) -> {
+            targets.forEach((target) -> {
+                pushTarget(taskName, target);
+            });
+        });
+        start();
+    }
+
+    public void pushTarget(String taskName, Target target) {
+        targetsToTaskName.put(target, taskName);
+
+        tasksTargets.putIfAbsent(taskName, new ArrayList<>());
+        tasksTargets.get(taskName).add(target);
+
         queue.add(target);
     }
 
     public void start() throws InterruptedException {
-        if(running)
+        if (running)
             return;
+        System.out.println("STARTED!!!!");
         running = true;
         this.threadExecutor = Executors.newFixedThreadPool(numThread);
-        while (tasks.size()>0 || !queue.isEmpty()) {
+        while (tasks.size() > 0 || !queue.isEmpty()) {
             if (pause.get()) {
                 try {
                     synchronized (this) {
@@ -85,6 +103,7 @@ public class TaskProcessor {
         while (!threadExecutor.isTerminated()) {
             Thread.sleep(1000);
         }
+        System.out.println("FINISHED!!!!");
 
         running = false;
         pause.set(false);
@@ -123,47 +142,68 @@ public class TaskProcessor {
     public synchronized void setTaskOutput(String text) {
 //        taskOutput.set(text);
     }
+
     public void OnFinish(Target target) {
+        System.out.println("finished " + target.geStringInfo());
+
         targetsDone.incrementAndGet();
-        target.setStatus(Status.FINISHED);
-        String name = target.name;
+        if (tasksTargets.get(targetsToTaskName.get(target)).size() == 0)
+            tasksTargets.remove(targetsToTaskName.get(target));
+        targetsToTaskName.remove(target);
         updateProgress();
-        setTaskOutput("finished task " + name + " with the result " + target.getResult() + " time it took to process " + target.getProcessTime().toMillis());
+//        setTaskOutput("finished task " + name + " with the result " + target.getResult() + " time it took to process " + target.getProcessTime().toMillis());
 
-        String finalUrl = HttpUrl
-                .parse(Constants.TARGETDONE)
-                .newBuilder()
-                .addQueryParameter(Constants.TARGETNAME,target.getName())
-                .addQueryParameter(Constants.TASKNAME,targetsToTaskName.get(target))
-                .build()
-                .toString();
-        System.out.println("finalUrl " + finalUrl);
+        try {
+            String url = HttpClientUtil.createUrl(
+                    Constants.TARGET_DONE_URL,
+                    Utils.tuple(Constants.TARGETNAME, target.getName()),
+                    Utils.tuple(Constants.TASKNAME, targetsToTaskName.get(target)));
 
-        Platform.runLater(()->{
-            HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((tasksJson) -> {
-            }));});
+            Platform.runLater(() -> {
+                HttpClientUtil.runAsync(url, new SimpleCallBack());
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         getMoreTargets();
     }
 
-    public synchronized void getMoreTargets(){
-        if(targetsDone.get() > 0) {
-            String finalUrl = HttpUrl
-                    .parse(Constants.GET_TARGETS)
-                    .newBuilder()
-                    .addQueryParameter(Constants.TARGETS, String.valueOf(targetsDone.getAndSet(0)))
-                    .build()
-                    .toString();
-            System.out.println("finalUrl " + finalUrl);
+    public synchronized void getMoreTargets() {
+        if (targetsDone.get() <= 0)
+            return;
 
-            Platform.runLater(() -> {
-                HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((tasksJson) -> {
-                }));
-            });
-        }
+        String finalUrl = HttpUrl
+                .parse(Constants.GET_TARGETS)
+                .newBuilder()
+                .addQueryParameter(Constants.TARGETS, String.valueOf(targetsDone.getAndSet(0)))
+                .build()
+                .toString();
+        System.out.println("finalUrl " + finalUrl);
+
+        Platform.runLater(() -> {
+            HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((targetsMapJson) -> {
+                try {
+                    Map<String, List<Target>> targets = GSON_INSTANCE.fromJson(targetsMapJson, new TypeToken<Map<String, List<Target>>>() {
+                    }.getType());
+                    pushTargets(targets);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }));
+        });
     }
 
     public synchronized void updateProgress() {
+        try {
+            String url = HttpClientUtil.createUrl(
+                    Constants.UPDATE_PROGRESS_POST_URL);
 
+            Platform.runLater(() -> {
+                HttpClientUtil.runAsyncBody(url, GSON_INSTANCE.toJson(targetsToTaskName), new SimpleCallBack());
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

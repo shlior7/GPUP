@@ -3,6 +3,7 @@ package utils;
 import com.google.gson.JsonObject;
 import javafx.scene.control.Alert;
 import types.Task;
+import types.Tuple;
 
 import java.util.Iterator;
 import java.util.function.BiConsumer;
@@ -42,5 +43,9 @@ public class Utils {
             task = null;
         }
         return task;
+    }
+
+    public static <X, Y> Tuple<X, Y> tuple(X x, Y y) {
+        return new Tuple<>(x, y);
     }
 }

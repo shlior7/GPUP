@@ -33,19 +33,12 @@ public class Constants {
     public static final String GET_GRAPH = FULL_SERVER_PATH + "/graphs/one";
     public static final String TASK_UPLOAD = FULL_SERVER_PATH + "/task/upload";
     public static final String GET_TASK_ALL = FULL_SERVER_PATH + "/task/all";
-    public static final String TASK_SIGN = FULL_SERVER_PATH+ "/task/sign";
-    public static final String TARGETDONE = FULL_SERVER_PATH+ "/task/target/done";
-    public static final String GET_TARGETS = FULL_SERVER_PATH+ "/task/target/get";;
-
-
-
-
-
-
-
-
-
-
+    public static final String TASK_SIGN = FULL_SERVER_PATH + "/task/sign";
+    public static final String TARGET_DONE_URL = FULL_SERVER_PATH + "/task/target/done";
+    public static final String GET_TARGETS = FULL_SERVER_PATH + "/task/target/get";
+    public static final String UPDATE_PROGRESS_POST_URL = FULL_SERVER_PATH + "/task/update/post";
+    public static final String UPDATE_PROGRESS_GET_URL = FULL_SERVER_PATH + "/task/update/get";
+    ;
 
 
     public final static Gson GSON_INSTANCE = new Gson();

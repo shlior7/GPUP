@@ -1,66 +1,56 @@
 package graphApp.actions.task;
 
-import TargetGraph.Result;
 import TargetGraph.Status;
 import TargetGraph.Target;
+import com.google.gson.JsonObject;
 import graphApp.GraphPane;
 import graphApp.actions.SideAction;
 import graphApp.components.ActionButton;
-import graphApp.components.AnchoredNode;
-import graphApp.components.TargetsCheckComboBox;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
+import types.TaskStatus;
+import utils.Constants;
+import utils.Utils;
+import utils.http.HttpClientUtil;
+import utils.http.SimpleCallBack;
 
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
+
+import static utils.Constants.GSON_INSTANCE;
 
 public class TaskController extends SideAction {
     protected final ActionButton runButton;
     protected final ProgressBar progressBar;
     protected boolean choose;
     protected TextArea taskOutput;
-    protected boolean paused;
+    protected AtomicBoolean paused;
+    protected AtomicBoolean isTaskRunning;
+    protected Timer updateTimer;
+    Object threadLock = new Object();
+    private Timer changingColorTimer;
 
     public TaskController(GraphPane graphPane) {
         super("Run Task", graphPane);
-
         //Both
         runButton = new ActionButton();
         this.progressBar = new ProgressBar();
-        this.paused = false;
+        this.paused = new AtomicBoolean(false);
+        this.isTaskRunning = new AtomicBoolean(false);
 //        this.progressBar.progressProperty().bind(graphPane.engine.getTaskRunner().getProgress());///server
         settings.getChildren().add(new AnchorPane(progressBar));
         createLogTextArea();
         createColorMap();
     }
 
-    ////BOTH
-    public synchronized void changeColors(HashMap<String, AtomicBoolean> flickering) {
-        graphPane.graph.getAdjacentMap().keySet().forEach(name -> {
-            Target target = graphPane.graph.getVerticesMap().get(name);
-            Status status = target.getStatus();
-            String stroke = status.getColor();
-            String fill = target.getResult().getColor();
-            if (status == Status.FINISHED)
-                stroke = fill;
-            if (status == Status.IN_PROCESS) {
-                flickering.putIfAbsent(name, new AtomicBoolean(false));
-                stroke = flickering.get(name).get() ? "yellow" : "gold";
-                flickering.get(name).set(!flickering.get(name).get());
-            }
-            graphPane.graphView.getStylableVertex(target).setStyle("-fx-stroke: " + stroke + ";" + "-fx-fill: " + fill + ";");
-        });
-    }
 
     public String getInstantTime() {
         taskOutput.setScrollTop(Double.MIN_VALUE);
@@ -71,29 +61,92 @@ public class TaskController extends SideAction {
 
     public void afterRunning() {
         runButton.setText("Finished!");
-        paused = false;
+        paused.set(false);
 //        alertWhenDone();
     }
 
-//
-//    protected void initChangingColorThread() {
-//        Thread.UncaughtExceptionHandler handler = (th, ex) -> System.out.println("Uncaught exception: " + ex);
-//        Thread check = new Thread(() -> {
-//            HashMap<String, AtomicBoolean> flickering = new HashMap<>();
-//            while (graphPane.engine.isTaskRunning() || graphPane.engine.getTaskRunner() == null) { /// Server
-//                changeColors(flickering);
-//                try {
-//                    Thread.sleep(1000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//            changeColors(flickering);
-//            Platform.runLater(this::afterRunning);
-//        }, "ColorChanger");
-//        check.setUncaughtExceptionHandler(handler);
-//        check.start();
-//    }
+    public void start(String taskName) {
+        isTaskRunning.set(true);
+        updateTimer = new Timer();
+        updateTimer.schedule(new TimerTask() {
+            public void run() {
+                getUpdate(taskName);
+            }
+        }, 0, 1000);
+
+        changingColorTimer = new Timer();
+        changingColorTimer.schedule(new TimerTask() {
+            final HashMap<String, AtomicBoolean> flickering = new HashMap<>();
+
+            public void run() {
+                initChangingColorThread(flickering);
+            }
+        }, 0, 1000);
+    }
+
+
+    private void getUpdate(String taskName) {
+        try {
+            String url = HttpClientUtil.createUrl(Constants.UPDATE_PROGRESS_GET_URL, Utils.tuple(Constants.TASKNAME, taskName));
+            HttpClientUtil.runAsync(url, new SimpleCallBack((updateJson) -> {
+                JsonObject json = GSON_INSTANCE.fromJson(updateJson, JsonObject.class);
+                String targetsString = json.get("targets").getAsString().replaceAll("\\s", "");
+                Target[] targets = GSON_INSTANCE.fromJson(targetsString, Target[].class);
+
+                String progressString = json.get("progress").getAsString().replaceAll("\\s", "");
+                Double progress = GSON_INSTANCE.fromJson(progressString, Double.class);
+
+                String taskStatusString = json.get("taskStatus").getAsString().replaceAll("\\s", "");
+                TaskStatus taskStatus = GSON_INSTANCE.fromJson(taskStatusString, TaskStatus.class);
+
+                graphPane.graph.updateAllTarget(targets);
+                progressBar.progressProperty().set(progress);
+                switch (taskStatus) {
+                    case PAUSED:
+                        paused.set(true);
+                        break;
+                    case ACTIVE:
+                        paused.set(false);
+                        resume();
+                        break;
+                    case STOPPED:
+                    case FINISHED:
+                        paused.set(false);
+                        isTaskRunning.set(false);
+                        resume();
+                }
+
+            }));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void resume() {
+        synchronized (graphPane.graph) {
+            threadLock.notifyAll();
+        }
+    }
+
+    protected void initChangingColorThread(HashMap<String, AtomicBoolean> flickering) {
+        if (!isTaskRunning.get()) /// Server
+        {
+            changeColors(flickering);
+            Platform.runLater(this::afterRunning);
+            changingColorTimer.cancel();
+        }
+
+        if (paused.get() && graphPane.graph.getStatusesStatistics().get(Status.IN_PROCESS).size() == 0) {
+            try {
+                synchronized (graphPane.graph) {
+                    threadLock.wait();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        changeColors(flickering);
+    }
 
 
 //    private void alertWhenDone() {
@@ -137,5 +190,22 @@ public class TaskController extends SideAction {
 //            if (!Objects.equals(oldValue, newValue))
 //                Platform.runLater(() -> taskOutput.appendText("\n" + getInstantTime() + ".   " + newValue));
 //        });
+    }
+
+    public synchronized void changeColors(HashMap<String, AtomicBoolean> flickering) {
+        graphPane.graph.getAdjacentMap().keySet().forEach(name -> {
+            Target target = graphPane.graph.getVerticesMap().get(name);
+            Status status = target.getStatus();
+            String stroke = status.getColor();
+            String fill = target.getResult().getColor();
+            if (status == Status.FINISHED)
+                stroke = fill;
+            if (status == Status.IN_PROCESS) {
+                flickering.putIfAbsent(name, new AtomicBoolean(false));
+                stroke = flickering.get(name).get() ? "yellow" : "gold";
+                flickering.get(name).set(!flickering.get(name).get());
+            }
+            graphPane.graphView.getStylableVertex(target).setStyle("-fx-stroke: " + stroke + ";" + "-fx-fill: " + fill + ";");
+        });
     }
 }

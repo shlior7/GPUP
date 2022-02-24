@@ -1,7 +1,9 @@
 package utils.http;
 
 import okhttp3.*;
+import types.Tuple;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class HttpClientUtil {
@@ -31,6 +33,19 @@ public class HttpClientUtil {
         call.enqueue(callback);
     }
 
+    @SafeVarargs
+    public static String createUrl(String url, Tuple<String, String>... tuples) throws Exception {
+        HttpUrl.Builder builder = Objects.requireNonNull(HttpUrl
+                        .parse(url))
+                .newBuilder();
+
+        for (Tuple<String, String> tuple : tuples) {
+            builder.addQueryParameter(tuple.x, tuple.y);
+        }
+
+        return builder.build().toString();
+    }
+
     public static void runAsyncBody(String finalUrl, RequestBody body, Callback callback) {
 
         Request request = new Request.Builder()
@@ -43,6 +58,23 @@ public class HttpClientUtil {
         call.enqueue(callback);
     }
 
+
+    public static void runAsyncBody(String finalUrl, String body, Callback callback) {
+
+        RequestBody bodyReq = RequestBody.create(
+                MediaType.parse("application/json"), body);
+
+        Request request = new Request.Builder()
+                .url(finalUrl)
+                .post(bodyReq)
+                .build();
+
+        Call call = HttpClientUtil.HTTP_CLIENT.newCall(request);
+
+        call.enqueue(callback);
+    }
+
+    
     public static void shutdown() {
         System.out.println("Shutting down HTTP CLIENT");
         HTTP_CLIENT.dispatcher().executorService().shutdown();

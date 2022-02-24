@@ -9,17 +9,30 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5ec3d5d0-8517-48d0-b595-9bc78986c321" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/SharedEngine/src/types/TargetInfo.java" afterDir="false" />
+    <list default="true" id="5ec3d5d0-8517-48d0-b595-9bc78986c321" name="Changes" comment="yolo">
+      <change afterPath="$PROJECT_DIR$/GraphFx/src/utils/ObservableAtomicInteger.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SharedEngine/src/types/Tuple.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Admin/src/app/components/TaskControllerAdmin.java" beforeDir="false" afterPath="$PROJECT_DIR$/Admin/src/app/components/TaskControllerAdmin.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Engine/src/engine/Engine.java" beforeDir="false" afterPath="$PROJECT_DIR$/Engine/src/engine/Engine.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Engine/src/task/TaskManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/Engine/src/task/TaskManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Engine/src/utils/Utils.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/GPUPServer/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/AskForTasksServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/AskForTasksServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/SignToTaskServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/SignToTaskServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SharedEngine/src/types/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/types/Task.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Engine/src/task/TaskRunner.java" beforeDir="false" afterPath="$PROJECT_DIR$/Engine/src/task/TaskRunner.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TargetGraphServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TargetGraphServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskGetUpdateServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskGetUpdateServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskPostUpdateServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskPostUpdateServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GraphFx/src/graphApp/GraphPane.java" beforeDir="false" afterPath="$PROJECT_DIR$/GraphFx/src/graphApp/GraphPane.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GraphFx/src/graphApp/actions/task/TaskController.java" beforeDir="false" afterPath="$PROJECT_DIR$/GraphFx/src/graphApp/actions/task/TaskController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GraphFx/src/utils/http/HttpClientUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/GraphFx/src/utils/http/HttpClientUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SharedEngine/src/TargetGraph/GraphParams.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/TargetGraph/GraphParams.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SharedEngine/src/TargetGraph/TargetGraph.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/TargetGraph/TargetGraph.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SharedEngine/src/utils/Constants.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/utils/Constants.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/SharedEngine/src/utils/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/utils/Utils.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Worker/src/engine/TaskProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/Worker/src/engine/TaskProcessor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Worker/src/screens/dashboard/Dashboard.java" beforeDir="false" afterPath="$PROJECT_DIR$/Worker/src/screens/dashboard/Dashboard.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Worker/src/utils/CheckBoxCellFactory.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Worker/src/utils/http/HttpClientUtil.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Worker/src/utils/http/SimpleCookieManager.java" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,6 +45,9 @@
         <option value="Class" />
       </list>
     </option>
+  </component>
+  <component name="FormatOnSaveOptions">
+    <option name="myRunOnSave" value="true" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -51,6 +67,9 @@
     <option name="FILTER_DEBUG" value="true" />
     <option name="CUSTOM_FILTER" />
   </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
   <component name="ProjectId" id="25R9Vb2s4ZfSMxFCVu7JtNnMS0f" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -64,7 +83,6 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="format.on.save" value="true" />
     <property name="last_directory_selection" value="$PROJECT_DIR$/Engine/src/utils" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
@@ -221,7 +239,10 @@
       <updated>1645479062251</updated>
       <workItem from="1645479063521" duration="1860000" />
       <workItem from="1645480940200" duration="36060000" />
-      <workItem from="1645634324493" duration="3203000" />
+      <workItem from="1645634324493" duration="4148000" />
+      <workItem from="1645639991147" duration="62000" />
+      <workItem from="1645640064355" duration="1895000" />
+      <workItem from="1645657024369" duration="11907000" />
     </task>
     <task id="LOCAL-00001" summary="tasks runner and processor">
       <created>1645556682838</created>
@@ -260,7 +281,6 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="tasks runner and processor" />

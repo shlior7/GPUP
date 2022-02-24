@@ -30,18 +30,15 @@ public class Engine implements IEngine {
         try {
             File file = new File("/Users/liorsht/IdeaProjects/GPUP/ex2-big.xml");
             loadXmlFile(file, userManager.getAdmin("admin"));
-            addTask(new Simulation("1"),"big",userManager.getAdmin("admin"));
-            addTask(new Simulation("2"),"big",userManager.getAdmin("admin"));
-        }
-        catch (Exception e){
+            addTask(new Simulation("1"), "big", userManager.getAdmin("admin"));
+            addTask(new Simulation("2"), "big", userManager.getAdmin("admin"));
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public boolean toggleTaskRunning() {
-        if (taskRunner != null)
-            return taskRunner.togglePause();
-        return false;
+    public boolean toggleTaskRunning(String TaskName) throws Exception {
+        return tasksManager.togglePause(TaskName);
     }
 
     public TaskManager getTasksManager() {
@@ -65,9 +62,6 @@ public class Engine implements IEngine {
         return targetGraph.findCircuit(targetName);
     }
 
-    public Map<String, List<String>> getStatusesStatistics() {
-        return targetGraph.getStatusesStatistics();
-    }
 
     public String getResultStatistics() {
         return targetGraph.getStatsInfoString(targetGraph.getResultStatistics());

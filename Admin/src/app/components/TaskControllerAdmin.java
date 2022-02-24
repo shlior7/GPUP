@@ -19,6 +19,8 @@ import types.Task;
 import utils.Constants;
 
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.stream.Collectors;
 
 import static utils.Constants.GSON_INSTANCE;
@@ -28,6 +30,7 @@ public class TaskControllerAdmin extends TaskController {
     private boolean choose;
     private TextArea taskOutput;
     private boolean paused;
+    private Timer updateTimer;
 
     public TaskControllerAdmin(GraphPane graphPane) {
         super(graphPane);
@@ -36,6 +39,7 @@ public class TaskControllerAdmin extends TaskController {
         this.settings.getChildren().addAll(new AnchoredNode(runButton), new AnchoredNode(targetsComboBox));
         this.choose = true;
         setOnAction(this::chooseTargets);
+        updateTimer = new Timer();
     }
 
 

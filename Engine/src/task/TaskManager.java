@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TaskManager {
     private final Map<String, TaskRunner> tasksRunners;
-    private final Map<Worker,Set<String>> workersTasks;
+    private final Map<Worker, Set<String>> workersTasks;
 
     public TaskManager() {
         tasksRunners = new HashMap<>();
@@ -28,8 +28,7 @@ public class TaskManager {
         try {
             task.initIncrementalRun();
             task.start();
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -51,10 +50,14 @@ public class TaskManager {
     public synchronized void resumeTask() {
     }
 
-    public void updateTask(String taskName, Target[] targets, String[] taskOutputs) {
+    public void updateTasks(Map<String, Target[]> targetsToTaskName) {
+        targetsToTaskName.forEach(this::updateTask);
+    }
+
+    public void updateTask(String taskName, Target[] targets) {
         TaskRunner taskRunner = getTask(taskName);
         taskRunner.getGraph().updateAllTarget(targets);
-        taskRunner.addTaskLog(taskOutputs);
+//        taskRunner.addTaskLog(taskOutputs);
     }
 
     public TaskRunner getTask(String taskName) {
@@ -66,10 +69,10 @@ public class TaskManager {
         Map<String, List<Target>> targetsToSend = new HashMap<>();
 
         AtomicInteger finalAmount = new AtomicInteger(amount);
-        workersTasks.getOrDefault(worker,new HashSet<>()).forEach((task)->{
+        workersTasks.getOrDefault(worker, new HashSet<>()).forEach((task) -> {
             TaskRunner taskRunner = tasksRunners.get(task);
-            if(taskRunner.getTargetWorkingOn(worker) == 0 && finalAmount.get() > 0){
-                tasksToSend.put(task,taskRunner.getTasksForWorker(worker, 1));
+            if (taskRunner.getTargetWorkingOn(worker) == 0 && finalAmount.get() > 0) {
+                tasksToSend.put(task, taskRunner.getTasksForWorker(worker, 1));
                 finalAmount.getAndDecrement();
             }
         });
@@ -78,10 +81,10 @@ public class TaskManager {
         while (!tasks.isEmpty() && div != 0) {
             TaskRunner taskRunner = tasks.pop();
             int tasksToAsk = div < 1 ? 1 : (int) div;
-            tasksToSend.putIfAbsent(taskRunner.getTask().getTaskName(),new ArrayList<>());
+            tasksToSend.putIfAbsent(taskRunner.getTask().getTaskName(), new ArrayList<>());
 
             List<Task> tasksToAdd = taskRunner.getTasksForWorker(worker, tasksToAsk);
-            if(!tasksToAdd.isEmpty()) {
+            if (!tasksToAdd.isEmpty()) {
                 tasksToSend.get(taskRunner.getTask().getTaskName()).addAll(tasksToAdd);
                 amount -= tasksToAdd.size();
                 div = (double) amount / (double) tasks.size();
@@ -104,10 +107,17 @@ public class TaskManager {
         if (taskRunner == null)
             return null;
 
-        workersTasks.putIfAbsent(worker,new HashSet<>());
-        if(signTo)  workersTasks.get(worker).add(taskName);
+        workersTasks.putIfAbsent(worker, new HashSet<>());
+        if (signTo) workersTasks.get(worker).add(taskName);
         else workersTasks.get(worker).remove(taskName);
 
         return taskRunner.getTask();
+    }
+
+    public boolean togglePause(String taskName) throws Exception {
+        TaskRunner taskRunner = getTask(taskName);
+        if (taskRunner == null)
+            throw new Exception("no such task");
+        return taskRunner.togglePause();
     }
 }

@@ -2,10 +2,7 @@ package screens.dashboard;
 
 import TargetGraph.TargetGraph;
 import TargetGraph.Target;
-//import app.utils.Constants;
-//import app.utils.http.HttpClientUtil;
-//import app.utils.http.SimpleCallBack;
-import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import engine.TaskProcessor;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -15,7 +12,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import okhttp3.HttpUrl;
 import types.*;
@@ -33,17 +29,16 @@ import java.util.function.Consumer;
 
 import static utils.Constants.GSON_INSTANCE;
 
-//import static app.utils.Constants.GSON_INSTANCE;
-
 
 public class Dashboard extends Stage implements Initializable {
     private TaskProcessor taskProcessor;
     private Worker worker;
     private TaskInfo[] taskInfos;
-    private Map<String, Task> mySignedTasks;
     private int credits = 0;
-    Timer taskTimer;
-    Timer userTimer;
+
+    private Timer taskTimer;
+    private Timer targetsTimer;
+    private Timer userTimer;
 
 
     List<TargetInfo> TargetsInfo = new ArrayList<>();
@@ -79,7 +74,7 @@ public class Dashboard extends Stage implements Initializable {
 
     public void init(ScrollPane root, Worker worker) {
         this.worker = worker;
-        this.availableThreads.setText(String.valueOf(worker.getThreads()));
+        this.availableThreads.textProperty().bind(taskProcessor.availableThreads().asString());
         this.numberOfCredits.setText(String.valueOf(this.credits));
         this.setScene(new Scene(root, 2048, 1800));
         this.getUsers();
@@ -102,6 +97,13 @@ public class Dashboard extends Stage implements Initializable {
                 getUsers();
             }
         }, 0, 5 * 60 * 1000);
+
+        targetsTimer = new Timer();
+        targetsTimer.schedule(new TimerTask() {
+            public void run() {
+                taskProcessor.getMoreTargets();
+            }
+        }, 0, 1000);
     }
 
 
@@ -183,13 +185,12 @@ public class Dashboard extends Stage implements Initializable {
                 .build()
                 .toString();
         System.out.println("finalUrl " + finalUrl);
-
+        
         Platform.runLater(() -> {
             HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((tasksJson) -> {
                 System.out.println(tasksJson);
                 if (signTo) {
-                    Task task = Utils.getTaskFromJson(tasksJson);
-                    mySignedTasks.put(taskName, task);
+                    taskProcessor.pushTask(Utils.getTaskFromJson(tasksJson));
                 } else {
                     taskProcessor.removeTask(taskName);
                 }

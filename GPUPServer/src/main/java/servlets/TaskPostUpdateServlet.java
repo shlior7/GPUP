@@ -2,6 +2,7 @@ package servlets;
 
 import TargetGraph.Target;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,6 +17,8 @@ import utils.SessionUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,18 +35,20 @@ public class TaskPostUpdateServlet extends HttpServlet {
             UserManager userManager = ServletUtils.getUserManager(getServletContext());
             Worker worker = userManager.getWorker(usernameFromSession);
             if (worker != null) {
-                String taskName = request.getParameter(TASKNAME);
-
                 String requestData = request.getReader().lines().collect(Collectors.joining());
-                JsonObject json = GSON_INSTANCE.fromJson(requestData, JsonObject.class);
 
-                Target[] targets = GSON_INSTANCE.fromJson(json.get(TARGETS), Target[].class);
-                String[] taskOutput = GSON_INSTANCE.fromJson(json.get(TASKOUTPUT), String[].class);
+                Map<String, Target[]> targetsToTaskName = GSON_INSTANCE.fromJson(requestData, new TypeToken<Map<String, List<Target>>>() {
+                }.getType());
+
+//                JsonObject json = GSON_INSTANCE.fromJson(requestData, JsonObject.class);
+//
+//                Target[] targets = GSON_INSTANCE.fromJson(json.get(TARGETS), Target[].class);
+//                String[] taskOutput = GSON_INSTANCE.fromJson(json.get(TASKOUTPUT), String[].class);
 
 //                Task task = GSON_INSTANCE.fromJson(requestData, (Class<? extends Task>) Class.forName(json.get("type").getAsString()));
 
 
-                ServletUtils.getEngine(getServletContext()).getTaskManager().updateTask(taskName, targets, taskOutput);
+                ServletUtils.getEngine(getServletContext()).getTaskManager().updateTasks(targetsToTaskName);
             } else {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                 out.println("Request is not from a worker");
@@ -96,3 +101,4 @@ public class TaskPostUpdateServlet extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 }
+

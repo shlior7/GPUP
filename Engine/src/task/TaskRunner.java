@@ -143,8 +143,10 @@ public class TaskRunner implements Runnable {
     }
 
     public synchronized List<Task> getTasksForWorker(Worker worker, int amount) {
-        if (pause.get())
+        if (pause.get() || !running)
             return new ArrayList<>();
+
+
         List<Target> targetsToWait = new ArrayList<>();
         List<Target> targetsToSend = new ArrayList<>();
         List<Task> tasksToSend = new ArrayList<>();
@@ -196,21 +198,27 @@ public class TaskRunner implements Runnable {
         if (target == null)
             throw new Exception("No such target");
 
+        targetsDone.incrementAndGet();
         target.setStatus(Status.FINISHED);
         String name = target.name;
         updateProgress();
         setTaskOutput("finished task " + name + " with the result " + target.getResult() + " time it took to process " + target.getProcessTime().toMillis());
-
-        if (!targetGraph.whoAreYourDirectDaddies(target.name).isEmpty()) {
-            setTaskOutput("adding " + targetGraph.whoAreYourDirectDaddies(target.name) + " to waiting queue");
-            queue.addAll(targetGraph.whoAreYourDirectDaddies(target.name));
-        }
 
         if (target.getResult() == Result.Failure) {
             targetGraph.setParentsStatuses(name, Status.SKIPPED, targetsDone);
             targetGraph.whoAreAllYourDaddies(name).forEach(t -> setTaskOutput(t.getName() + " was set to skipped"));
             updateProgress();
         }
+
+        if (!targetGraph.whoAreYourDirectDaddies(target.name).isEmpty()) {
+            setTaskOutput("adding " + targetGraph.whoAreYourDirectDaddies(target.name) + " to waiting queue");
+            queue.addAll(targetGraph.whoAreYourDirectDaddies(target.name));
+        }
+
+        if (targetsDone.get() == targetGraph.size()) {
+            taskData.setStatus(TaskStatus.FINISHED);
+        }
+
     }
 
     public void resume() {
@@ -270,7 +278,7 @@ public class TaskRunner implements Runnable {
         return taskData;
     }
 
-    public int getTargetWorkingOn(Worker worker){
-        return taskData.getWorkerListMap().getOrDefault(worker,new ArrayList<>()).size();
+    public int getTargetWorkingOn(Worker worker) {
+        return taskData.getWorkerListMap().getOrDefault(worker, new ArrayList<>()).size();
     }
 }
