@@ -2,6 +2,7 @@ package engine;
 
 import TargetGraph.Status;
 import TargetGraph.Target;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
 import javafx.beans.binding.StringBinding;
@@ -170,11 +171,11 @@ public class TaskProcessor {
     }
 
     public void pause(String taskName) {
-        try {
-            runningTasks.remove(taskName);
-        } catch (Exception ignored) {
+        runningTasks.remove(taskName);
+    }
 
-        }
+    public boolean taskIsRunning(String taskName) {
+        return runningTasks.containsKey(taskName);
     }
 
     public boolean togglePause(String taskName) {
@@ -238,6 +239,7 @@ public class TaskProcessor {
         }
         updateProgress();
         getMoreTargets();
+        setTargetsTable();
 
         String taskName = targetsToTaskName.get(target);
         if (signedTasksTargets.containsKey(taskName)) {
@@ -258,7 +260,6 @@ public class TaskProcessor {
             System.out.println("available " + availableThreads.get());
             prev = availableThreads.get();
         }
-
 
         if (availableThreads.get() <= 0 || runningTasks.size() == 0 || waitingForResponse.get())
             return;
@@ -313,13 +314,7 @@ public class TaskProcessor {
     public void setMyTasksTable(List<TaskInfo> myTasks) {
         setAddRemoveFromTable(myTasks, myTasksTable
                 , (t1, t2) -> t1.setProgress(t2.getProgress())
-                , (t1, t2) -> t1.setWorkers(t2.getWorkers())
-                , (t1, t2) -> {
-                    if (t2.getTaskStatus().equals(TaskStatus.FINISHED.toString())) {
-                        removeTask(t2.getTaskName());
-                        t2.setRegistered(false);
-                    }
-                });
+                , (t1, t2) -> t1.setWorkers(t2.getWorkers()));
     }
 
     public void setMyTasksTable() {
@@ -331,6 +326,28 @@ public class TaskProcessor {
 
     public StringBinding getCreditsBinding() {
         return credits.asString();
+    }
+
+
+    public synchronized void signToTasks(String taskName, boolean signTo) {
+        String finalUrl = HttpClientUtil.createUrl(Constants.TASK_SIGN
+                , Utils.tuple(Constants.SIGNTO, String.valueOf(signTo))
+                , Utils.tuple(Constants.TASKNAME, taskName));
+
+        System.out.println("finalUrl " + finalUrl);
+
+        HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((taskJson) -> {
+            System.out.println(taskJson);
+            if (signTo) {
+                JsonObject json = GSON_INSTANCE.fromJson(taskJson, JsonObject.class);
+                System.out.println("taskJson = " + taskJson);
+                Task task = Utils.getTaskFromJson(json);
+                task.setCreditPerTarget(json.get("creditPerTarget").getAsInt());
+                pushTask(task);
+            } else {
+                removeTask(taskName);
+            }
+        }));
     }
 
 }

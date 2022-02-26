@@ -39,14 +39,17 @@ public class SignUpCell extends TableCell<TaskInfo, Boolean> {
 
         signUpCheckbox.setOnAction(actionEvent -> {
             TaskInfo task = table.getItems().get(getTableRow().getIndex());
+            if (task.getTaskStatus().equals(TaskStatus.FINISHED.toString())) {
+                signUpCheckbox.setSelected(false);
+                return;
+            }
             task.setRegistered(signUpCheckbox.isSelected());
             signUpCheckbox.selectedProperty().bindBidirectional(task.getRegisteredProperty());
             if (signUpCheckbox.isSelected()) {
-                signToTasks(task.getTaskName(), true);
+                taskProcessor.signToTasks(task.getTaskName(), true);
                 signUpCheckbox.setDisable(true);
             }
         });
-
 
         signUpCheckbox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             System.out.println("changed checkbox newValue = " + newValue);
@@ -54,7 +57,7 @@ public class SignUpCell extends TableCell<TaskInfo, Boolean> {
                 TaskInfo task = table.getItems().get(getTableRow().getIndex());
                 System.out.println("changed to false task = " + task.getTaskName() + " " + task.getRegistered());
                 if (!task.getTaskStatus().equals(TaskStatus.FINISHED.toString())) {
-                    signToTasks(task.getTaskName(), false);
+                    taskProcessor.signToTasks(task.getTaskName(), false);
                     signUpCheckbox.setDisable(false);
                 } else {
                     signUpCheckbox.setDisable(true);
@@ -63,26 +66,6 @@ public class SignUpCell extends TableCell<TaskInfo, Boolean> {
         });
     }
 
-    private synchronized void signToTasks(String taskName, boolean signTo) {
-        String finalUrl = HttpClientUtil.createUrl(Constants.TASK_SIGN
-                , Utils.tuple(Constants.SIGNTO, String.valueOf(signTo))
-                , Utils.tuple(Constants.TASKNAME, taskName));
-
-        System.out.println("finalUrl " + finalUrl);
-
-        HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((taskJson) -> {
-            System.out.println(taskJson);
-            if (signTo) {
-                JsonObject json = GSON_INSTANCE.fromJson(taskJson, JsonObject.class);
-                System.out.println("taskJson = " + taskJson);
-                Task task = Utils.getTaskFromJson(json);
-                task.setCreditPerTarget(json.get("creditPerTarget").getAsInt());
-                taskProcessor.pushTask(task);
-            } else {
-                taskProcessor.removeTask(taskName);
-            }
-        }));
-    }
 
     /**
      * places an add button in the row only if the row is not empty.

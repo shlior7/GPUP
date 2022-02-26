@@ -5,6 +5,8 @@ import TargetGraph.Type;
 import javafx.beans.property.*;
 import lombok.ToString;
 
+import java.util.Objects;
+
 @ToString
 public class TaskInfo extends TableItem {
     public String taskName;
@@ -17,6 +19,7 @@ public class TaskInfo extends TableItem {
     public String independents;
     public String roots;
     public String creditPerTarget;
+    public boolean paused;
 
     public final BooleanProperty registered;
     public StringProperty taskStatus;
@@ -55,6 +58,14 @@ public class TaskInfo extends TableItem {
         setTargetsProcessed("0");
 
         this.registered = new SimpleBooleanProperty(registered);
+    }
+
+    public boolean isPaused() {
+        return paused;
+    }
+
+    public void setPaused(boolean paused) {
+        this.paused = paused;
     }
 
     public String getTaskName() {
@@ -139,8 +150,8 @@ public class TaskInfo extends TableItem {
     }
 
     public String ifNullZero(String string) {
-        if (string == null)
-            return "o";
+        if (Objects.equals(string, "null") || string == null)
+            return "0";
         return string;
     }
 
