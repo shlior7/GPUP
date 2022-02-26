@@ -9,16 +9,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-<<<<<<< HEAD
     <list default="true" id="5ec3d5d0-8517-48d0-b595-9bc78986c321" name="Changes" comment="stop and pause">
       <change afterPath="$PROJECT_DIR$/Worker/src/utils/PauseButtonCell.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Worker/src/utils/StopButtonCell.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-=======
-    <list default="true" id="5ec3d5d0-8517-48d0-b595-9bc78986c321" name="Changes" comment="delete chat utils">
-      <change afterPath="$PROJECT_DIR$/Worker/src/utils/PauseButtonCell.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Worker/src/utils/StopButtonCell.java" afterDir="false" />
->>>>>>> a7d737c891c5baa507d9ade15a807bb3a6113711
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/SharedEngine/src/types/TaskInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/types/TaskInfo.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Worker/src/engine/TaskProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/Worker/src/engine/TaskProcessor.java" afterDir="false" />
@@ -244,11 +238,7 @@
       <workItem from="1645639991147" duration="62000" />
       <workItem from="1645640064355" duration="1895000" />
       <workItem from="1645657024369" duration="11907000" />
-<<<<<<< HEAD
       <workItem from="1645697986382" duration="91877000" />
-=======
-      <workItem from="1645697986382" duration="91016000" />
->>>>>>> a7d737c891c5baa507d9ade15a807bb3a6113711
     </task>
     <task id="LOCAL-00001" summary="tasks runner and processor">
       <created>1645556682838</created>
@@ -292,7 +282,6 @@
       <option name="project" value="LOCAL" />
       <updated>1645906981794</updated>
     </task>
-<<<<<<< HEAD
     <task id="LOCAL-00007" summary="stop and pause">
       <created>1645911423104</created>
       <option name="number" value="00007" />
@@ -301,9 +290,6 @@
       <updated>1645911423104</updated>
     </task>
     <option name="localTasksCounter" value="8" />
-=======
-    <option name="localTasksCounter" value="7" />
->>>>>>> a7d737c891c5baa507d9ade15a807bb3a6113711
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -327,12 +313,8 @@
     <MESSAGE value="maybe working" />
     <MESSAGE value="working tasks without logs" />
     <MESSAGE value="delete chat utils" />
-<<<<<<< HEAD
     <MESSAGE value="stop and pause" />
     <option name="LAST_COMMIT_MESSAGE" value="stop and pause" />
-=======
-    <option name="LAST_COMMIT_MESSAGE" value="delete chat utils" />
->>>>>>> a7d737c891c5baa507d9ade15a807bb3a6113711
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
