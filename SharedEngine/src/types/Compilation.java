@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.StringJoiner;
+import java.util.function.Consumer;
 
 public class Compilation extends Task {
     private final String outFolder;
@@ -28,10 +29,6 @@ public class Compilation extends Task {
         super(task.taskName, Compilation.class);
         this.outFolder = task.outFolder;
         this.workingDir = task.workingDir;
-    }
-
-    public String getName() {
-        return "Compilation";
     }
 
     public void setTarget(Target target) {
@@ -67,6 +64,7 @@ public class Compilation extends Task {
         Instant after = Instant.now();
         targetToRunOn.setProcessTime(Duration.between(before, after));
         targetToRunOn.setResult(exitCode == 0 ? Result.Success : Result.Failure);
+        onFinished.accept(targetToRunOn);
     }
 
 }

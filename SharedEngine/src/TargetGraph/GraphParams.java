@@ -19,8 +19,8 @@ public class GraphParams {
     private Map<TaskType, Integer> prices;
 
     public GraphParams(TargetGraph targetGraph) {
-        allTargets = new ArrayList<>();
-        edges = new ArrayList<>();
+//        allTargets = new ArrayList<>();
+//        edges = new ArrayList<>();
         allTargets = targetGraph.getVerticesMap().values();
         edges = targetGraph.getEdges();
         graphsName = targetGraph.getGraphsName();

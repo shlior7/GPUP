@@ -19,10 +19,10 @@ public class Simulation extends Task {
 
     public Simulation(String name) {
         super(name, Simulation.class);
-        this.timeToProcess = 1;
+        this.timeToProcess = 6000;
         this.isRandom = false;
         this.successProbability = 1;
-        this.successWithWarningProbability = 1;
+        this.successWithWarningProbability = 0;
     }
 
     public Simulation(String taskName, int timeToProcess, boolean isRandom, float successProbability, float successWithWarningProbability) {
@@ -61,11 +61,6 @@ public class Simulation extends Task {
     }
 
     @Override
-    public String getName() {
-        return "Simulation";
-    }
-
-    @Override
     public void run() {
         Random rand = new Random();
         int timeToSleep = isRandom ? rand.nextInt(timeToProcess) : timeToProcess;
@@ -73,15 +68,19 @@ public class Simulation extends Task {
         targetToRunOn.setStatus(Status.IN_PROCESS);
         targetToRunOn.setStartedTime(before);
         outputText.accept(targetToRunOn.name + " going to sleep for " + timeToSleep);
+        System.out.println(targetToRunOn.name + " going to sleep for " + timeToSleep);
         try {
             outputText.accept("before " + targetToRunOn.name + " going to sleep");
             sleep(timeToSleep);
             outputText.accept("after " + targetToRunOn.name + " went to sleep");
+            System.out.println("after " + targetToRunOn.name + " went to sleep");
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         Instant after = Instant.now();
         targetToRunOn.setProcessTime(Duration.between(before, after));
         targetToRunOn.setResult(getResult(rand));
+        onFinished.accept(targetToRunOn);
     }
 }

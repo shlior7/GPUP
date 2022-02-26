@@ -30,10 +30,8 @@ public class TargetGraphServlet extends HttpServlet {
         response.setContentType("application/json");
         try (PrintWriter out = response.getWriter()) {
             String graphName = request.getParameter(Constants.GRAPHNAME);
-            System.out.println("graphName " + graphName);
             TargetGraph targetGraph = ServletUtils.getEngine(getServletContext()).getGraphManager().getOrDefault(graphName, null);
             String json = GSON_INSTANCE.toJson(new GraphParams(targetGraph));
-            System.out.println("graph json" + json);
             out.println(json);
             out.flush();
         } catch (Exception e) {

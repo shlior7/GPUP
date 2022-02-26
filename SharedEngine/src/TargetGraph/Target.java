@@ -44,12 +44,20 @@ public class Target {
         }
     }
 
-    public String geStringInfo() {
+    public String getStringInfo() {
         return
                 "Name: " + name +
                         "\nUser Data: " + userData +
                         "\nStatus: " + status +
                         "\nResult: " + result;
+
+    }
+
+    public String getStringInfos() {
+        return
+                "Name: " + name +
+                        ", Status: " + status +
+                        ", Result: " + result;
 
     }
 

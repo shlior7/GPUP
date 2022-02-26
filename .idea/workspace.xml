@@ -9,17 +9,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5ec3d5d0-8517-48d0-b595-9bc78986c321" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/SharedEngine/src/types/TargetInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Engine/src/task/TaskManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/Engine/src/task/TaskManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Engine/src/utils/Utils.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/GPUPServer/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/AskForTasksServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/AskForTasksServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/SignToTaskServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/SignToTaskServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SharedEngine/src/types/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/types/Task.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SharedEngine/src/utils/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/utils/Utils.java" afterDir="false" />
+<<<<<<< HEAD
+    <list default="true" id="5ec3d5d0-8517-48d0-b595-9bc78986c321" name="Changes" comment="stop and pause">
+      <change afterPath="$PROJECT_DIR$/Worker/src/utils/PauseButtonCell.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Worker/src/utils/StopButtonCell.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+=======
+    <list default="true" id="5ec3d5d0-8517-48d0-b595-9bc78986c321" name="Changes" comment="delete chat utils">
+      <change afterPath="$PROJECT_DIR$/Worker/src/utils/PauseButtonCell.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Worker/src/utils/StopButtonCell.java" afterDir="false" />
+>>>>>>> a7d737c891c5baa507d9ade15a807bb3a6113711
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SharedEngine/src/types/TaskInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/types/TaskInfo.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Worker/src/engine/TaskProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/Worker/src/engine/TaskProcessor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Worker/src/screens/dashboard/Dashboard.java" beforeDir="false" afterPath="$PROJECT_DIR$/Worker/src/screens/dashboard/Dashboard.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Worker/src/utils/ButtonCell.java" beforeDir="false" afterPath="$PROJECT_DIR$/Worker/src/utils/ButtonCell.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Worker/src/utils/SignUpCell.java" beforeDir="false" afterPath="$PROJECT_DIR$/Worker/src/utils/SignUpCell.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,6 +38,9 @@
       </list>
     </option>
   </component>
+  <component name="FormatOnSaveOptions">
+    <option name="myRunOnSave" value="true" />
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -44,12 +52,29 @@
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
   </component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="recentNewPullRequestHead">
+      <RepoCoordinatesHolder>
+        <option name="owner" value="shlior7" />
+        <option name="repository" value="GPUP" />
+      </RepoCoordinatesHolder>
+    </option>
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="6657b148-e866-43e2-b407-3c7ead17621c" />
+        <option name="url" value="git@github.com:shlior7/GPUP.git" />
+      </UrlAndAccount>
+    </option>
+  </component>
   <component name="LogFilters">
     <option name="FILTER_ERRORS" value="false" />
     <option name="FILTER_WARNINGS" value="false" />
     <option name="FILTER_INFO" value="true" />
     <option name="FILTER_DEBUG" value="true" />
     <option name="CUSTOM_FILTER" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="25R9Vb2s4ZfSMxFCVu7JtNnMS0f" />
   <component name="ProjectViewState">
@@ -64,7 +89,6 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="format.on.save" value="true" />
     <property name="last_directory_selection" value="$PROJECT_DIR$/Engine/src/utils" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
@@ -80,11 +104,12 @@
       <recent name="$PROJECT_DIR$/.idea" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="utils" />
       <recent name="servlets" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.WorkerApp">
-    <configuration name="AdminApp" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Application.AdminApp">
+    <configuration name="AdminApp" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="app.main.AdminApp" />
       <module name="Admin" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Admin" />
@@ -98,7 +123,7 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="WorkerApp" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+    <configuration name="WorkerApp" type="Application" factoryName="Application" singleton="false" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="screens.main.WorkerApp" />
       <module name="Worker" />
       <extension name="coverage">
@@ -204,12 +229,6 @@
       <item itemvalue="Application.AdminApp" />
       <item itemvalue="Tomcat Server.Tomcat 10.0.16" />
     </list>
-    <recent_temporary>
-      <list>
-        <item itemvalue="Application.WorkerApp" />
-        <item itemvalue="Application.AdminApp" />
-      </list>
-    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -221,7 +240,15 @@
       <updated>1645479062251</updated>
       <workItem from="1645479063521" duration="1860000" />
       <workItem from="1645480940200" duration="36060000" />
-      <workItem from="1645634324493" duration="3203000" />
+      <workItem from="1645634324493" duration="4148000" />
+      <workItem from="1645639991147" duration="62000" />
+      <workItem from="1645640064355" duration="1895000" />
+      <workItem from="1645657024369" duration="11907000" />
+<<<<<<< HEAD
+      <workItem from="1645697986382" duration="91877000" />
+=======
+      <workItem from="1645697986382" duration="91016000" />
+>>>>>>> a7d737c891c5baa507d9ade15a807bb3a6113711
     </task>
     <task id="LOCAL-00001" summary="tasks runner and processor">
       <created>1645556682838</created>
@@ -244,7 +271,39 @@
       <option name="project" value="LOCAL" />
       <updated>1645634135133</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="maybe working">
+      <created>1645698686234</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1645698686234</updated>
+    </task>
+    <task id="LOCAL-00005" summary="working tasks without logs">
+      <created>1645906933447</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1645906933447</updated>
+    </task>
+    <task id="LOCAL-00006" summary="delete chat utils">
+      <created>1645906981794</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1645906981794</updated>
+    </task>
+<<<<<<< HEAD
+    <task id="LOCAL-00007" summary="stop and pause">
+      <created>1645911423104</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1645911423104</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
+=======
+    <option name="localTasksCounter" value="7" />
+>>>>>>> a7d737c891c5baa507d9ade15a807bb3a6113711
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -260,12 +319,40 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="tasks runner and processor" />
     <MESSAGE value="misc changes" />
     <MESSAGE value="yolo" />
-    <option name="LAST_COMMIT_MESSAGE" value="yolo" />
+    <MESSAGE value="maybe working" />
+    <MESSAGE value="working tasks without logs" />
+    <MESSAGE value="delete chat utils" />
+<<<<<<< HEAD
+    <MESSAGE value="stop and pause" />
+    <option name="LAST_COMMIT_MESSAGE" value="stop and pause" />
+=======
+    <option name="LAST_COMMIT_MESSAGE" value="delete chat utils" />
+>>>>>>> a7d737c891c5baa507d9ade15a807bb3a6113711
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/Engine/src/task/TaskManager.java</url>
+          <line>155</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/Engine/src/task/TaskManager.java</url>
+          <line>100</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/Worker/src/engine/TaskProcessor.java</url>
+          <line>98</line>
+          <option name="timeStamp" value="39" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

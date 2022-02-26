@@ -1,10 +1,12 @@
 package servlets;
 
+import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.hildan.fxgson.FxGson;
 import task.TaskRunner;
 import types.*;
 import utils.ServletUtils;
@@ -15,15 +17,18 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static utils.Constants.GSON_INSTANCE;
 
-@WebServlet(name = "TaskListServlet", urlPatterns = {"/task/all"})
-public class TasksListServlet extends HttpServlet {
+@WebServlet(name = "AllTasksListServlet", urlPatterns = {"/task/all"})
+public class AllTasksListServlet extends HttpServlet {
 
-    private List<TaskInfo> generateJSONFromTaskCollection(Collection<TaskRunner> taskCollection,Worker worker) {
+    private List<TaskInfo> generateJSONFromTaskCollection(Collection<TaskRunner> taskCollection, Worker worker) {
         List<TaskInfo> tasksList = new ArrayList<>();
-        taskCollection.forEach(taskRunner -> tasksList.add(new TaskInfo(taskRunner.getTaskData(),worker)));
+        taskCollection.forEach(taskRunner ->
+                tasksList.add(new TaskInfo(taskRunner.getTaskData(), taskRunner.isWorkerRegisteredToThisTask(worker), taskRunner.getProgress().get()))
+        );
         return tasksList;
     }
 
@@ -35,8 +40,8 @@ public class TasksListServlet extends HttpServlet {
         Worker worker = ServletUtils.getUserManager(getServletContext()).getWorker(usernameFromSession);
         try (PrintWriter out = response.getWriter()) {
             Collection<TaskRunner> allTasks = ServletUtils.getEngine(getServletContext()).getTaskManager().getAllTasks();
-            String json = GSON_INSTANCE.toJson(generateJSONFromTaskCollection(allTasks,worker));
-            System.out.println("response = " + json);
+            String json = GSON_INSTANCE.toJson(generateJSONFromTaskCollection(allTasks, worker));
+            System.out.println("all tasks response = " + json);
             out.println(json);
             out.flush();
         } catch (Exception e) {

@@ -2,13 +2,13 @@ package types;
 
 
 import TargetGraph.Type;
-import com.google.gson.annotations.Expose;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.*;
 import lombok.ToString;
 
+import java.util.Objects;
+
 @ToString
-public class TaskInfo {
+public class TaskInfo extends TableItem {
     public String taskName;
     public String createdBy;
     public String graphName;
@@ -19,36 +19,106 @@ public class TaskInfo {
     public String independents;
     public String roots;
     public String creditPerTarget;
-    public String taskStatus;
-    public String workers;
-    @Expose(deserialize = false)
-    private final BooleanProperty registered;
+    public boolean paused;
+
+    public final BooleanProperty registered;
+    public StringProperty taskStatus;
+    public StringProperty creditsFromTask;
+    public StringProperty workers;
+    public StringProperty targetsProcessed;
+    public DoubleProperty progress;
 
     public TaskInfo() {
+        super("");
         this.registered = new SimpleBooleanProperty(false);
     }
 
-    public TaskInfo(TaskData taskData,Worker worker) {
+
+    public TaskInfo(TaskData taskData, boolean registered, double progress) {
+        this(taskData, registered, progress, 0);
+    }
+
+    public TaskInfo(TaskData taskData, boolean registered, double progress, int creditsFromTask) {
+        super(taskData.getTask().getTaskName());
         this.taskName = taskData.getTask().getTaskName();
         this.createdBy = taskData.getCreatedBy().getName();
         this.graphName = taskData.getTargetGraph().getGraphsName();
-        this.type = taskData.getTask().getName();
+        this.type = taskData.getTask().getClassName();
         this.targets = String.valueOf(taskData.getTargetGraph().totalSize());
-        this.leaves = String.valueOf(taskData.getTargetGraph().getTypesStatistics().get(Type.leaf));
-        this.middles = String.valueOf(taskData.getTargetGraph().getTypesStatistics().get(Type.middle));
-        this.independents = String.valueOf(taskData.getTargetGraph().getTypesStatistics().get(Type.independent));
-        this.roots = String.valueOf(taskData.getTargetGraph().getTypesStatistics().get(Type.root));
-        this.creditPerTarget = String.valueOf(taskData.getTargetGraph().getPrices().get(TaskType.valueOf(taskData.getTask().getName())));
-        this.taskStatus = taskData.getStatus().toString();
-        this.workers = String.valueOf(taskData.getWorkerListMap().keySet().size());
-        this.registered = new SimpleBooleanProperty(worker != null && taskData.getWorkerListMap().containsKey(worker));
+        this.leaves = ifNullZero(String.valueOf(taskData.getTargetGraph().getTypesStatistics().get(Type.leaf)));
+        this.middles = ifNullZero(String.valueOf(taskData.getTargetGraph().getTypesStatistics().get(Type.middle)));
+        this.independents = ifNullZero(String.valueOf(taskData.getTargetGraph().getTypesStatistics().get(Type.independent)));
+        this.roots = ifNullZero(String.valueOf(taskData.getTargetGraph().getTypesStatistics().get(Type.root)));
+        this.creditPerTarget = String.valueOf(taskData.getTargetGraph().getPrices().get(TaskType.valueOf(taskData.getTask().getClassName())));
 
+        setTaskStatus(taskData.getStatus().toString());
+        setWorkers(String.valueOf(taskData.getWorkerListMap().keySet().size()));
+        setProgress(progress);
+        setCreditsFromTask(String.valueOf(creditsFromTask));
+        setTargetsProcessed("0");
 
+        this.registered = new SimpleBooleanProperty(registered);
+    }
 
+    public boolean isPaused() {
+        return paused;
+    }
+
+    public void setPaused(boolean paused) {
+        this.paused = paused;
     }
 
     public String getTaskName() {
-        return this.taskName;
+        return taskName;
+    }
+
+    public String getTargetsProcessed() {
+        return targetsProcessedProperty().get();
+    }
+
+    public void setTargetsProcessed(String value) {
+        targetsProcessedProperty().set(value);
+    }
+
+    private StringProperty targetsProcessedProperty() {
+        if (targetsProcessed == null) targetsProcessed = new SimpleStringProperty(this, "targetsProcessed");
+        return targetsProcessed;
+    }
+
+    public String getCreditsFromTask() {
+        return creditsFromTaskProperty().get();
+    }
+
+    public void setCreditsFromTask(String valueOf) {
+        creditsFromTaskProperty().set(valueOf);
+    }
+
+    public StringProperty creditsFromTaskProperty() {
+        if (creditsFromTask == null) creditsFromTask = new SimpleStringProperty(this, "creditsFromTask");
+        return creditsFromTask;
+    }
+
+    public Double getProgress() {
+        return progressProperty().get();
+    }
+
+    public void setProgress(double valueOf) {
+        progressProperty().set(valueOf);
+    }
+
+    public StringProperty workersProperty() {
+        if (workers == null) workers = new SimpleStringProperty(this, "workers");
+        return workers;
+    }
+
+    public DoubleProperty progressProperty() {
+        if (progress == null) progress = new SimpleDoubleProperty(this, "progress");
+        return progress;
+    }
+
+    public StringProperty taskStatusProperty() {
+        if (taskStatus == null) taskStatus = new SimpleStringProperty(this, "taskStatus");
+        return taskStatus;
     }
 
     public String getCreatedBy() {
@@ -79,6 +149,12 @@ public class TaskInfo {
         return this.independents;
     }
 
+    public String ifNullZero(String string) {
+        if (Objects.equals(string, "null") || string == null)
+            return "0";
+        return string;
+    }
+
     public String getRoots() {
         return this.roots;
     }
@@ -88,18 +164,21 @@ public class TaskInfo {
     }
 
     public String getTaskStatus() {
-        return this.taskStatus;
+        return taskStatusProperty().get();
     }
 
     public String getWorkers() {
-        return this.workers;
+        return this.workersProperty().get();
     }
+
     public boolean getRegistered() {
         return this.registered.get();
     }
+
     public BooleanProperty getRegisteredProperty() {
         return this.registered;
     }
+
     public void setTaskName(String taskName) {
         this.taskName = taskName;
     }
@@ -141,11 +220,11 @@ public class TaskInfo {
     }
 
     public void setTaskStatus(String taskStatus) {
-        this.taskStatus = taskStatus;
+        taskStatusProperty().set(taskStatus);
     }
 
     public void setWorkers(String workers) {
-        this.workers = workers;
+        workersProperty().set(workers);
     }
 
     public void setRegistered(boolean registered) {

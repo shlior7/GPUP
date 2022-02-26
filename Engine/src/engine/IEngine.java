@@ -31,6 +31,6 @@ public interface IEngine {
 
     TaskManager getTaskManager();
 
-    List<Task> getTasksForWorker(String userName, String[] tasksNames, int threadsAmount) throws Exception;
+    Map<String, List<Target>> getTargetsForWorker(String userName, String[] taskNames, int threadsAmount) throws Exception;
 
 }

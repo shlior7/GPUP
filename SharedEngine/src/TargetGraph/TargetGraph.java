@@ -280,8 +280,14 @@ public class TargetGraph implements Graph<Target> {
         return false;
     }
 
+    public Map<Status, List<Target>> getStatusesStatistics() {
+        Map<Status, List<Target>> statuses = new HashMap<>();
+        allTargets.values().forEach(target -> statuses.put(target.getStatus(), Stream.concat(statuses.getOrDefault(target.getStatus(), new ArrayList<>()).stream(), Stream.of(target)).collect(Collectors.toList())));
 
-    public Map<String, List<String>> getStatusesStatistics() {
+        return statuses;
+    }
+
+    public Map<String, List<String>> getStatusesStatisticsString() {
         Map<String, List<String>> statuses = new HashMap<>();
         allTargets.values().forEach(target -> statuses.put(target.getStatus().name(), Stream.concat(statuses.getOrDefault(target.getStatus().name(), new ArrayList<>()).stream(), Stream.of(target.name)).collect(Collectors.toList())));
 
@@ -398,7 +404,7 @@ public class TargetGraph implements Graph<Target> {
         if (target.getTargetInfo() == null) {
             target.setTargetInfo(createTargetInGraphInfo(target));
         }
-        return target.geStringInfo() + target.getTargetInfo() + (isGraphRunning() ? createStatusInfo(target) : "");
+        return target.getStringInfo() + target.getTargetInfo() + (isGraphRunning() ? createStatusInfo(target) : "");
     }
 
     public boolean isGraphRunning() {
@@ -529,5 +535,6 @@ public class TargetGraph implements Graph<Target> {
         for (Target t : targets) {
             updateTarget(t);
         }
+        System.out.println("targets = " + getCurrentTargets().stream().map(Target::getStringInfos).collect(Collectors.toList()));
     }
 }

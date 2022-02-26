@@ -16,7 +16,7 @@ public class GraphPane extends BorderPane {
     public final ChoosingController choosingController;
     public final SideController sideController;
     public GraphPanel<Target> graphView;
-    public TargetGraph graph;
+    public final TargetGraph graph;
 
     public GraphPane(TargetGraph graph) {
         super();

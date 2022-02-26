@@ -3,7 +3,6 @@ package engine;
 import java.io.File;
 import java.io.InputStream;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import TargetGraph.*;
 
@@ -30,18 +29,19 @@ public class Engine implements IEngine {
         try {
             File file = new File("/Users/liorsht/IdeaProjects/GPUP/ex2-big.xml");
             loadXmlFile(file, userManager.getAdmin("admin"));
-            addTask(new Simulation("1"),"big",userManager.getAdmin("admin"));
-            addTask(new Simulation("2"),"big",userManager.getAdmin("admin"));
-        }
-        catch (Exception e){
+
+            File file2 = new File("/Users/liorsht/IdeaProjects/GPUP/ex3-small.xml");
+            loadXmlFile(file2, userManager.getAdmin("admin"));
+
+            addTask(new Simulation("small_task"), "small", userManager.getAdmin("admin"));
+            addTask(new Simulation("big_task"), "big", userManager.getAdmin("admin"));
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public boolean toggleTaskRunning() {
-        if (taskRunner != null)
-            return taskRunner.togglePause();
-        return false;
+    public boolean toggleTaskRunning(String TaskName) throws Exception {
+        return tasksManager.togglePause(TaskName);
     }
 
     public TaskManager getTasksManager() {
@@ -65,9 +65,6 @@ public class Engine implements IEngine {
         return targetGraph.findCircuit(targetName);
     }
 
-    public Map<String, List<String>> getStatusesStatistics() {
-        return targetGraph.getStatusesStatistics();
-    }
 
     public String getResultStatistics() {
         return targetGraph.getStatsInfoString(targetGraph.getResultStatistics());
@@ -133,13 +130,13 @@ public class Engine implements IEngine {
     }
 
     @Override
-    public synchronized List<Task> getTasksForWorker(String userName, String[] tasksNames, int threadsAmount) throws Exception {
+    public synchronized Map<String, List<Target>> getTargetsForWorker(String userName, String[] taskNames, int threadsAmount) throws Exception {
         Worker user = userManager.getWorker(userName);
         if (user == null)
             throw new Exception("Not worker");
 
-        LinkedList<TaskRunner> tasks = Arrays.asList(tasksNames).stream().map(tasksManager::getTask).collect(Collectors.toCollection(LinkedList::new));
-        return tasksManager.getTasksForWorker(user, tasks, threadsAmount);
+
+        return tasksManager.getTargetsForWorker(user, taskNames, threadsAmount);
     }
 
 //    public synchronized void onFinishTaskOnTarget(String userName, String taskName) {
@@ -188,14 +185,19 @@ public class Engine implements IEngine {
         TargetGraph targetGraph = allGraphs.getOrDefault(graphName, null);
         if (targetGraph == null)
             throw new Exception("graph wasn't found");
+
+        task.setCreditPerTarget(targetGraph.getPrices().get(TaskType.valueOf(task.getClassName())));
         targetGraph.createNewGraphFromTargetList(targets);
         tasksManager.addTask(task, targetGraph, createdBy);
     }
 
     public void addTask(Task task, String graphName, Admin createdBy) throws Exception {
         TargetGraph targetGraph = allGraphs.getOrDefault(graphName, null);
+
         if (targetGraph == null)
             throw new Exception("graph wasn't found");
+
+        task.setCreditPerTarget(targetGraph.getPrices().get(TaskType.valueOf(task.getClassName())));
         tasksManager.addTask(task, targetGraph, createdBy);
     }
 

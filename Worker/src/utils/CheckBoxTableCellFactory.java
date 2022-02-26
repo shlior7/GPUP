@@ -11,19 +11,17 @@ import javafx.util.Callback;
 import types.TaskInfo;
 
 public class CheckBoxTableCellFactory<S, T> implements Callback<TableColumn<S, T>, TableCell<S, T>> {
+//    BooleanProperty selected = new SimpleBooleanProperty();
+//    CheckBoxTableCell<S, T> ctCell = new CheckBoxTableCell<>();
+
     public TableCell<S, T> call(TableColumn<S, T> param) {
-        final BooleanProperty selected = new SimpleBooleanProperty();
-        CheckBoxTableCell<S,T> ctCell = new CheckBoxTableCell<>();
+        BooleanProperty selected = new SimpleBooleanProperty();
+        CheckBoxTableCell<S, T> ctCell = new CheckBoxTableCell<>();
         ctCell.setSelectedStateCallback(index -> {
-            ((TaskInfo) param.getTableView().getItems().get(index)).getRegisteredProperty().bind(selected);
+                    ((TaskInfo) param.getTableView().getItems().get(index)).getRegisteredProperty().bind(selected);
                     return selected;
                 }
         );
-
-        selected.addListener((obs, wasSelected, isSelected) -> {
-
-            System.out.println(isSelected);
-        });
         return ctCell;
     }
 }

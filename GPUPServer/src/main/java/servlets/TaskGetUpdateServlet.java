@@ -17,6 +17,8 @@ import utils.SessionUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,23 +32,23 @@ public class TaskGetUpdateServlet extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/plain;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            String usernameFromSession = SessionUtils.getUsername(request);
-            UserManager userManager = ServletUtils.getUserManager(getServletContext());
-            Worker worker = userManager.getWorker(usernameFromSession);
-            if (worker != null) {
-                String taskName = request.getParameter(TASKNAME);
-                TaskRunner taskRunner = ServletUtils.getEngine(getServletContext()).getTaskManager().getTask(taskName);
+            String taskName = request.getParameter(TASKNAME);
+            TaskRunner taskRunner = ServletUtils.getEngine(getServletContext()).getTaskManager().getTask(taskName);
+            System.out.println("taskName = " + taskName + ", response = " + response);
+            Set<Target> targets = taskRunner.getGraph().getCurrentTargets();
+//            String taskOutput = taskRunner.getTaskOutput().toString();
+            Double progress = taskRunner.getProgress().get();
+            TaskStatus taskStatus = taskRunner.getTaskData().getStatus();
 
-                Set<Target> targets = taskRunner.getGraph().getCurrentTargets();
-                String taskOutput = taskRunner.getTaskOutput().toString();
-                Double progress = taskRunner.getProgress().get();
-                TaskStatus taskStatus = taskRunner.getTaskData().getStatus();
+            Map<String, Object> jsonMap = new HashMap() {{
+                put("targets", GSON_INSTANCE.toJson(targets));
+                put("progress", progress.toString());
+                put("taskStatus", taskStatus.toString());
+            }};
 
-            } else {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-                out.println("Request is not from a worker");
-                out.flush();
-            }
+            System.out.println(jsonMap);
+            out.println(jsonMap);
+            out.flush();
         } catch (Exception e) {
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
@@ -94,3 +96,4 @@ public class TaskGetUpdateServlet extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 }
+

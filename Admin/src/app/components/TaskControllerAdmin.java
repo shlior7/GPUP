@@ -19,6 +19,8 @@ import types.Task;
 import utils.Constants;
 
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.stream.Collectors;
 
 import static utils.Constants.GSON_INSTANCE;
@@ -108,7 +110,6 @@ public class TaskControllerAdmin extends TaskController {
         targetToRunOn.forEach(t -> t.init(""));
         graphPane.graph.createNewGraphFromTargetList(targetToRunOn);
         graphPane.setBottom(taskOutput);
-
         uploadTask(taskSettings.task, targetToRunOn, taskSettings.runFromScratch);
     }
 
@@ -139,6 +140,7 @@ public class TaskControllerAdmin extends TaskController {
 //        initChangingColorThread();
 
         runButton.setText("Pause");
+        super.start(taskSettings.task.getTaskName());
 //        runButton.setOnAction(this::pauseResume);
     }
 
