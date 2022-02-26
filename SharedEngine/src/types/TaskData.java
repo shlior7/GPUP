@@ -8,6 +8,7 @@ import lombok.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 @Setter
@@ -19,6 +20,9 @@ public class TaskData {
     protected TargetGraph targetGraph;
     @NonNull
     protected Admin createdBy;
+    @NonNull
+    protected AtomicInteger targetsDone;
+
     private TaskStatus status = TaskStatus.UNSTARTED;
     private Map<Worker, List<Target>> workerListMap = new HashMap<>();
 
@@ -26,10 +30,22 @@ public class TaskData {
         workerListMap.put(worker, targets);
     }
 
-    public void removeWorker(Worker worker){
+    public void removeWorker(Worker worker) {
         try {
             workerListMap.remove(worker);
+        } catch (Exception ignored) {
         }
-        catch (Exception ignored){}
+    }
+
+    public AtomicInteger getTargetsDoneInteger() {
+        return targetsDone;
+    }
+
+    public int getTargetsDone() {
+        return targetsDone.get();
+    }
+
+    public void setTargetsDone(int value) {
+        targetsDone.set(value);
     }
 }

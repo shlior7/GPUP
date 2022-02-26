@@ -30,7 +30,6 @@ public class TaskControllerAdmin extends TaskController {
     private boolean choose;
     private TextArea taskOutput;
     private boolean paused;
-    private Timer updateTimer;
 
     public TaskControllerAdmin(GraphPane graphPane) {
         super(graphPane);
@@ -39,7 +38,6 @@ public class TaskControllerAdmin extends TaskController {
         this.settings.getChildren().addAll(new AnchoredNode(runButton), new AnchoredNode(targetsComboBox));
         this.choose = true;
         setOnAction(this::chooseTargets);
-        updateTimer = new Timer();
     }
 
 
@@ -112,7 +110,6 @@ public class TaskControllerAdmin extends TaskController {
         targetToRunOn.forEach(t -> t.init(""));
         graphPane.graph.createNewGraphFromTargetList(targetToRunOn);
         graphPane.setBottom(taskOutput);
-
         uploadTask(taskSettings.task, targetToRunOn, taskSettings.runFromScratch);
     }
 
@@ -143,6 +140,7 @@ public class TaskControllerAdmin extends TaskController {
 //        initChangingColorThread();
 
         runButton.setText("Pause");
+        super.start(taskSettings.task.getTaskName());
 //        runButton.setOnAction(this::pauseResume);
     }
 

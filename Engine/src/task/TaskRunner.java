@@ -23,7 +23,6 @@ public class TaskRunner implements Runnable {
     private final TargetGraph targetGraph;
     private ExecutorService threadExecutor;
     private Queue<Target> queue;
-    private final AtomicInteger targetsDone = new AtomicInteger(0);
     public final AtomicBoolean pause = new AtomicBoolean(false);
     private Task task;
     private boolean running = false;
@@ -48,7 +47,7 @@ public class TaskRunner implements Runnable {
         this.taskOutput = new SimpleStringProperty("");
         this.progress = new SimpleDoubleProperty(0);
         this.numThread = 1;
-        this.taskData = new TaskData(task, targetGraph, createdBy);
+        this.taskData = new TaskData(task, targetGraph, createdBy, new AtomicInteger(0));
         this.taskOutputTotal = new LinkedList<>();
     }
 
@@ -68,7 +67,7 @@ public class TaskRunner implements Runnable {
     public void initIncrementalRun() {
         this.threadExecutor = Executors.newFixedThreadPool(numThread);
         this.progress.set(0);
-        this.targetsDone.set(0);
+        this.taskData.setTargetsDone(0);
         pause.set(false);
         running = true;
         setTaskOutput("");
@@ -89,7 +88,7 @@ public class TaskRunner implements Runnable {
     @Override
     public void run() {
         queue = targetGraph.initQueue();
-        while (targetsDone.get() < targetGraph.size() || !queue.isEmpty()) {
+        while (taskData.getTargetsDone() < targetGraph.size() || !queue.isEmpty()) {
             if (pause.get()) {
                 try {
                     synchronized (targetGraph) {
@@ -139,13 +138,48 @@ public class TaskRunner implements Runnable {
             setTaskOutput("running task on target: " + target.name);
         }
         threadExecutor.execute(initTask(target));
-        targetsDone.incrementAndGet();
+        taskData.getTargetsDoneInteger().incrementAndGet();
+    }
+
+    public synchronized List<Target> getTargetsForWorker(Worker worker, int amount) {
+        if (pause.get() || !running)
+            return new ArrayList<>();
+
+        List<Target> targetsToWait = new ArrayList<>();
+        List<Target> targetsToSend = new ArrayList<>();
+
+        for (int i = 0; i < amount && !queue.isEmpty(); i++) {
+            Target target = queue.poll();
+            switch (target.getStatus()) {
+                case FROZEN:
+                case WAITING:
+                    if (!targetGraph.didAllChildrenFinish(target.name)) {
+                        if (target.getStatus() == Status.FROZEN)
+                            target.setWaitingTime(Instant.now());
+                        target.setStatus(Status.WAITING);
+                        targetsToWait.add(target);
+                        continue;
+                    }
+                    break;
+                default:
+                    continue;
+            }
+            targetsToSend.add(target);
+            target.setStatus(Status.IN_PROCESS);
+        }
+        queue.addAll(targetsToWait);
+        synchronized (this) {
+            setTaskOutput("sending the targets " + targetsToSend + "to the worker " + worker.getName());
+            System.out.println("sending the targets " + targetsToSend + "to the worker " + worker.getName());
+        }
+        taskData.setWorkersTargets(worker, targetsToSend);
+        workerListMap.put(worker, targetsToSend);
+        return targetsToSend;
     }
 
     public synchronized List<Task> getTasksForWorker(Worker worker, int amount) {
         if (pause.get() || !running)
             return new ArrayList<>();
-
 
         List<Target> targetsToWait = new ArrayList<>();
         List<Target> targetsToSend = new ArrayList<>();
@@ -198,14 +232,15 @@ public class TaskRunner implements Runnable {
         if (target == null)
             throw new Exception("No such target");
 
-        targetsDone.incrementAndGet();
+        taskData.getTargetsDoneInteger().incrementAndGet();
         target.setStatus(Status.FINISHED);
         String name = target.name;
         updateProgress();
         setTaskOutput("finished task " + name + " with the result " + target.getResult() + " time it took to process " + target.getProcessTime().toMillis());
+        System.out.println("finished task " + name + " with the result " + target.getResult() + " time it took to process " + target.getProcessTime().toMillis());
 
         if (target.getResult() == Result.Failure) {
-            targetGraph.setParentsStatuses(name, Status.SKIPPED, targetsDone);
+            targetGraph.setParentsStatuses(name, Status.SKIPPED, taskData.getTargetsDoneInteger());
             targetGraph.whoAreAllYourDaddies(name).forEach(t -> setTaskOutput(t.getName() + " was set to skipped"));
             updateProgress();
         }
@@ -215,8 +250,11 @@ public class TaskRunner implements Runnable {
             queue.addAll(targetGraph.whoAreYourDirectDaddies(target.name));
         }
 
-        if (targetsDone.get() == targetGraph.size()) {
+        if (taskData.getTargetsDone() == targetGraph.size()) {
             taskData.setStatus(TaskStatus.FINISHED);
+            System.out.println("finished task!!! " + taskData.getTask().getTaskName());
+            running = false;
+            workerListMap = new HashMap<>();
         }
 
     }
@@ -258,7 +296,7 @@ public class TaskRunner implements Runnable {
     }
 
     public synchronized void updateProgress() {
-        progress.set(targetsDone.doubleValue() / (double) targetGraph.size());
+        progress.set(taskData.getTargetsDoneInteger().doubleValue() / (double) targetGraph.size());
     }
 
     public ReadOnlyDoubleProperty getProgress() {
@@ -267,7 +305,7 @@ public class TaskRunner implements Runnable {
 
     public void reset() {
         queue.clear();
-        targetsDone.set(targetGraph.size());
+        taskData.setTargetsDone(targetGraph.size());
     }
 
     public TargetGraph getGraph() {
@@ -280,5 +318,22 @@ public class TaskRunner implements Runnable {
 
     public int getTargetWorkingOn(Worker worker) {
         return taskData.getWorkerListMap().getOrDefault(worker, new ArrayList<>()).size();
+    }
+
+    public void signWorkerToTask(Worker worker) {
+        workerListMap.putIfAbsent(worker, new ArrayList<>());
+    }
+
+    public void unSignWorkerToTask(Worker worker) {
+        try {
+            workerListMap.remove(worker);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean isWorkerRegisteredToThisTask(Worker worker) {
+        System.out.println("workerList " + workerListMap);
+        return workerListMap.containsKey(worker);
     }
 }

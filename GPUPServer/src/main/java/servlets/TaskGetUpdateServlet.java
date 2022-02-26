@@ -34,7 +34,7 @@ public class TaskGetUpdateServlet extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             String taskName = request.getParameter(TASKNAME);
             TaskRunner taskRunner = ServletUtils.getEngine(getServletContext()).getTaskManager().getTask(taskName);
-
+            System.out.println("taskName = " + taskName + ", response = " + response);
             Set<Target> targets = taskRunner.getGraph().getCurrentTargets();
 //            String taskOutput = taskRunner.getTaskOutput().toString();
             Double progress = taskRunner.getProgress().get();
@@ -46,7 +46,8 @@ public class TaskGetUpdateServlet extends HttpServlet {
                 put("taskStatus", taskStatus.toString());
             }};
 
-            out.println(GSON_INSTANCE.toJson(jsonMap));
+            System.out.println(jsonMap);
+            out.println(jsonMap);
             out.flush();
         } catch (Exception e) {
             e.printStackTrace();

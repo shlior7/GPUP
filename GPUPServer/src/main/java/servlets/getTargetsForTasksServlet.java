@@ -1,30 +1,26 @@
 package servlets;
 
 import TargetGraph.Target;
-import com.google.gson.JsonObject;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import managers.UserManager;
-import types.Admin;
-import types.Task;
 import types.Worker;
 import utils.ServletUtils;
 import utils.SessionUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static utils.Constants.*;
 
-@WebServlet(name = "AskForTasksServlet", urlPatterns = {"/task/target/ask"})
-public class AskForTasksServlet extends HttpServlet {
+@WebServlet(name = "getTargetsForTasksServlet", urlPatterns = {"/task/target/get"})
+public class getTargetsForTasksServlet extends HttpServlet {
 
     // urls that starts with forward slash '/' are considered absolute
     // urls that doesn't start with forward slash '/' are considered relative to the place where this servlet request comes from
@@ -50,11 +46,14 @@ public class AskForTasksServlet extends HttpServlet {
             Worker worker = userManager.getWorker(usernameFromSession);
             if (worker != null) {
                 synchronized (this) {
-                    String[] tasksNames = GSON_INSTANCE.fromJson(request.getReader().lines().collect(Collectors.joining()), String[].class);
-                    int threads = Integer.parseInt(request.getParameter(THREADS));
+                    String requestData = request.getReader().lines().collect(Collectors.joining());
+                    String[] taskNames = GSON_INSTANCE.fromJson(requestData, String[].class);
 
-                    List<Task> tasks = ServletUtils.getEngine(getServletContext()).getTasksForWorker(worker.getName(), tasksNames, threads);
-                    out.println(GSON_INSTANCE.toJson(tasks));
+                    int threads = Integer.parseInt(request.getParameter(TARGETS));
+
+
+                    Map<String, List<Target>> targetsPerTaskMap = ServletUtils.getEngine(getServletContext()).getTargetsForWorker(worker.getName(), taskNames, threads);
+                    out.println(GSON_INSTANCE.toJson(targetsPerTaskMap));
                     out.flush();
                 }
             } else {

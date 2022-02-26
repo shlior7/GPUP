@@ -1,12 +1,17 @@
 package utils;
 
 import com.google.gson.JsonObject;
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
+import javafx.scene.control.TableView;
+import types.TableItem;
 import types.Task;
 import types.Tuple;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import static utils.Constants.GSON_INSTANCE;
 
@@ -34,11 +39,10 @@ public class Utils {
         information.showAndWait();
     }
 
-    public static Task getTaskFromJson(String taskJson) {
+    public static Task getTaskFromJson(JsonObject json) {
         Task task;
         try {
-            JsonObject json = GSON_INSTANCE.fromJson(taskJson, JsonObject.class);
-            task = GSON_INSTANCE.fromJson(taskJson, (Class<? extends Task>) Class.forName(json.get("type").getAsString()));
+            task = GSON_INSTANCE.fromJson(json, (Class<? extends Task>) Class.forName(json.get("ClassType").getAsString()));
         } catch (ClassNotFoundException e) {
             task = null;
         }
@@ -47,5 +51,47 @@ public class Utils {
 
     public static <X, Y> Tuple<X, Y> tuple(X x, Y y) {
         return new Tuple<>(x, y);
+    }
+
+    @SafeVarargs
+    public static <V extends TableItem> void setAndAddToTable(V[] items, TableView<V> table, BiConsumer<V, V>... setFieldFunctions) {
+        Platform.runLater(() -> {
+            for (V item : items) {
+                checkAndSetItem(table, item, setFieldFunctions);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public static <V extends TableItem> void setAndAddToTable(Collection<V> items, TableView<V> table, BiConsumer<V, V>... setFieldFunctions) {
+        Platform.runLater(() -> {
+            for (V item : items) {
+                checkAndSetItem(table, item, setFieldFunctions);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public static <V extends TableItem> void setAddRemoveFromTable(Collection<V> items, TableView<V> table, BiConsumer<V, V>... setFieldFunctions) {
+        Platform.runLater(() -> {
+            for (V item : items) {
+                checkAndSetItem(table, item, setFieldFunctions);
+            }
+        });
+        table.getItems().removeIf(tableItem -> items.stream().noneMatch(item -> tableItem.getId().equals(item.getId())));
+    }
+
+    private static <V extends TableItem> void checkAndSetItem(TableView<V> table, V item, BiConsumer<V, V>[] setFieldFunctions) {
+        boolean found = false;
+        for (V tableItem : table.getItems()) {
+            if (item.getId().equals(tableItem.getId())) {
+                found = true;
+                for (BiConsumer<V, V> setField : setFieldFunctions)
+                    setField.accept(tableItem, item);
+            }
+        }
+        if (!found) {
+            table.getItems().add(item);
+        }
     }
 }

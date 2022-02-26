@@ -1,22 +1,21 @@
 package screens.dashboard;
 
-import TargetGraph.TargetGraph;
-import TargetGraph.Target;
-import com.google.gson.reflect.TypeToken;
 import engine.TaskProcessor;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.ProgressBarTableCell;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import okhttp3.HttpUrl;
 import types.*;
+import utils.ButtonCell;
 import utils.Constants;
-import utils.Utils;
+import utils.SignUpCell;
 import utils.http.HttpClientUtil;
 import utils.http.SimpleCallBack;
 
@@ -24,36 +23,45 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 import static utils.Constants.GSON_INSTANCE;
+import static utils.Utils.setAndAddToTable;
 
 
 public class Dashboard extends Stage implements Initializable {
     private TaskProcessor taskProcessor;
-    private Worker worker;
-    private TaskInfo[] taskInfos;
-    private int credits = 0;
-
     private Timer taskTimer;
     private Timer targetsTimer;
     private Timer userTimer;
-
-
     List<TargetInfo> TargetsInfo = new ArrayList<>();
 
     @FXML
-    private Label numberOfCredits;
+    public TableColumn<TaskInfo, String> targetsColumn;
+    @FXML
+    public TableColumn<TaskInfo, Boolean> stopColumn;
+
+    @FXML
+    public TableColumn<TaskInfo, Boolean> pausedColumn;
+    @FXML
+    public TableColumn<TaskInfo, Double> progressColumn;
+
+    @FXML
+    public TableView<TaskInfo> myTasksTable;
+
+    @FXML
+    public Label threadsLabel;
+
+    @FXML
+    public Label nameLabel;
+
+    @FXML
+    public Label creditsLabel;
 
     @FXML
     private TableView<TargetInfo> targetsTable;
 
     @FXML
     private Label availableThreads;
-
-    @FXML
-    private ListView<String> myTasks;
 
     @FXML
     public TableView<UserInfo> usersTable;
@@ -66,21 +74,58 @@ public class Dashboard extends Stage implements Initializable {
 
     public static Dashboard createDashboard(Worker worker) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(Dashboard.class.getResource("worker_dashboard.fxml"));
-        ScrollPane root = fxmlLoader.load();
+        Pane root = fxmlLoader.load();
         Dashboard dashboard = fxmlLoader.getController();
         dashboard.init(root, worker);
         return dashboard;
     }
 
-    public void init(ScrollPane root, Worker worker) {
-        this.worker = worker;
+    public void init(Pane root, Worker worker) {
+        this.taskProcessor = new TaskProcessor(worker.getThreads(), targetsTable, myTasksTable);
+
+        this.nameLabel.setText(worker.getName());
+        this.creditsLabel.textProperty().bind(taskProcessor.getCreditsBinding());
+        this.availableThreads.setText(taskProcessor.availableThreads().toString());
         this.availableThreads.textProperty().bind(taskProcessor.availableThreads().asString());
-        this.numberOfCredits.setText(String.valueOf(this.credits));
+
         this.setScene(new Scene(root, 2048, 1800));
         this.getUsers();
         this.initTimers();
         this.getTasks();
-        taskProcessor = new TaskProcessor(worker.getThreads());
+        this.setCellFactories();
+
+    }
+
+    public void setCellFactories() {
+        registerColumn.setCellValueFactory(features -> new SimpleBooleanProperty(features.getValue() != null));
+        registerColumn.setCellFactory(personBooleanTableColumn -> new SignUpCell(taskTable, taskProcessor));
+
+        pausedColumn.setCellValueFactory(features -> new SimpleBooleanProperty(features.getValue() != null));
+        pausedColumn.setCellFactory(personBooleanTableColumn -> new ButtonCell("Pause", myTasksTable, (button, taskName) -> {
+
+            boolean taskIsRunning = taskProcessor.togglePause(taskName);
+            Platform.runLater(() -> {
+                button.setText(taskIsRunning ? "Pause" : "Resume");
+            });
+            System.out.println("paused " + taskName);
+        }));
+
+        stopColumn.setCellValueFactory(features -> new SimpleBooleanProperty(features.getValue() != null));
+        stopColumn.setCellFactory(personBooleanTableColumn -> new ButtonCell("Stop", myTasksTable, (button, taskName) -> {
+            taskTable.getItems().forEach(t -> {
+                if (t.getTaskName().equals(taskName))
+                    t.setRegistered(false);
+            });
+            // must be called before you can call i.remove()
+            myTasksTable.getItems().removeIf(task -> task.getTaskName().equals(taskName));
+
+            taskProcessor.pause(taskName);
+        }));
+
+        progressColumn.setCellValueFactory(new PropertyValueFactory<>("progress"));
+        progressColumn.setCellFactory(ProgressBarTableCell.forTableColumn());
+
+        targetsColumn.setCellValueFactory(new PropertyValueFactory<>("targetsProcessed"));
     }
 
     public void initTimers() {
@@ -89,14 +134,14 @@ public class Dashboard extends Stage implements Initializable {
             public void run() {
                 getTasks();
             }
-        }, 10 * 1000, 5 * 60 * 1000);
+        }, 5 * 1000, 2 * 1000);
 
         userTimer = new Timer();
         userTimer.schedule(new TimerTask() {
             public void run() {
                 getUsers();
             }
-        }, 0, 5 * 60 * 1000);
+        }, 1000, 2000);
 
         targetsTimer = new Timer();
         targetsTimer.schedule(new TimerTask() {
@@ -106,35 +151,15 @@ public class Dashboard extends Stage implements Initializable {
         }, 0, 1000);
     }
 
-
     public void getUsers() {
-        String finalUrl = HttpUrl
-                .parse(Constants.GET_USERS_ALL)
-                .newBuilder()
-                .build()
-                .toString();
-        System.out.println("finalUrl " + finalUrl);
+        String url = HttpClientUtil.createUrl(Constants.GET_USERS_ALL);
 
-        HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((graphJson) -> {
+        HttpClientUtil.runAsync(url, new SimpleCallBack((graphJson) -> {
             UserInfo[] users = GSON_INSTANCE.fromJson(graphJson, UserInfo[].class);
-            System.out.println(Arrays.toString(users));
             if (users != null) setUserTable(users);
         }));
     }
 
-
-    public void getGraph(String graphName, Consumer<String> callBack) {
-        AtomicReference<TargetGraph> graph = new AtomicReference<>();
-        String finalUrl = HttpUrl
-                .parse(Constants.GET_GRAPH)
-                .newBuilder()
-                .addQueryParameter(Constants.GRAPHNAME, graphName)
-                .build()
-                .toString();
-        System.out.println("finalUrl " + finalUrl);
-
-        HttpClientUtil.runAsync(finalUrl, new SimpleCallBack(callBack));
-    }
 
     private void setUserTable(UserInfo[] users) {
         Platform.runLater(() -> {
@@ -144,70 +169,38 @@ public class Dashboard extends Stage implements Initializable {
     }
 
     private void getTasks() {
-        String finalUrl = HttpUrl
-                .parse(Constants.GET_TASK_ALL)
-                .newBuilder()
-                .build()
-                .toString();
-        System.out.println("finalUrl " + finalUrl);
+        String url = HttpClientUtil.createUrl(Constants.GET_TASK_ALL);
 
-        Platform.runLater(() -> {
-            HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((tasksJson) -> {
-                System.out.println(tasksJson);
+        HttpClientUtil.runAsync(url, new SimpleCallBack((tasksJson) -> {
+            try {
+                System.out.println("tasksJson " + tasksJson);
                 TaskInfo[] tasks = GSON_INSTANCE.newBuilder().excludeFieldsWithModifiers(Modifier.PRIVATE).create().fromJson(tasksJson, TaskInfo[].class);
+
                 System.out.println(Arrays.toString(tasks));
-                if (tasks != null && !Arrays.equals(tasks, taskInfos)) setTaskTable(tasks);
-            }));
-        });
+
+                List<TaskInfo> myTasks = new ArrayList<>();
+                for (TaskInfo task : tasks) {
+                    if (task.registered.get()) {
+                        myTasks.add(task);
+//                        if (task.getTaskStatus().equals(TaskStatus.FINISHED.toString())) {
+//                            taskProcessor.removeTask(task.getTaskName());
+//                        }
+                    }
+                }
+
+                setTaskTable(tasks);
+                taskProcessor.setMyTasksTable(myTasks);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }));
     }
+
 
     private void setTaskTable(TaskInfo[] tasks) {
-        Platform.runLater(() -> {
-            taskInfos = tasks;
-            Arrays.stream(tasks).forEach(task -> {
-                task.getRegisteredProperty().addListener(((observable, oldValue, newValue) -> {
-                    ////Worker pressed on checkbox
-                    System.out.println("task = " + task.getTaskName() + " old " + oldValue + " new " + newValue);
-                    signToTasks(task.getTaskName(), newValue);
-                }));
-            });
-            taskTable.getItems().clear();
-            taskTable.getItems().addAll(tasks);
-        });
-    }
-
-    private synchronized void signToTasks(String taskName, boolean signTo) {
-        String finalUrl = HttpUrl
-                .parse(Constants.TASK_SIGN)
-                .newBuilder()
-                .addQueryParameter(Constants.SIGNTO, String.valueOf(signTo))
-                .addQueryParameter(Constants.TASKNAME, taskName)
-                .build()
-                .toString();
-        System.out.println("finalUrl " + finalUrl);
-        
-        Platform.runLater(() -> {
-            HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((tasksJson) -> {
-                System.out.println(tasksJson);
-                if (signTo) {
-                    taskProcessor.pushTask(Utils.getTaskFromJson(tasksJson));
-                } else {
-                    taskProcessor.removeTask(taskName);
-                }
-            }));
-        });
-    }
-
-    public void setTargetsTable(ObservableList<TargetInfo> targetsInfo) {
-        Platform.runLater(() -> {
-            targetsTable.getItems().clear();
-            targetsTable.getItems().addAll(targetsInfo);
-        });
-    }
-
-    public synchronized void addTargetInfo(Task task) {
-        this.TargetsInfo.add(new TargetInfo(task));
-        setTargetsTable(FXCollections.observableList(TargetsInfo));
+        setAndAddToTable(tasks, taskTable
+                , (t1, t2) -> t1.setTaskStatus(t2.getTaskStatus()));
     }
 
     @Override

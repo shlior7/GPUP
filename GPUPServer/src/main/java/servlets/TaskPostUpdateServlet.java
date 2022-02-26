@@ -36,10 +36,10 @@ public class TaskPostUpdateServlet extends HttpServlet {
             Worker worker = userManager.getWorker(usernameFromSession);
             if (worker != null) {
                 String requestData = request.getReader().lines().collect(Collectors.joining());
-
-                Map<String, Target[]> targetsToTaskName = GSON_INSTANCE.fromJson(requestData, new TypeToken<Map<String, List<Target>>>() {
+//                System.out.println("requestData " + requestData);
+                Map<String, Target[]> targetsToTaskName = GSON_INSTANCE.fromJson(requestData, new TypeToken<Map<String, Target[]>>() {
                 }.getType());
-
+                System.out.println("post targetsToTaskName " + targetsToTaskName);
 //                JsonObject json = GSON_INSTANCE.fromJson(requestData, JsonObject.class);
 //
 //                Target[] targets = GSON_INSTANCE.fromJson(json.get(TARGETS), Target[].class);
@@ -49,6 +49,7 @@ public class TaskPostUpdateServlet extends HttpServlet {
 
 
                 ServletUtils.getEngine(getServletContext()).getTaskManager().updateTasks(targetsToTaskName);
+
             } else {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                 out.println("Request is not from a worker");

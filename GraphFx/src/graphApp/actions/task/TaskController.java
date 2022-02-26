@@ -30,7 +30,6 @@ import static utils.Constants.GSON_INSTANCE;
 public class TaskController extends SideAction {
     protected final ActionButton runButton;
     protected final ProgressBar progressBar;
-    protected boolean choose;
     protected TextArea taskOutput;
     protected AtomicBoolean paused;
     protected AtomicBoolean isTaskRunning;
@@ -45,7 +44,6 @@ public class TaskController extends SideAction {
         this.progressBar = new ProgressBar();
         this.paused = new AtomicBoolean(false);
         this.isTaskRunning = new AtomicBoolean(false);
-//        this.progressBar.progressProperty().bind(graphPane.engine.getTaskRunner().getProgress());///server
         settings.getChildren().add(new AnchorPane(progressBar));
         createLogTextArea();
         createColorMap();
@@ -79,24 +77,31 @@ public class TaskController extends SideAction {
             final HashMap<String, AtomicBoolean> flickering = new HashMap<>();
 
             public void run() {
-                initChangingColorThread(flickering);
+                changeTargetsColors(flickering);
             }
         }, 0, 1000);
     }
 
 
     private void getUpdate(String taskName) {
+        if (!isTaskRunning.get())
+            return;
         try {
+
             String url = HttpClientUtil.createUrl(Constants.UPDATE_PROGRESS_GET_URL, Utils.tuple(Constants.TASKNAME, taskName));
+            System.out.println(url);
+
             HttpClientUtil.runAsync(url, new SimpleCallBack((updateJson) -> {
+                System.out.println("updateJson = " + updateJson);
                 JsonObject json = GSON_INSTANCE.fromJson(updateJson, JsonObject.class);
-                String targetsString = json.get("targets").getAsString().replaceAll("\\s", "");
+
+                String targetsString = json.get("targets").toString().replaceAll("\\s", "");
                 Target[] targets = GSON_INSTANCE.fromJson(targetsString, Target[].class);
 
-                String progressString = json.get("progress").getAsString().replaceAll("\\s", "");
+                String progressString = json.get("progress").toString().replaceAll("\\s", "");
                 Double progress = GSON_INSTANCE.fromJson(progressString, Double.class);
 
-                String taskStatusString = json.get("taskStatus").getAsString().replaceAll("\\s", "");
+                String taskStatusString = json.get("taskStatus").toString().replaceAll("\\s", "");
                 TaskStatus taskStatus = GSON_INSTANCE.fromJson(taskStatusString, TaskStatus.class);
 
                 graphPane.graph.updateAllTarget(targets);
@@ -123,19 +128,19 @@ public class TaskController extends SideAction {
     }
 
     public void resume() {
-        synchronized (graphPane.graph) {
-            threadLock.notifyAll();
-        }
+        if (paused.get())
+            synchronized (graphPane.graph) {
+                threadLock.notifyAll();
+            }
     }
 
-    protected void initChangingColorThread(HashMap<String, AtomicBoolean> flickering) {
-        if (!isTaskRunning.get()) /// Server
-        {
+    protected void changeTargetsColors(HashMap<String, AtomicBoolean> flickering) {
+        if (!isTaskRunning.get()) {
             changeColors(flickering);
             Platform.runLater(this::afterRunning);
             changingColorTimer.cancel();
         }
-
+        System.out.println("changing colors " + paused.get());
         if (paused.get() && graphPane.graph.getStatusesStatistics().get(Status.IN_PROCESS).size() == 0) {
             try {
                 synchronized (graphPane.graph) {

@@ -34,16 +34,22 @@ public class HttpClientUtil {
     }
 
     @SafeVarargs
-    public static String createUrl(String url, Tuple<String, String>... tuples) throws Exception {
-        HttpUrl.Builder builder = Objects.requireNonNull(HttpUrl
-                        .parse(url))
-                .newBuilder();
+    public static String createUrl(String url, Tuple<String, String>... tuples) {
+        String createdUrl = "";
+        try {
+            HttpUrl.Builder builder = Objects.requireNonNull(HttpUrl
+                            .parse(url))
+                    .newBuilder();
 
-        for (Tuple<String, String> tuple : tuples) {
-            builder.addQueryParameter(tuple.x, tuple.y);
+            for (Tuple<String, String> tuple : tuples) {
+                builder.addQueryParameter(tuple.x, tuple.y);
+            }
+            createdUrl = builder.build().toString();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        return builder.build().toString();
+        return createdUrl;
     }
 
     public static void runAsyncBody(String finalUrl, RequestBody body, Callback callback) {
@@ -74,7 +80,7 @@ public class HttpClientUtil {
         call.enqueue(callback);
     }
 
-    
+
     public static void shutdown() {
         System.out.println("Shutting down HTTP CLIENT");
         HTTP_CLIENT.dispatcher().executorService().shutdown();

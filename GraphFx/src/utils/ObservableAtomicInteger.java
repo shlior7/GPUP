@@ -1,5 +1,6 @@
 package utils;
 
+import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.IntegerProperty;
@@ -15,8 +16,8 @@ public class ObservableAtomicInteger implements ObservableIntegerValue {
     IntegerProperty observable;
 
     public ObservableAtomicInteger(int value) {
-        integer = new AtomicInteger(0);
-        observable = new SimpleIntegerProperty(0);
+        integer = new AtomicInteger(value);
+        observable = new SimpleIntegerProperty(value);
     }
 
     @Override
@@ -75,9 +76,41 @@ public class ObservableAtomicInteger implements ObservableIntegerValue {
         return num;
     }
 
+    public synchronized void increment() {
+        int num = integer.incrementAndGet();
+        Platform.runLater(() -> {
+            System.out.println("inc");
+            observable.set(num);
+        });
+    }
+
+    public synchronized void decrement() {
+        int num = integer.decrementAndGet();
+        Platform.runLater(() -> {
+            System.out.println("dec");
+            observable.set(num);
+        });
+    }
+
+    public synchronized int decrementAndGet() {
+        int num = integer.decrementAndGet();
+        Platform.runLater(() -> {
+            observable.set(num);
+        });
+        return num;
+    }
+
     public synchronized int getAndSet(int value) {
         int num = integer.getAndSet(value);
         observable.set(value);
+        return num;
+    }
+
+    public synchronized int addAndGet(int value) {
+        int num = integer.addAndGet(value);
+        Platform.runLater(() -> {
+            observable.set(num);
+        });
         return num;
     }
 

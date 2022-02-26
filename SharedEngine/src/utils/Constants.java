@@ -2,6 +2,7 @@ package utils;
 
 
 import com.google.gson.Gson;
+import org.hildan.fxgson.FxGson;
 
 public class Constants {
 
@@ -38,15 +39,12 @@ public class Constants {
     public static final String GET_TARGETS = FULL_SERVER_PATH + "/task/target/get";
     public static final String UPDATE_PROGRESS_POST_URL = FULL_SERVER_PATH + "/task/update/post";
     public static final String UPDATE_PROGRESS_GET_URL = FULL_SERVER_PATH + "/task/update/get";
-    ;
 
-
-    public final static Gson GSON_INSTANCE = new Gson();
+    public final static Gson GSON_INSTANCE = FxGson.coreBuilder().disableHtmlEscaping().create();
+//    public final static Gson GSON_INSTANCE = new Gson();
 
     // Server resources locations
-
     public static final String SYMBOL = "symbol";
-
     public static final String CHAT_PARAMETER = "userstring";
     public static final String CHAT_VERSION_PARAMETER = "chatversion";
 

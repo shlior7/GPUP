@@ -33,6 +33,7 @@ public class UserListServlet extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             Collection<IUser> allUsers = ServletUtils.getEngine(getServletContext()).getAllUsers();
             String json = GSON_INSTANCE.toJson(generateJSONFromIUsersCollection(allUsers));
+            System.out.println("all users response = " + json);
             out.println(json);
             out.flush();
         } catch (Exception e) {

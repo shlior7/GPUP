@@ -3,7 +3,6 @@ package types;
 public class Worker implements IUser {
 
     private final String name;
-
     private int threads;
 
     public Worker(String name, int threads) {

@@ -3,67 +3,67 @@ package types;
 import TargetGraph.Result;
 import TargetGraph.Status;
 import TargetGraph.Target;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
+@Setter
+@Getter
 @ToString
-public class TargetInfo {
-    private final String taskName;
+public class TargetInfo extends TableItem {
     private final String targetName;
+    private final String taskName;
     private final String taskType;
     private final String price;
-    private String targetStatus;
+    private StringProperty credits;
+    private StringProperty targetStatus;
     private String log;
 
-
-    public TargetInfo(Task task) {
-        Target target = task.getTarget();
-        this.taskName = task.getName();
-        this.targetName = target.toString();
-        this.price = String.valueOf(task.getPricePerTarget());
-        this.taskType = task.getType();
+    public TargetInfo(Task task, Target target) {
+        super(task.getTaskName() + "" + target.getName());
+        this.taskName = task.getTaskName();
+        this.targetName = target.getName();
+        this.price = String.valueOf(task.getCreditPerTarget());
+        this.taskType = task.getClassName();
+        setCredits(target.getStatus() == Status.FINISHED ? String.valueOf(task.getCreditPerTarget()) : "0");
         if (target.getStatus() == Status.FINISHED) {
-            this.targetStatus = target.getResult().toString();
-            if(target.getResult() == Result.Success||target.getResult() == Result.Warning) {
+            setTargetStatus(target.getResult().toString());
+            if (target.getResult() == Result.Success || target.getResult() == Result.Warning) {
                 this.log = targetName + ".log";
-            }
-            else{
+            } else {
                 this.log = "";
             }
-        }
-        else {
-            this.targetStatus = target.getStatus().toString();
+        } else {
+            setTargetStatus(target.getStatus().toString());
             this.log = "";
         }
     }
 
-    public String getTaskName() {
-        return taskName;
+    public String getCredits() {
+        return creditsProperty().get();
     }
 
-    public String getTargetName() {
-        return targetName;
+    public synchronized void setCredits(String credit) {
+        creditsProperty().set(credit);
     }
 
-    public String getTaskType() {
-        return taskType;
-    }
-
-    public String getPrice() {
-        return price;
+    public StringProperty creditsProperty() {
+        if (credits == null) credits = new SimpleStringProperty(this, "credits");
+        return credits;
     }
 
     public String getTargetStatus() {
-        return targetStatus;
-    }
-
-    public String getLog() {return log;}
-
-    public synchronized void setLog(String log) {
-        this.log = log;
+        return targetStatusProperty().get();
     }
 
     public synchronized void setTargetStatus(String targetStatus) {
-        this.targetStatus = targetStatus;
+        targetStatusProperty().set(targetStatus);
     }
 
+    public StringProperty targetStatusProperty() {
+        if (targetStatus == null) targetStatus = new SimpleStringProperty(this, "targetStatus");
+        return targetStatus;
+    }
 }

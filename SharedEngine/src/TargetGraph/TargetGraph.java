@@ -404,7 +404,7 @@ public class TargetGraph implements Graph<Target> {
         if (target.getTargetInfo() == null) {
             target.setTargetInfo(createTargetInGraphInfo(target));
         }
-        return target.geStringInfo() + target.getTargetInfo() + (isGraphRunning() ? createStatusInfo(target) : "");
+        return target.getStringInfo() + target.getTargetInfo() + (isGraphRunning() ? createStatusInfo(target) : "");
     }
 
     public boolean isGraphRunning() {
@@ -535,5 +535,6 @@ public class TargetGraph implements Graph<Target> {
         for (Target t : targets) {
             updateTarget(t);
         }
+        System.out.println("targets = " + getCurrentTargets().stream().map(Target::getStringInfos).collect(Collectors.toList()));
     }
 }

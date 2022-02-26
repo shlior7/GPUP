@@ -5,48 +5,55 @@ import TargetGraph.Target;
 import java.util.function.Consumer;
 
 public abstract class Task implements Runnable {
-    protected int pricePerTarget;
+    protected int creditPerTarget;
     protected String taskName;
     protected Target targetToRunOn;
     protected Consumer<String> outputText;
-    protected Consumer<Target> onFuncFinished;
-    protected String type;
+    protected Consumer<Target> onFinished;
+    protected String ClassType;
+    protected String ClassName;
 
     public Task(String taskName, Class<? extends Task> type) {
         this.taskName = taskName;
-        this.type = type.getName();
+        this.ClassType = type.getName();
+        this.ClassName = type.getSimpleName();
     }
+
     public abstract Task copy();
 
     public void setTarget(Target targetToRunOn) {
         this.targetToRunOn = targetToRunOn;
     }
 
-    public int getPricePerTarget() {
-        return pricePerTarget;
+    public int getCreditPerTarget() {
+        return creditPerTarget;
     }
 
-    public String getType(){return type;}
+    public String getClassType() {
+        return ClassType;
+    }
 
     public void setOutputText(Consumer<String> outputText) {
         this.outputText = outputText;
     }
 
-    public abstract String getName();
+    public String getClassName() {
+        return ClassName;
+    }
 
     public String getTaskName() {
         return taskName;
     }
 
-    public void setPricePerTarget(int pricePerTarget) {
-        this.pricePerTarget = pricePerTarget;
+    public void setCreditPerTarget(int creditPerTarget) {
+        this.creditPerTarget = creditPerTarget;
     }
 
     public Target getTarget() {
         return targetToRunOn;
     }
 
-    public void setFuncOnFinished(Consumer<Target> onFuncFinished){
-        this.onFuncFinished = onFuncFinished;
+    public void setFuncOnFinished(Consumer<Target> onFuncFinished) {
+        this.onFinished = onFuncFinished;
     }
 }

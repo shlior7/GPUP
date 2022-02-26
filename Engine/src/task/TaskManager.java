@@ -8,6 +8,7 @@ import types.Worker;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class TaskManager {
     private final Map<String, TaskRunner> tasksRunners;
@@ -64,6 +65,42 @@ public class TaskManager {
         return tasksRunners.getOrDefault(taskName, null);
     }
 
+    public synchronized Map<String, List<Target>> getTargetsForWorker(Worker worker, String[] taskNames, int amount) {
+        Map<String, List<Target>> targetsToSend = new HashMap<>();
+        LinkedList<TaskRunner> tasksOfWorker = new LinkedList<>();
+
+        for (String taskName : taskNames) {
+            tasksOfWorker.add(tasksRunners.get(taskName));
+        }
+
+        if (tasksOfWorker.stream().noneMatch(TaskRunner::isRunning))
+            return new HashMap<>();
+
+
+        AtomicInteger finalAmount = new AtomicInteger(amount);
+
+        double div = finalAmount.doubleValue() / (double) tasksOfWorker.size();
+        System.out.println("div " + div);
+        System.out.println("tasks left " + tasksOfWorker.size());
+        while (!tasksOfWorker.isEmpty() && div != 0) {
+            TaskRunner taskRunner = tasksOfWorker.pop();
+            int tasksToAsk = div < 1 ? 1 : (int) div;
+            targetsToSend.putIfAbsent(taskRunner.getTask().getTaskName(), new ArrayList<>());
+
+            List<Target> tasksToAdd = taskRunner.getTargetsForWorker(worker, tasksToAsk);
+            System.out.println("tasksToAdd " + tasksToAdd);
+            if (!tasksToAdd.isEmpty()) {
+                targetsToSend.get(taskRunner.getTask().getTaskName()).addAll(tasksToAdd);
+                finalAmount.set(finalAmount.get() - tasksToAdd.size());
+                div = finalAmount.doubleValue() / (double) tasksOfWorker.size();
+            }
+        }
+        System.out.println("2 targetsToSend = " + targetsToSend);
+
+        System.out.println("worker = " + worker + ", amount = " + amount + " targets " + targetsToSend);
+        return targetsToSend;
+    }
+
     public synchronized List<Task> getTasksForWorker(Worker worker, LinkedList<TaskRunner> tasks, int amount) {
         Map<String, List<Task>> tasksToSend = new HashMap<>();
         Map<String, List<Target>> targetsToSend = new HashMap<>();
@@ -106,10 +143,15 @@ public class TaskManager {
         TaskRunner taskRunner = getTask(taskName);
         if (taskRunner == null)
             return null;
-
         workersTasks.putIfAbsent(worker, new HashSet<>());
-        if (signTo) workersTasks.get(worker).add(taskName);
-        else workersTasks.get(worker).remove(taskName);
+
+        if (signTo) {
+            taskRunner.signWorkerToTask(worker);
+            workersTasks.get(worker).add(taskName);
+        } else {
+            taskRunner.unSignWorkerToTask(worker);
+            workersTasks.get(worker).remove(taskName);
+        }
 
         return taskRunner.getTask();
     }
