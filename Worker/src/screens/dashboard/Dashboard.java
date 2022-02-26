@@ -13,9 +13,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import types.*;
-import utils.ButtonCell;
-import utils.Constants;
-import utils.SignUpCell;
+import utils.*;
 import utils.http.HttpClientUtil;
 import utils.http.SimpleCallBack;
 
@@ -101,26 +99,10 @@ public class Dashboard extends Stage implements Initializable {
         registerColumn.setCellFactory(personBooleanTableColumn -> new SignUpCell(taskTable, taskProcessor));
 
         pausedColumn.setCellValueFactory(features -> new SimpleBooleanProperty(features.getValue() != null));
-        pausedColumn.setCellFactory(personBooleanTableColumn -> new ButtonCell("Pause", myTasksTable, (button, taskName) -> {
-
-            boolean taskIsRunning = taskProcessor.togglePause(taskName);
-            Platform.runLater(() -> {
-                button.setText(taskIsRunning ? "Pause" : "Resume");
-            });
-            System.out.println("paused " + taskName);
-        }));
+        pausedColumn.setCellFactory(personBooleanTableColumn -> new PauseButtonCell(myTasksTable, taskProcessor));
 
         stopColumn.setCellValueFactory(features -> new SimpleBooleanProperty(features.getValue() != null));
-        stopColumn.setCellFactory(personBooleanTableColumn -> new ButtonCell("Stop", myTasksTable, (button, taskName) -> {
-            taskTable.getItems().forEach(t -> {
-                if (t.getTaskName().equals(taskName))
-                    t.setRegistered(false);
-            });
-            // must be called before you can call i.remove()
-            myTasksTable.getItems().removeIf(task -> task.getTaskName().equals(taskName));
-
-            taskProcessor.pause(taskName);
-        }));
+        stopColumn.setCellFactory(personBooleanTableColumn -> new StopButtonCell(myTasksTable, taskProcessor));
 
         progressColumn.setCellValueFactory(new PropertyValueFactory<>("progress"));
         progressColumn.setCellFactory(ProgressBarTableCell.forTableColumn());
@@ -182,9 +164,9 @@ public class Dashboard extends Stage implements Initializable {
                 for (TaskInfo task : tasks) {
                     if (task.registered.get()) {
                         myTasks.add(task);
-//                        if (task.getTaskStatus().equals(TaskStatus.FINISHED.toString())) {
-//                            taskProcessor.removeTask(task.getTaskName());
-//                        }
+                    }
+                    if (task.getTaskStatus().equals(TaskStatus.FINISHED.toString())) {
+                        taskProcessor.removeTask(task.getTaskName());
                     }
                 }
 
@@ -200,7 +182,9 @@ public class Dashboard extends Stage implements Initializable {
 
     private void setTaskTable(TaskInfo[] tasks) {
         setAndAddToTable(tasks, taskTable
-                , (t1, t2) -> t1.setTaskStatus(t2.getTaskStatus()));
+                , (t1, t2) -> t1.setTaskStatus(t2.getTaskStatus())
+                , (t1, t2) -> t1.setRegistered(t2.getRegistered())
+                , (t1, t2) -> t1.setWorkers(t2.getWorkers()));
     }
 
     @Override
