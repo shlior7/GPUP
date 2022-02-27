@@ -3,7 +3,6 @@
  */
 package utils;
 
-import com.google.gson.JsonObject;
 import engine.TaskProcessor;
 import javafx.geometry.Insets;
 import javafx.scene.control.CheckBox;
@@ -11,13 +10,10 @@ import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.StackPane;
-import types.Task;
 import types.TaskInfo;
 import types.TaskStatus;
 import utils.http.HttpClientUtil;
 import utils.http.SimpleCallBack;
-
-import static utils.Constants.GSON_INSTANCE;
 
 public class SignUpCell extends TableCell<TaskInfo, Boolean> {
     // a button for adding a new person.

@@ -55,4 +55,9 @@ public class AdminApp extends Application {
         HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((s) -> controller.show()));
     }
 
+    @Override
+    public void stop() {
+        HttpClientUtil.shutdown();
+    }
+
 }

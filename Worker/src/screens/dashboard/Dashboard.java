@@ -1,6 +1,5 @@
 package screens.dashboard;
 
-import chat.client.component.main.ChatClient;
 import engine.TaskProcessor;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -26,7 +25,6 @@ import java.util.*;
 
 import static utils.Constants.GSON_INSTANCE;
 import static utils.Utils.setAddRemoveFromTable;
-import static utils.Utils.setAndAddToTable;
 
 
 public class Dashboard extends Stage implements Initializable {
@@ -34,8 +32,6 @@ public class Dashboard extends Stage implements Initializable {
     private Timer taskTimer;
     private Timer targetsTimer;
     private Timer userTimer;
-    private ChatClient chat;
-    List<TargetInfo> TargetsInfo = new ArrayList<>();
 
     @FXML
     public TableColumn<TaskInfo, String> targetsColumn;
@@ -86,13 +82,8 @@ public class Dashboard extends Stage implements Initializable {
     }
 
 
-    public void initChat(){
-        chat = new ChatClient(this,chatTab);
-    }
-
     public void init(Pane root, Worker worker) {
         this.taskProcessor = new TaskProcessor(worker.getThreads(), targetsTable, myTasksTable);
-        this.initChat();
         this.nameLabel.setText(worker.getName());
         this.creditsLabel.textProperty().bind(taskProcessor.getCreditsBinding());
         this.availableThreads.setText(taskProcessor.availableThreads().toString());

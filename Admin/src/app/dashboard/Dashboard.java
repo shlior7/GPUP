@@ -3,10 +3,6 @@ package app.dashboard;
 import TargetGraph.TargetGraph;
 import TargetGraph.GraphParams;
 import app.components.TaskControllerAdmin;
-import app.utils.http.HttpClientUtil;
-import app.utils.http.SimpleCallBack;
-import chat.client.component.main.ChatClient;
-import app.components.taskSettingsManager;
 import graphApp.GraphPane;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -50,7 +46,6 @@ public class Dashboard extends Stage implements Initializable {
     Map<String, GraphPane> graphPanes = new HashMap<>();
     Timer taskTimer;
     Timer userTimer;
-    ChatClient chat;
 
     @FXML
     public TableView<UserInfo> UsersTable;
@@ -76,11 +71,6 @@ public class Dashboard extends Stage implements Initializable {
         dashboard.getTasks();
         dashboard.initTimers();
         return dashboard;
-    }
-
-
-    public void initChat(){
-        chat = new ChatClient(this,chatTab);
     }
 
 

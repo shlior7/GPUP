@@ -10,7 +10,6 @@ import graphApp.components.TargetsCheckComboBox;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.TextArea;
 import javafx.scene.layout.Pane;
 import okhttp3.HttpUrl;
 import types.Task;

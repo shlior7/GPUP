@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static utils.Constants.GSON_INSTANCE;
-import static utils.Constants.UPDATE_TARGET_LOGS_URL;
 import static utils.Utils.setAddRemoveFromTable;
 import static utils.Utils.setAndAddToTable;
 
