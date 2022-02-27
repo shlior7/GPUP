@@ -1,5 +1,6 @@
 package screens.dashboard;
 
+import chat.client.component.main.ChatClient;
 import engine.TaskProcessor;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -33,6 +34,7 @@ public class Dashboard extends Stage implements Initializable {
     private Timer taskTimer;
     private Timer targetsTimer;
     private Timer userTimer;
+    private ChatClient chat;
     List<TargetInfo> TargetsInfo = new ArrayList<>();
 
     @FXML
@@ -72,6 +74,9 @@ public class Dashboard extends Stage implements Initializable {
     @FXML
     public TableColumn<TaskInfo, Boolean> registerColumn;
 
+    @FXML
+    public Tab chatTab;
+
     public static Dashboard createDashboard(Worker worker) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(Dashboard.class.getResource("worker_dashboard.fxml"));
         Pane root = fxmlLoader.load();
@@ -80,9 +85,14 @@ public class Dashboard extends Stage implements Initializable {
         return dashboard;
     }
 
+
+    public void initChat(){
+        chat = new ChatClient(this,chatTab);
+    }
+
     public void init(Pane root, Worker worker) {
         this.taskProcessor = new TaskProcessor(worker.getThreads(), targetsTable, myTasksTable);
-
+        this.initChat();
         this.nameLabel.setText(worker.getName());
         this.creditsLabel.textProperty().bind(taskProcessor.getCreditsBinding());
         this.availableThreads.setText(taskProcessor.availableThreads().toString());

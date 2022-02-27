@@ -3,10 +3,12 @@ package app.dashboard;
 import TargetGraph.TargetGraph;
 import TargetGraph.GraphParams;
 import app.components.TaskControllerAdmin;
+import app.utils.http.HttpClientUtil;
+import app.utils.http.SimpleCallBack;
+import chat.client.component.main.ChatClient;
 import app.components.taskSettingsManager;
 import graphApp.GraphPane;
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -15,6 +17,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
@@ -47,6 +50,7 @@ public class Dashboard extends Stage implements Initializable {
     Map<String, GraphPane> graphPanes = new HashMap<>();
     Timer taskTimer;
     Timer userTimer;
+    ChatClient chat;
 
     @FXML
     public TableView<UserInfo> UsersTable;
@@ -58,6 +62,8 @@ public class Dashboard extends Stage implements Initializable {
     public ComboBox<String> graphComboBox;
     @FXML
     public AnchorPane graphsRoot;
+    @FXML
+    public Tab chatTab;
 
     public static Dashboard createDashboard() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(Dashboard.class.getResource("admin_dashboard.fxml"));
@@ -71,6 +77,12 @@ public class Dashboard extends Stage implements Initializable {
         dashboard.initTimers();
         return dashboard;
     }
+
+
+    public void initChat(){
+        chat = new ChatClient(this,chatTab);
+    }
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
