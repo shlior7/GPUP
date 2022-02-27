@@ -43,25 +43,32 @@ public class LoginServlet extends HttpServlet {
                 String usernameFromParameter = request.getParameter(USERNAME);
                 String roleFromParameter = request.getParameter(ROLE);
 
-                if (usernameFromParameter == null || usernameFromParameter.isEmpty() || roleFromParameter == null) {
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad Request: wrong parameters");
-                } else {
-                    usernameFromParameter = usernameFromParameter.trim();
-                    synchronized (this) {
-                        if (userManager.isUserExists(usernameFromParameter)) {
-                            String errorMessage = "Username " + usernameFromParameter + " already exists. Please enter a different username.";
-                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.getOutputStream().print(errorMessage);
-                        } else {
-                            if (roleFromParameter.equals("Worker")) {
-                                String threadsFromParameter = request.getParameter(THREADS);
-                                userManager.addWorker(usernameFromParameter, Integer.parseInt(threadsFromParameter));
-                            } else {
-                                userManager.addAdmin(usernameFromParameter);
+                if (usernameFromParameter == null || usernameFromParameter.isEmpty()) {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad Request: userName is null or empty");
+                    return;
+                }
+                if (!roleFromParameter.equals("Admin") && !roleFromParameter.equals("Worker")) {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad Request: roll needs to be `Worker` or `Admin` ");
+                    return;
+                }
+                usernameFromParameter = usernameFromParameter.trim();
+                synchronized (this) {
+                    if (userManager.isUserExists(usernameFromParameter)) {
+                        String errorMessage = "Username " + usernameFromParameter + " already exists. Please enter a different username.";
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, errorMessage);
+                    } else {
+                        if (roleFromParameter.equals("Worker")) {
+                            String threadsFromParameter = request.getParameter(THREADS);
+                            if (!validateThreads(threadsFromParameter)) {
+                                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad Request: threads needs to be a number between 1-5");
+                                return;
                             }
-                            request.getSession(true).setAttribute(Constants.USERNAME, usernameFromParameter);
-                            response.setStatus(HttpServletResponse.SC_OK);
+                            userManager.addWorker(usernameFromParameter, Integer.parseInt(threadsFromParameter));
+                        } else {
+                            userManager.addAdmin(usernameFromParameter);
                         }
+                        request.getSession(true).setAttribute(Constants.USERNAME, usernameFromParameter);
+                        response.setStatus(HttpServletResponse.SC_OK);
                     }
                 }
             } else {
@@ -70,6 +77,17 @@ public class LoginServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean validateThreads(String threadsString) {
+        try {
+            int threads = Integer.parseInt(threadsString);
+            if (threads > 5 || threads < 1)
+                return false;
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
     }
 
 // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

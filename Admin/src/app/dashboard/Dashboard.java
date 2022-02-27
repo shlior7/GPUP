@@ -3,8 +3,7 @@ package app.dashboard;
 import TargetGraph.TargetGraph;
 import TargetGraph.GraphParams;
 import app.components.TaskControllerAdmin;
-import app.utils.http.HttpClientUtil;
-import app.utils.http.SimpleCallBack;
+import app.components.taskSettingsManager;
 import graphApp.GraphPane;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -28,10 +27,11 @@ import types.GraphInfo;
 import types.TaskInfo;
 import types.UserInfo;
 import utils.Constants;
+import utils.http.HttpClientUtil;
+import utils.http.SimpleCallBack;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -39,6 +39,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static utils.Constants.GSON_INSTANCE;
+import static utils.Utils.setAddRemoveFromTable;
+import static utils.Utils.setAndAddToTable;
 
 public class Dashboard extends Stage implements Initializable {
     GraphInfo[] graphInfos = new GraphInfo[0];
@@ -131,8 +133,7 @@ public class Dashboard extends Stage implements Initializable {
     }
 
     private void setGraphTable(GraphInfo[] graphs) {
-        graphTable.getItems().clear();
-        graphTable.getItems().addAll(graphs);
+        setAndAddToTable(graphs, graphTable);
     }
 
     public void getUsers() {
@@ -217,21 +218,24 @@ public class Dashboard extends Stage implements Initializable {
 
         HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((tasksJson) -> {
             System.out.println(tasksJson);
-            TaskInfo[] tasks = GSON_INSTANCE.newBuilder().excludeFieldsWithModifiers(Modifier.PRIVATE).create()
-                    .fromJson(tasksJson, TaskInfo[].class);
+            TaskInfo[] tasks = GSON_INSTANCE.fromJson(tasksJson, TaskInfo[].class);
             System.out.println(Arrays.toString(tasks));
             if (tasks != null) setTaskTable(tasks);
         }));
     }
 
     private void setTaskTable(TaskInfo[] tasks) {
-        Platform.runLater(() -> {
-            taskTable.getItems().clear();
-            taskTable.getItems().addAll(tasks);
-        });
+        setAddRemoveFromTable(tasks, taskTable
+                , (t1, t2) -> t1.setTaskStatus(t2.getTaskStatus())
+                , (t1, t2) -> t1.setCreditPerTarget(String.valueOf(Integer.parseInt(t2.getCreditPerTarget()) * Integer.parseInt(t2.getTargets())))
+                , (t1, t2) -> t1.setWorkers(t2.getWorkers()));
     }
 
     public void OnDashboardTabSelectionChanged(Event event) {
         getTasks();
+    }
+
+    public void open(ActionEvent actionEvent) {
+
     }
 }

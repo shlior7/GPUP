@@ -7,6 +7,9 @@ import lombok.ToString;
 
 import java.util.Objects;
 
+import static utils.Utils.getStringValueOrZero;
+import static utils.Utils.ifNullZero;
+
 @ToString
 public class TaskInfo extends TableItem {
     public String taskName;
@@ -21,7 +24,7 @@ public class TaskInfo extends TableItem {
     public String creditPerTarget;
     public boolean paused;
 
-    public final BooleanProperty registered;
+    public BooleanProperty registered;
     public StringProperty taskStatus;
     public StringProperty creditsFromTask;
     public StringProperty workers;
@@ -45,11 +48,11 @@ public class TaskInfo extends TableItem {
         this.graphName = taskData.getTargetGraph().getGraphsName();
         this.type = taskData.getTask().getClassName();
         this.targets = String.valueOf(taskData.getTargetGraph().totalSize());
-        this.leaves = ifNullZero(String.valueOf(taskData.getTargetGraph().getTypesStatistics().get(Type.leaf)));
-        this.middles = ifNullZero(String.valueOf(taskData.getTargetGraph().getTypesStatistics().get(Type.middle)));
-        this.independents = ifNullZero(String.valueOf(taskData.getTargetGraph().getTypesStatistics().get(Type.independent)));
-        this.roots = ifNullZero(String.valueOf(taskData.getTargetGraph().getTypesStatistics().get(Type.root)));
-        this.creditPerTarget = String.valueOf(taskData.getTargetGraph().getPrices().get(TaskType.valueOf(taskData.getTask().getClassName())));
+        this.leaves = getStringValueOrZero(taskData.getTargetGraph().getTypesStatistics().get(Type.leaf));
+        this.middles = getStringValueOrZero(taskData.getTargetGraph().getTypesStatistics().get(Type.middle));
+        this.independents = getStringValueOrZero(taskData.getTargetGraph().getTypesStatistics().get(Type.independent));
+        this.roots = getStringValueOrZero(taskData.getTargetGraph().getTypesStatistics().get(Type.root));
+        this.creditPerTarget = getStringValueOrZero(taskData.getTargetGraph().getPrices().get(TaskType.valueOf(taskData.getTask().getClassName())));
 
         setTaskStatus(taskData.getStatus().toString());
         setWorkers(String.valueOf(taskData.getWorkerListMap().keySet().size()));
@@ -149,11 +152,6 @@ public class TaskInfo extends TableItem {
         return this.independents;
     }
 
-    public String ifNullZero(String string) {
-        if (Objects.equals(string, "null") || string == null)
-            return "0";
-        return string;
-    }
 
     public String getRoots() {
         return this.roots;
@@ -176,6 +174,10 @@ public class TaskInfo extends TableItem {
     }
 
     public BooleanProperty getRegisteredProperty() {
+        return this.registered;
+    }
+
+    public BooleanProperty registeredProperty() {
         return this.registered;
     }
 

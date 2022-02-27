@@ -1,66 +1,53 @@
 package servlets;
 
 import TargetGraph.Target;
-import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import managers.UserManager;
-import task.TaskRunner;
-import types.LogLine;
-import types.Task;
-import types.TaskStatus;
 import types.Worker;
 import utils.ServletUtils;
 import utils.SessionUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import static utils.Constants.*;
+import static utils.Constants.GSON_INSTANCE;
 
-@WebServlet(name = "TaskGetUpdateServlet", urlPatterns = {"/task/update/get"})
-public class TaskGetUpdateServlet extends HttpServlet {
+@WebServlet(name = "TaskPostLogServlet", urlPatterns = {"/task/update/log"})
+public class TaskPostLogServlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("application/json");
+        response.setContentType("text/plain;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            String taskName = request.getParameter(TASKNAME);
+            String usernameFromSession = SessionUtils.getUsername(request);
+            if (usernameFromSession != null) {
+                String requestData = request.getReader().lines().collect(Collectors.joining());
+
+                Map<String, Map<String, String[]>> logsToPost = GSON_INSTANCE.fromJson(requestData, new TypeToken<Map<String, Map<String, String[]>>>() {
+                }.getType());
+                System.out.println("post logs " + logsToPost);
+//                JsonObject json = GSON_INSTANCE.fromJson(requestData, JsonObject.class);
+//
+//                Target[] targets = GSON_INSTANCE.fromJson(json.get(TARGETS), Target[].class);
+//                String[] taskOutput = GSON_INSTANCE.fromJson(json.get(TASKOUTPUT), String[].class);
+
+//                Task task = GSON_INSTANCE.fromJson(requestData, (Class<? extends Task>) Class.forName(json.get("type").getAsString()));
 
 
-            TaskRunner taskRunner = ServletUtils.getEngine(getServletContext()).getTaskManager().getTask(taskName);
-            if (taskRunner == null) {
-                System.out.println(taskName + " no task like that found");
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, taskName + " no task like that found");
-                return;
+                ServletUtils.getEngine(getServletContext()).postLogs(logsToPost);
+
+            } else {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                out.println("no user in session");
+                out.flush();
             }
-
-            System.out.println("taskName = " + taskName + ", response = " + taskRunner.getGraph().getGraphsName());
-            Set<Target> targets = taskRunner.getGraph().getCurrentTargets();
-            Double progress = taskRunner.getProgress().get();
-            TaskStatus taskStatus = taskRunner.getTaskData().getStatus();
-
-            List<String> targetLogs = ServletUtils.getEngine(getServletContext()).getLogs(taskName);
-
-
-            Map<String, Object> jsonMap = new HashMap() {{
-                put("targets", GSON_INSTANCE.toJson(targets));
-                put("progress", progress.toString());
-                put("taskStatus", taskStatus.toString());
-                put("targetLogs", targetLogs);
-            }};
-
-            System.out.println(jsonMap);
-            out.println(jsonMap);
-            out.flush();
         } catch (Exception e) {
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());

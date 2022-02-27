@@ -13,6 +13,11 @@ public class ActionButton extends Button {
         init();
     }
 
+    public ActionButton(String label) {
+        super(label);
+        init();
+    }
+
     public ActionButton(String label, EventHandler<ActionEvent> eventHandler) {
         super(label);
         setOnAction(eventHandler);

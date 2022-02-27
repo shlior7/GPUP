@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -22,6 +23,9 @@ public class Target {
         this.name = name;
         this.processTime = Duration.ZERO;
         this.result = Result.NULL;
+        this.targetInfo = "";
+        this.userData = "";
+
     }
 
     public void updateData(Target target) {
@@ -71,5 +75,14 @@ public class Target {
     @Override
     public String toString() {
         return name;
+    }
+
+    public boolean equals(final Object o) {
+        if (o == this) return true;
+        if (!(o instanceof Target)) return false;
+        final Target other = (Target) o;
+        final String this$name = this.getName();
+        final String other$name = other.getName();
+        return Objects.equals(this$name, other$name);
     }
 }

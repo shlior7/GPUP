@@ -36,6 +36,8 @@ public class SignUpCell extends TableCell<TaskInfo, Boolean> {
         this.taskProcessor = taskProcessor;
         paddedPane.setPadding(new Insets(3));
         paddedPane.getChildren().add(signUpCheckbox);
+        signUpCheckbox.setSelected(false);
+        signUpCheckbox.setDisable(false);
 
         signUpCheckbox.setOnAction(actionEvent -> {
             TaskInfo task = table.getItems().get(getTableRow().getIndex());
@@ -53,9 +55,9 @@ public class SignUpCell extends TableCell<TaskInfo, Boolean> {
 
         signUpCheckbox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             System.out.println("changed checkbox newValue = " + newValue);
-            if (!newValue) {
+            if (!newValue && oldValue) {
                 TaskInfo task = table.getItems().get(getTableRow().getIndex());
-                System.out.println("changed to false task = " + task.getTaskName() + " " + task.getRegistered());
+                System.out.println("changed to false task = " + task.getTaskName() + " " + task.getRegistered() + " " + task.getTaskStatus());
                 if (!task.getTaskStatus().equals(TaskStatus.FINISHED.toString())) {
                     taskProcessor.signToTasks(task.getTaskName(), false);
                     signUpCheckbox.setDisable(false);
