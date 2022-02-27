@@ -1,53 +1,43 @@
 package servlets;
 
-import TargetGraph.Result;
-import TargetGraph.Target;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import managers.UserManager;
-import types.Worker;
 import utils.ServletUtils;
-import utils.SessionUtils;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import static utils.Constants.*;
 
-@WebServlet(name = "TaskDoneServlet", urlPatterns = {"/task/target/done"})
-public class TaskDoneServlet extends HttpServlet {
+@WebServlet(name = "TaskNameValidateServlet", urlPatterns = {"/task/validate"})
+public class TaskNameValidateServlet extends HttpServlet {
 
+    // urls that starts with forward slash '/' are considered absolute
+    // urls that doesn't start with forward slash '/' are considered relative to the place where this servlet request comes from
+    // you can use absolute paths, but then you need to build them from scratch, starting from the context path
+    // ( can be fetched from request.getContextPath() ) and then the 'absolute' path from it.
+    // Each method with it's pros and cons...
+
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     *
+     * @param request  servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException      if an I/O error occurs
+     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/plain;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            String usernameFromSession = SessionUtils.getUsername(request);
-            UserManager userManager = ServletUtils.getUserManager(getServletContext());
-            Worker worker = userManager.getWorker(usernameFromSession);
-            if (worker != null) {
-                String taskName = request.getParameter(TASKNAME);
-                String targetName = request.getParameter(TARGETNAME);
-                Result result = Result.valueOf(request.getParameter(RESULT));
-
-                System.out.println("target " + targetName + " in task " + taskName + " is Done");
-                int res = ServletUtils.getEngine(getServletContext()).getTaskManager().onFinishTaskOnTarget(taskName, targetName, result);
-                response.setStatus(res);
-            } else {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-                out.println("Request is not from a worker");
-            }
-            out.flush();
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-        }
-
+        String taskName = request.getParameter(TASKNAME);
+        boolean exists = ServletUtils.getEngine(getServletContext()).getTaskManager().doesTaskExists(taskName);
+        response.setStatus(exists ? HttpServletResponse.SC_UNAUTHORIZED : HttpServletResponse.SC_OK);
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+// <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
 
     /**
      * Handles the HTTP <code>GET</code> method.

@@ -3,6 +3,7 @@ package types;
 import TargetGraph.Result;
 import TargetGraph.Status;
 import TargetGraph.Target;
+import lombok.Getter;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -11,6 +12,7 @@ import java.util.function.Consumer;
 
 import static java.lang.Thread.sleep;
 
+@Getter
 public class Simulation extends Task {
     private final int timeToProcess;
     private final boolean isRandom;
@@ -67,12 +69,12 @@ public class Simulation extends Task {
         Instant before = Instant.now();
         targetToRunOn.setStatus(Status.IN_PROCESS);
         targetToRunOn.setStartedTime(before);
-        outputText.accept(targetToRunOn.name + " going to sleep for " + timeToSleep);
+        outputText(targetToRunOn.name + " going to sleep for " + timeToSleep);
         System.out.println(targetToRunOn.name + " going to sleep for " + timeToSleep);
         try {
-            outputText.accept("before " + targetToRunOn.name + " going to sleep");
+            outputText("before " + targetToRunOn.name + " going to sleep");
             sleep(timeToSleep);
-            outputText.accept("after " + targetToRunOn.name + " went to sleep");
+            outputText("after " + targetToRunOn.name + " went to sleep");
             System.out.println("after " + targetToRunOn.name + " went to sleep");
 
         } catch (InterruptedException e) {

@@ -9,6 +9,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.ProgressBarTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Pane;
@@ -24,6 +25,7 @@ import java.net.URL;
 import java.util.*;
 
 import static utils.Constants.GSON_INSTANCE;
+import static utils.Utils.setAddRemoveFromTable;
 import static utils.Utils.setAndAddToTable;
 
 
@@ -105,8 +107,19 @@ public class Dashboard extends Stage implements Initializable {
     }
 
     public void setCellFactories() {
-        registerColumn.setCellValueFactory(features -> new SimpleBooleanProperty(features.getValue() != null));
-        registerColumn.setCellFactory(personBooleanTableColumn -> new SignUpCell(taskTable, taskProcessor));
+//        registerColumn.setCellValueFactory(features -> {
+//            System.out.println("features " + features.getValue());
+//            return new SimpleBooleanProperty(features.getValue() != null);
+//        });
+//        registerColumn.setCellFactory(personBooleanTableColumn -> new SignUpCell(taskTable, taskProcessor));
+
+        registerColumn.setCellValueFactory((param) -> {
+//            TableView<TaskInfo> tblView = param.getTableView();
+//            TaskInfo rowData = param.getValue();
+            return param.getValue().registeredProperty();
+        });
+        registerColumn.setCellFactory(CheckBoxTableCell.forTableColumn(registerColumn));
+//        registerColumn.setCellFactory(CheckBoxTableCell.forTableColumn((i) -> taskTable.getItems().get(i).registeredProperty()));
 
         pausedColumn.setCellValueFactory(features -> new SimpleBooleanProperty(features.getValue() != null));
         pausedColumn.setCellFactory(personBooleanTableColumn -> new PauseButtonCell(myTasksTable, taskProcessor));
@@ -178,6 +191,18 @@ public class Dashboard extends Stage implements Initializable {
                     if (task.getTaskStatus().equals(TaskStatus.FINISHED.toString())) {
                         taskProcessor.removeTask(task.getTaskName());
                     }
+
+                    task.registeredProperty().addListener((observable, oldValue, newValue) -> {
+                        System.out.println(oldValue + " -> " + newValue);
+                        if (oldValue != newValue) {
+                            if (newValue && task.getTaskStatus().equals(TaskStatus.FINISHED.toString())) {
+                                task.setRegistered(false);
+                                return;
+                            }
+                            System.out.println("sign task = " + task.getTaskName() + " " + task.getRegistered() + " " + task.getTaskStatus());
+                            taskProcessor.signToTasks(task.getTaskName(), newValue);
+                        }
+                    });
                 }
 
                 setTaskTable(tasks);
@@ -191,7 +216,7 @@ public class Dashboard extends Stage implements Initializable {
 
 
     private void setTaskTable(TaskInfo[] tasks) {
-        setAndAddToTable(tasks, taskTable
+        setAddRemoveFromTable(tasks, taskTable
                 , (t1, t2) -> t1.setTaskStatus(t2.getTaskStatus())
                 , (t1, t2) -> t1.setRegistered(t2.getRegistered())
                 , (t1, t2) -> t1.setWorkers(t2.getWorkers()));

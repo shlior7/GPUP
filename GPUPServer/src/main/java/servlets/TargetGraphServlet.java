@@ -31,6 +31,9 @@ public class TargetGraphServlet extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             String graphName = request.getParameter(Constants.GRAPHNAME);
             TargetGraph targetGraph = ServletUtils.getEngine(getServletContext()).getGraphManager().getOrDefault(graphName, null);
+            if (targetGraph == null) {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            }
             String json = GSON_INSTANCE.toJson(new GraphParams(targetGraph));
             out.println(json);
             out.flush();

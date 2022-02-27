@@ -1,65 +1,42 @@
 package servlets;
 
-import TargetGraph.Target;
-import com.google.gson.JsonObject;
+import TargetGraph.Result;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import managers.UserManager;
-import task.TaskRunner;
-import types.LogLine;
-import types.Task;
-import types.TaskStatus;
+import types.Admin;
 import types.Worker;
 import utils.ServletUtils;
 import utils.SessionUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static utils.Constants.*;
 
-@WebServlet(name = "TaskGetUpdateServlet", urlPatterns = {"/task/update/get"})
-public class TaskGetUpdateServlet extends HttpServlet {
+@WebServlet(name = "TaskPauseServlet", urlPatterns = {"/task/pause"})
+public class TaskPauseServlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("application/json");
+        response.setContentType("text/plain;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            String taskName = request.getParameter(TASKNAME);
+            String usernameFromSession = SessionUtils.getUsername(request);
+            UserManager userManager = ServletUtils.getUserManager(getServletContext());
+            Admin admin = userManager.getAdmin(usernameFromSession);
+            if (admin != null) {
+                String taskName = request.getParameter(TASKNAME);
 
-
-            TaskRunner taskRunner = ServletUtils.getEngine(getServletContext()).getTaskManager().getTask(taskName);
-            if (taskRunner == null) {
-                System.out.println(taskName + " no task like that found");
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, taskName + " no task like that found");
-                return;
+                System.out.println("task " + taskName + " pause");
+                ServletUtils.getEngine(getServletContext()).getTaskManager().pauseTask(taskName);
+                out.println(taskName + " is paused");
+            } else {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                out.println("Request is not from a admin");
             }
-
-            System.out.println("taskName = " + taskName + ", response = " + taskRunner.getGraph().getGraphsName());
-            Set<Target> targets = taskRunner.getGraph().getCurrentTargets();
-            Double progress = taskRunner.getProgress().get();
-            TaskStatus taskStatus = taskRunner.getTaskData().getStatus();
-
-            List<String> targetLogs = ServletUtils.getEngine(getServletContext()).getLogs(taskName);
-
-
-            Map<String, Object> jsonMap = new HashMap() {{
-                put("targets", GSON_INSTANCE.toJson(targets));
-                put("progress", progress.toString());
-                put("taskStatus", taskStatus.toString());
-                put("targetLogs", targetLogs);
-            }};
-
-            System.out.println(jsonMap);
-            out.println(jsonMap);
             out.flush();
         } catch (Exception e) {
             e.printStackTrace();
@@ -108,4 +85,3 @@ public class TaskGetUpdateServlet extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 }
-

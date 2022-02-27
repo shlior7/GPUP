@@ -7,12 +7,14 @@ import okhttp3.Response;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class SimpleCallBack implements Callback {
 
     Consumer<String> onFail;
     Consumer<String> onSuccess;
+    BiConsumer<String, Integer> onSuccessResponseCode;
     public CountDownLatch countDownLatch = new CountDownLatch(1);
 
     public SimpleCallBack() {
@@ -20,6 +22,10 @@ public class SimpleCallBack implements Callback {
 
     public SimpleCallBack(Consumer<String> onSuccess) {
         this.onSuccess = onSuccess;
+    }
+
+    public SimpleCallBack(BiConsumer<String, Integer> onSuccess) {
+        this.onSuccessResponseCode = onSuccess;
     }
 
     public SimpleCallBack(Consumer<String> onSuccess, Consumer<String> onFail) {
@@ -45,15 +51,19 @@ public class SimpleCallBack implements Callback {
         countDownLatch.countDown();
         String responseBody = response.body().string();
         {
-            if (response.code() != 200) {
-                Platform.runLater(() ->
-                        System.out.println("Something went wrong: " + responseBody)
-                );
-            } else {
-                Platform.runLater(() -> {
-                    System.out.println("OK " + responseBody);
-                    if (onSuccess != null) onSuccess.accept(responseBody);
-                });
+            if (onSuccessResponseCode != null)
+                onSuccessResponseCode.accept(responseBody, response.code());
+            else {
+                if (response.code() != 200) {
+                    Platform.runLater(() ->
+                            System.out.println("Something went wrong: " + responseBody)
+                    );
+                } else {
+                    Platform.runLater(() -> {
+                        System.out.println("OK " + responseBody);
+                        if (onSuccess != null) onSuccess.accept(responseBody);
+                    });
+                }
             }
         }
     }
