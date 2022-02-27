@@ -40,6 +40,11 @@ public class Constants {
     public static final String UPDATE_PROGRESS_POST_URL = FULL_SERVER_PATH + "/task/update/post";
     public static final String UPDATE_PROGRESS_GET_URL = FULL_SERVER_PATH + "/task/update/get";
 
+
+    public final static String SEND_CHAT_LINE = FULL_SERVER_PATH + "/chat/send";
+    public final static String CHAT_LINES_LIST = FULL_SERVER_PATH + "/chat/get";
+
+
     public final static Gson GSON_INSTANCE = FxGson.coreBuilder().disableHtmlEscaping().create();
 //    public final static Gson GSON_INSTANCE = new Gson();
 
