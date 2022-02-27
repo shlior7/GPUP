@@ -2,6 +2,7 @@ package task;
 
 import TargetGraph.TargetGraph;
 import TargetGraph.Target;
+import TargetGraph.Result;
 import types.Admin;
 import types.Task;
 import types.Worker;
@@ -130,12 +131,12 @@ public class TaskManager {
         return null;
     }
 
-    public synchronized int onFinishTaskOnTarget(String taskName, String targetName) throws Exception {
+    public synchronized int onFinishTaskOnTarget(String taskName, String targetName, Result result) throws Exception {
         TaskRunner taskRunner = getTask(taskName);
         if (taskRunner == null)
             return 500;
 
-        taskRunner.OnFinish(targetName);
+        taskRunner.OnFinish(targetName, result);
         return 200;
     }
 

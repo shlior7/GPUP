@@ -30,10 +30,10 @@ public class Engine implements IEngine {
             File file = new File("/Users/liorsht/IdeaProjects/GPUP/ex2-big.xml");
             loadXmlFile(file, userManager.getAdmin("admin"));
 
-            File file2 = new File("/Users/liorsht/IdeaProjects/GPUP/ex3-small.xml");
-            loadXmlFile(file2, userManager.getAdmin("admin"));
+//            File file2 = new File("/Users/liorsht/IdeaProjects/GPUP/ex3-small.xml");
+//            loadXmlFile(file2, userManager.getAdmin("admin"));
 
-            addTask(new Simulation("small_task"), "small", userManager.getAdmin("admin"));
+//            addTask(new Simulation("small_task"), "small", userManager.getAdmin("admin"));
             addTask(new Simulation("big_task"), "big", userManager.getAdmin("admin"));
         } catch (Exception e) {
             e.printStackTrace();
@@ -108,10 +108,6 @@ public class Engine implements IEngine {
         taskRunner.reset();
     }
 
-    public boolean createNewGraphFromTargetList(Set<Target> targetToRunOn) {
-        return targetGraph.createNewGraphFromTargetList(targetToRunOn);
-    }
-
     public LinkedList<List<String>> findAllPaths(String source, String destination) {
         return targetGraph.findAllPaths(source, destination);
     }
@@ -181,13 +177,18 @@ public class Engine implements IEngine {
     }
 
     @Override
-    public void addTask(Task task, String graphName, Admin createdBy, Set<Target> targets) throws Exception {
+    public void addTask(Task task, String graphName, Admin createdBy, Set<Target> targets, boolean fromScratch) throws Exception {
         TargetGraph targetGraph = allGraphs.getOrDefault(graphName, null);
         if (targetGraph == null)
             throw new Exception("graph wasn't found");
+        if (fromScratch)
+            targetGraph.getCurrentTargets().forEach(t -> t.init(t.getTargetInfo()));
 
         task.setCreditPerTarget(targetGraph.getPrices().get(TaskType.valueOf(task.getClassName())));
         targetGraph.createNewGraphFromTargetList(targets);
+
+        System.out.println("task = " + task.getTaskName() + ", graphName = " + targetGraph.getStatsInfoString(targetGraph.getStatusesStatisticsString()) + "\n createdBy = " + createdBy + ", fromScratch = " + fromScratch);
+
         tasksManager.addTask(task, targetGraph, createdBy);
     }
 

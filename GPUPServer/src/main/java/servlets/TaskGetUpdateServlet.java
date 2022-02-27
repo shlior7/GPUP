@@ -30,11 +30,11 @@ public class TaskGetUpdateServlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/plain;charset=UTF-8");
+        response.setContentType("application/json");
         try (PrintWriter out = response.getWriter()) {
             String taskName = request.getParameter(TASKNAME);
             TaskRunner taskRunner = ServletUtils.getEngine(getServletContext()).getTaskManager().getTask(taskName);
-            System.out.println("taskName = " + taskName + ", response = " + response);
+            System.out.println("taskName = " + taskName + ", response = " + taskRunner.getGraph().getGraphsName());
             Set<Target> targets = taskRunner.getGraph().getCurrentTargets();
 //            String taskOutput = taskRunner.getTaskOutput().toString();
             Double progress = taskRunner.getProgress().get();

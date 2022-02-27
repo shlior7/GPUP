@@ -42,7 +42,7 @@ public class Utils {
     public static Task getTaskFromJson(JsonObject json) {
         Task task;
         try {
-            task = GSON_INSTANCE.fromJson(json, (Class<? extends Task>) Class.forName(json.get("ClassType").getAsString()));
+            task = GSON_INSTANCE.fromJson(json, (Class<? extends Task>) Class.forName(json.get("classType").getAsString()));
         } catch (ClassNotFoundException e) {
             task = null;
         }

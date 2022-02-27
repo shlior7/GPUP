@@ -3,6 +3,7 @@ package types;
 import TargetGraph.Result;
 import TargetGraph.Status;
 import TargetGraph.Target;
+import lombok.Getter;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,6 +14,7 @@ import java.time.Instant;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
+@Getter
 public class Compilation extends Task {
     private final String outFolder;
     private final String workingDir;

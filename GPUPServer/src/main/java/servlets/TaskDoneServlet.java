@@ -1,5 +1,6 @@
 package servlets;
 
+import TargetGraph.Result;
 import TargetGraph.Target;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -29,8 +30,10 @@ public class TaskDoneServlet extends HttpServlet {
             if (worker != null) {
                 String taskName = request.getParameter(TASKNAME);
                 String targetName = request.getParameter(TARGETNAME);
+                Result result = Result.valueOf(request.getParameter(RESULT));
+
                 System.out.println("target " + targetName + " in task " + taskName + " is Done");
-                int res = ServletUtils.getEngine(getServletContext()).getTaskManager().onFinishTaskOnTarget(taskName, targetName);
+                int res = ServletUtils.getEngine(getServletContext()).getTaskManager().onFinishTaskOnTarget(taskName, targetName, result);
                 response.setStatus(res);
             } else {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED);

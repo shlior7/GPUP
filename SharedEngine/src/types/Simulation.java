@@ -3,6 +3,7 @@ package types;
 import TargetGraph.Result;
 import TargetGraph.Status;
 import TargetGraph.Target;
+import lombok.Getter;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -11,6 +12,7 @@ import java.util.function.Consumer;
 
 import static java.lang.Thread.sleep;
 
+@Getter
 public class Simulation extends Task {
     private final int timeToProcess;
     private final boolean isRandom;

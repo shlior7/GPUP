@@ -27,7 +27,7 @@ public interface IEngine {
 
     void loadXmlFile(InputStream path, Admin createdBy) throws Exception;
 
-    void addTask(Task task, String graphName, Admin createdBy, Set<Target> targets) throws Exception;
+    void addTask(Task task, String graphName, Admin createdBy, Set<Target> targets, boolean fromScratch) throws Exception;
 
     TaskManager getTaskManager();
 

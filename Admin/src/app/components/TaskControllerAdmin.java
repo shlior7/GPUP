@@ -1,10 +1,6 @@
 package app.components;
 
-import TargetGraph.Result;
-import TargetGraph.Status;
 import TargetGraph.Target;
-import app.utils.http.HttpClientUtil;
-import app.utils.http.SimpleCallBack;
 import com.google.gson.JsonObject;
 import graphApp.GraphPane;
 import graphApp.actions.task.TaskController;
@@ -17,6 +13,8 @@ import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import types.Task;
 import utils.Constants;
+import utils.http.HttpClientUtil;
+import utils.http.SimpleCallBack;
 
 import java.util.Set;
 import java.util.Timer;
@@ -30,6 +28,7 @@ public class TaskControllerAdmin extends TaskController {
     private boolean choose;
     private TextArea taskOutput;
     private boolean paused;
+    TaskSettings taskSettings;
 
     public TaskControllerAdmin(GraphPane graphPane) {
         super(graphPane);
@@ -65,22 +64,25 @@ public class TaskControllerAdmin extends TaskController {
     void chooseTargets(ActionEvent event) {
         if (graphPane.choosingController.isChoosing() || paused)
             return;
-        TaskSettings taskSettings = TaskSettings.createTaskSettings(graphPane.graph);
+        if (taskSettings == null)
+            taskSettings = TaskSettings.createTaskSettings(graphPane.graph, null);
         taskSettings.showAndReturn();
 
         if (!taskSettings.submitted)
             return;
 
+
         graphPane.choosingController.setChoosingState(true);
         graphPane.choosingController.setOnChoose(this::onChoose);
 
-        if (!taskSettings.runFromScratch) {
+
+        if (taskSettings.runningNumber > 0) {
             graphPane.choosingController.chooseTargets(graphPane.graph.getCurrentTargets());
-//            taskRun(taskSettings);
+            taskRun(taskSettings);
             settings.setVisible(true);
             return;
         }
-
+        
         if (taskSettings.chooseAll)
             graphPane.choosingController.all(null);
 
@@ -98,19 +100,20 @@ public class TaskControllerAdmin extends TaskController {
     }
 
     private void BeforeRunning(TaskSettings taskSettings, Set<Target> targetToRunOn) {
-        if (taskSettings.runFromScratch) {
-            graphPane.graphView.reset();
+        if (taskSettings.runningNumber > 0) {
+            if (taskSettings.runFromScratch) {
+                graphPane.graphView.reset();
+                targetToRunOn.forEach(t -> t.init(""));
+            }
         } else {
-            targetToRunOn = targetToRunOn.stream().filter(target -> target.getResult() == Result.Failure || target.getStatus() == Status.SKIPPED).collect(Collectors.toSet());
+            graphPane.graph.createNewGraphFromTargetList(targetToRunOn);
         }
         graphPane.choosingController.clear(null);
         graphPane.choosingController.setChoosingState(false);
         targetsComboBox.setDisable(true);
         graphPane.graphView.hideEdges(targetToRunOn);
-        targetToRunOn.forEach(t -> t.init(""));
-        graphPane.graph.createNewGraphFromTargetList(targetToRunOn);
         graphPane.setBottom(taskOutput);
-        uploadTask(taskSettings.task, targetToRunOn, taskSettings.runFromScratch);
+        uploadTask(TaskSettings.Task, targetToRunOn, taskSettings.runFromScratch);
     }
 
     public void uploadTask(Task task, Set<Target> targetToRunOn, boolean fromScratch) {
@@ -121,11 +124,12 @@ public class TaskControllerAdmin extends TaskController {
                 .addQueryParameter(Constants.FROM_SCRATCH, String.valueOf(fromScratch))
                 .build()
                 .toString();
+
         System.out.println("finalUrl " + finalUrl);
         JsonObject json = new JsonObject();
         json.addProperty("task", GSON_INSTANCE.toJson(task));
         json.addProperty("targets", GSON_INSTANCE.toJson(targetToRunOn));
-        HttpClientUtil.runAsyncBody(finalUrl, RequestBody.create(MediaType.parse("text/json"), String.valueOf(json)), new SimpleCallBack());
+        HttpClientUtil.runAsyncBody(finalUrl, String.valueOf(json), new SimpleCallBack());
     }
 
     public void taskRun(TaskSettings taskSettings) {
@@ -136,14 +140,11 @@ public class TaskControllerAdmin extends TaskController {
         }
 
         BeforeRunning(taskSettings, targetToRunOn);
-//        initWorkingThread(taskSettings);
-//        initChangingColorThread();
 
         runButton.setText("Pause");
-        super.start(taskSettings.task.getTaskName());
+        super.start(TaskSettings.getTaskName());
 //        runButton.setOnAction(this::pauseResume);
     }
-
 
     //
 //    ///Admin

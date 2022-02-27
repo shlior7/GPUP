@@ -229,7 +229,8 @@ public class TaskProcessor {
             String url = HttpClientUtil.createUrl(
                     Constants.TARGET_DONE_URL,
                     Utils.tuple(Constants.TARGETNAME, target.getName()),
-                    Utils.tuple(Constants.TASKNAME, targetsToTaskName.get(target)));
+                    Utils.tuple(Constants.TASKNAME, targetsToTaskName.get(target)),
+                    Utils.tuple(Constants.RESULT, target.getResult().toString()));
             System.out.println(url);
             Platform.runLater(() -> {
                 HttpClientUtil.runAsync(url, new SimpleCallBack());

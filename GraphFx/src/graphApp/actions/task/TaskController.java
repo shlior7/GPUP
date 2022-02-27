@@ -82,18 +82,19 @@ public class TaskController extends SideAction {
         }, 0, 1000);
     }
 
-
     private void getUpdate(String taskName) {
         if (!isTaskRunning.get())
             return;
-        try {
 
+        try {
             String url = HttpClientUtil.createUrl(Constants.UPDATE_PROGRESS_GET_URL, Utils.tuple(Constants.TASKNAME, taskName));
             System.out.println(url);
 
             HttpClientUtil.runAsync(url, new SimpleCallBack((updateJson) -> {
                 System.out.println("updateJson = " + updateJson);
                 JsonObject json = GSON_INSTANCE.fromJson(updateJson, JsonObject.class);
+                if (json == null)
+                    return;
 
                 String targetsString = json.get("targets").toString().replaceAll("\\s", "");
                 Target[] targets = GSON_INSTANCE.fromJson(targetsString, Target[].class);
@@ -106,6 +107,7 @@ public class TaskController extends SideAction {
 
                 graphPane.graph.updateAllTarget(targets);
                 progressBar.progressProperty().set(progress);
+
                 switch (taskStatus) {
                     case PAUSED:
                         paused.set(true);
@@ -118,6 +120,7 @@ public class TaskController extends SideAction {
                     case FINISHED:
                         paused.set(false);
                         isTaskRunning.set(false);
+                        getUpdateFromServer(taskName);
                         resume();
                 }
 
@@ -125,6 +128,27 @@ public class TaskController extends SideAction {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void getUpdateFromServer(String taskName) {
+        String url = HttpClientUtil.createUrl(Constants.UPDATE_PROGRESS_GET_URL, Utils.tuple(Constants.TASKNAME, taskName));
+        System.out.println(url);
+
+        HttpClientUtil.runAsync(url, new SimpleCallBack((updateJson) -> {
+            System.out.println("updateJson = " + updateJson);
+            JsonObject json = GSON_INSTANCE.fromJson(updateJson, JsonObject.class);
+            if (json == null)
+                return;
+
+            String targetsString = json.get("targets").toString().replaceAll("\\s", "");
+            Target[] targets = GSON_INSTANCE.fromJson(targetsString, Target[].class);
+
+            String progressString = json.get("progress").toString().replaceAll("\\s", "");
+            Double progress = GSON_INSTANCE.fromJson(progressString, Double.class);
+
+            graphPane.graph.updateAllTarget(targets);
+            progressBar.progressProperty().set(progress);
+        }));
     }
 
     public void resume() {

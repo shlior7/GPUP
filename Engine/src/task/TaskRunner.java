@@ -227,13 +227,14 @@ public class TaskRunner implements Runnable {
 
     }
 
-    public synchronized void OnFinish(String targetName) throws Exception {
+    public synchronized void OnFinish(String targetName, Result result) throws Exception {
         Target target = taskData.getTargetGraph().getTarget(targetName);
         if (target == null)
             throw new Exception("No such target");
 
         taskData.getTargetsDoneInteger().incrementAndGet();
         target.setStatus(Status.FINISHED);
+        target.setResult(result);
         String name = target.name;
         updateProgress();
         setTaskOutput("finished task " + name + " with the result " + target.getResult() + " time it took to process " + target.getProcessTime().toMillis());
@@ -241,11 +242,13 @@ public class TaskRunner implements Runnable {
 
         if (target.getResult() == Result.Failure) {
             targetGraph.setParentsStatuses(name, Status.SKIPPED, taskData.getTargetsDoneInteger());
+            targetGraph.whoAreAllYourDaddies(name).forEach(t -> System.out.println(t.getName() + " was set to skipped"));
             targetGraph.whoAreAllYourDaddies(name).forEach(t -> setTaskOutput(t.getName() + " was set to skipped"));
             updateProgress();
         }
 
         if (!targetGraph.whoAreYourDirectDaddies(target.name).isEmpty()) {
+            System.out.println("adding " + targetGraph.whoAreYourDirectDaddies(target.name) + " to waiting queue");
             setTaskOutput("adding " + targetGraph.whoAreYourDirectDaddies(target.name) + " to waiting queue");
             queue.addAll(targetGraph.whoAreYourDirectDaddies(target.name));
         }
@@ -333,7 +336,6 @@ public class TaskRunner implements Runnable {
     }
 
     public boolean isWorkerRegisteredToThisTask(Worker worker) {
-        System.out.println("workerList " + workerListMap);
         return workerListMap.containsKey(worker);
     }
 }

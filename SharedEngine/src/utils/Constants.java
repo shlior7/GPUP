@@ -22,6 +22,7 @@ public class Constants {
     public static final String THREADS = "threads";
     public static final String TARGETS = "targets";
     public static final String TASKOUTPUT = "taskOutput";
+    public static final String RESULT = "result";
 
     // Server resources locations
     public final static String BASE_DOMAIN = "localhost";

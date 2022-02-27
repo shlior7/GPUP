@@ -16,6 +16,7 @@ import utils.Constants;
 import utils.ServletUtils;
 import utils.SessionUtils;
 import types.Worker;
+import utils.Utils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -54,20 +55,20 @@ public class TaskUploadServlet extends HttpServlet {
             if (admin != null) {
                 synchronized (this) {
                     String graphName = request.getParameter(GRAPHNAME);
-//                    boolean fromScratch = Boolean.parseBoolean(request.getParameter(FROM_SCRATCH));
+                    boolean fromScratch = Boolean.parseBoolean(request.getParameter(FROM_SCRATCH));
                     String requestData = request.getReader().lines().collect(Collectors.joining());
 //                    System.out.println("requestData = " + requestData);
 
                     JsonObject json = GSON_INSTANCE.fromJson(requestData, JsonObject.class);
                     String taskString = json.get("task").getAsString().replaceAll("\\s", "");
-//                    System.out.println(taskString);
+
                     JsonObject taskJson = GSON_INSTANCE.fromJson(taskString, JsonObject.class);
-                    Task task = GSON_INSTANCE.fromJson(taskString, (Class<? extends Task>) Class.forName(taskJson.get("type").getAsString()));
+                    Task task = Utils.getTaskFromJson(taskJson);
 
                     String targetString = json.get("targets").getAsString().replaceAll("\\s", "");
                     Set<Target> targets = Arrays.stream(GSON_INSTANCE.fromJson(targetString, Target[].class)).collect(Collectors.toSet());
 
-                    ServletUtils.getEngine(getServletContext()).addTask(task, graphName, admin, targets);
+                    ServletUtils.getEngine(getServletContext()).addTask(task, graphName, admin, targets, fromScratch);
                     response.setStatus(HttpServletResponse.SC_OK);
                 }
             } else {
