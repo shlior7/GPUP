@@ -1,49 +1,43 @@
 package servlets;
 
-import TargetGraph.TargetGraph;
-import TargetGraph.GraphParams;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import types.GraphInfo;
-import utils.Constants;
 import utils.ServletUtils;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 
-import static utils.Constants.GSON_INSTANCE;
+import static utils.Constants.*;
 
-@WebServlet(name = "TargetGraphServlet", urlPatterns = {"/graphs/one"})
-public class TargetGraphServlet extends HttpServlet {
+@WebServlet(name = "TaskNameValidateServlet", urlPatterns = {"/task/validate"})
+public class TaskNameValidateServlet extends HttpServlet {
 
+    // urls that starts with forward slash '/' are considered absolute
+    // urls that doesn't start with forward slash '/' are considered relative to the place where this servlet request comes from
+    // you can use absolute paths, but then you need to build them from scratch, starting from the context path
+    // ( can be fetched from request.getContextPath() ) and then the 'absolute' path from it.
+    // Each method with it's pros and cons...
+
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     *
+     * @param request  servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException      if an I/O error occurs
+     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("application/json");
-        try (PrintWriter out = response.getWriter()) {
-            String graphName = request.getParameter(Constants.GRAPHNAME);
-            TargetGraph targetGraph = ServletUtils.getEngine(getServletContext()).getGraphManager().getOrDefault(graphName, null);
-            if (targetGraph == null) {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            }
-            String json = GSON_INSTANCE.toJson(new GraphParams(targetGraph));
-            out.println(json);
-            out.flush();
-        } catch (Exception e) {
-            System.out.println(Arrays.toString(e.getStackTrace()));
-            e.printStackTrace();
-        }
+        response.setContentType("text/plain;charset=UTF-8");
+        String taskName = request.getParameter(TASKNAME);
+        boolean exists = ServletUtils.getEngine(getServletContext()).getTaskManager().doesTaskExists(taskName);
+        response.setStatus(exists ? HttpServletResponse.SC_UNAUTHORIZED : HttpServletResponse.SC_OK);
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+// <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
 
     /**
      * Handles the HTTP <code>GET</code> method.

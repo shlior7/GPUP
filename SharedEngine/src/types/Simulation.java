@@ -69,12 +69,12 @@ public class Simulation extends Task {
         Instant before = Instant.now();
         targetToRunOn.setStatus(Status.IN_PROCESS);
         targetToRunOn.setStartedTime(before);
-        outputText.accept(targetToRunOn.name + " going to sleep for " + timeToSleep);
+        outputText(targetToRunOn.name + " going to sleep for " + timeToSleep);
         System.out.println(targetToRunOn.name + " going to sleep for " + timeToSleep);
         try {
-            outputText.accept("before " + targetToRunOn.name + " going to sleep");
+            outputText("before " + targetToRunOn.name + " going to sleep");
             sleep(timeToSleep);
-            outputText.accept("after " + targetToRunOn.name + " went to sleep");
+            outputText("after " + targetToRunOn.name + " went to sleep");
             System.out.println("after " + targetToRunOn.name + " went to sleep");
 
         } catch (InterruptedException e) {

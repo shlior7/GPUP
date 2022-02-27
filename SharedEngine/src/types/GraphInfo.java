@@ -6,8 +6,11 @@ import lombok.ToString;
 
 import java.util.Map;
 
+import static utils.Utils.getStringValueOrZero;
+import static utils.Utils.ifNullZero;
+
 @ToString
-public class GraphInfo {
+public class GraphInfo extends TableItem {
     private final String graphName;
     private final String createdBy;
     private final String totalTargets;
@@ -17,14 +20,16 @@ public class GraphInfo {
     private final String roots;
 
     public GraphInfo(TargetGraph graph) {
-        this.graphName = (graph.getGraphsName());
+        super(graph.getGraphsName());
+        this.graphName = graph.getGraphsName();
         this.createdBy = graph.getCreatedBy().getName();
         this.totalTargets = String.valueOf(graph.totalSize());
+        
         Map<Type, Integer> typeIntegerMap = graph.getTypesStatistics();
-        this.leaves = String.valueOf(typeIntegerMap.get(Type.leaf));
-        this.independents = String.valueOf(typeIntegerMap.get(Type.independent));
-        this.middles = String.valueOf(typeIntegerMap.get(Type.middle));
-        this.roots = String.valueOf(typeIntegerMap.get(Type.root));
+        this.leaves = getStringValueOrZero(String.valueOf(typeIntegerMap.get(Type.leaf)));
+        this.independents = getStringValueOrZero(typeIntegerMap.get(Type.independent));
+        this.middles = getStringValueOrZero(typeIntegerMap.get(Type.middle));
+        this.roots = getStringValueOrZero(typeIntegerMap.get(Type.root));
     }
 
     public String getGraphName() {

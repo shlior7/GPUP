@@ -293,6 +293,10 @@ public class TargetGraph implements Graph<Target> {
         return statuses;
     }
 
+    public String getStringResultStatistics() {
+        return getStatsInfoString(getResultStatistics());
+    }
+
     public Map<Type, Integer> getCurrentTypesStatistics() {
         Map<Type, Integer> types = new HashMap<>();
         allTargets.values().forEach(target -> types.put(getType(target.name), types.getOrDefault(getType(target.name), 0) + 1));
@@ -363,8 +367,6 @@ public class TargetGraph implements Graph<Target> {
                 return "\n Waiting For " + whoAreAllYourBabies(target.name).stream().filter(t -> t.getStatus() != Status.FINISHED).collect(Collectors.toList());
             case SKIPPED:
                 return "\n Skipped because { " + getWhySkipped(target.name) + " }";
-            case IN_PROCESS:
-                return "\n Time it's Processing " + Duration.between(target.getStartedTime(), Instant.now()).toMillis();
             case FINISHED:
                 return "\n Process time " + target.getProcessTime().toMillis();
         }

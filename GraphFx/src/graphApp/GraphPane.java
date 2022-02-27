@@ -12,6 +12,8 @@ import graphfx.GraphProperties;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 
+import java.util.function.Consumer;
+
 public class GraphPane extends BorderPane {
     public final ChoosingController choosingController;
     public final SideController sideController;

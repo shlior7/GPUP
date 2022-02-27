@@ -8,6 +8,7 @@ import types.Admin;
 import types.IUser;
 import types.Task;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
@@ -32,5 +33,9 @@ public interface IEngine {
     TaskManager getTaskManager();
 
     Map<String, List<Target>> getTargetsForWorker(String userName, String[] taskNames, int threadsAmount) throws Exception;
+
+    void postLogs(Map<String, Map<String, String[]>> logsToPost);
+
+    List<String> getLogs(String taskName) throws IOException;
 
 }

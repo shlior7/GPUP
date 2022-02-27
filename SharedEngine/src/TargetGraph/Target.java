@@ -23,6 +23,9 @@ public class Target {
         this.name = name;
         this.processTime = Duration.ZERO;
         this.result = Result.NULL;
+        this.targetInfo = "";
+        this.userData = "";
+
     }
 
     public void updateData(Target target) {

@@ -11,47 +11,66 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane id="Task" fx:id="root" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="350.0" prefWidth="453.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.components.TaskSettings">
+<GridPane id="Task" fx:id="root" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="350.0"
+          prefWidth="453.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1"
+          fx:controller="app.components.TaskSettings">
     <columnConstraints>
-        <ColumnConstraints halignment="CENTER" hgrow="NEVER" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="222.0" />
-        <ColumnConstraints fillWidth="false" halignment="LEFT" hgrow="NEVER" maxWidth="275.0" minWidth="10.0" prefWidth="231.0" />
+        <ColumnConstraints halignment="CENTER" hgrow="NEVER" maxWidth="1.7976931348623157E308" minWidth="-Infinity"
+                           prefWidth="222.0"/>
+        <ColumnConstraints fillWidth="false" halignment="LEFT" hgrow="NEVER" maxWidth="275.0" minWidth="10.0"
+                           prefWidth="231.0"/>
     </columnConstraints>
     <rowConstraints>
-      <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER" />
-        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER" />
-        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER" />
-        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER" />
-        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER" />
-        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER" />
-        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER" />
-        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER" />
-        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER" />
-        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER" />
+        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER"/>
+        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER"/>
+        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER"/>
+        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER"/>
+        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER"/>
+        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER"/>
+        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER"/>
+        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER"/>
+        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER"/>
+        <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="NEVER"/>
     </rowConstraints>
-    <Label text="Targets to run on" GridPane.rowIndex="2" />
-    <ToggleButton fx:id="SimulationTask" mnemonicParsing="false" onAction="#SimulationTaskPressed" selected="true" text="Simulation Task" GridPane.rowIndex="3" />
-    <TextField fx:id="processTimeText" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-    <TextField fx:id="successProbabilityText" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-    <TextField fx:id="warningProbabilityText" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-    <Label text="Process time (ms)" GridPane.rowIndex="4" />
-    <Label layoutX="89.0" layoutY="135.0" text="Success probability" GridPane.rowIndex="6" />
-    <Label layoutX="89.0" layoutY="165.0" text="Warning probability" GridPane.rowIndex="7" />
-    <Button fx:id="RunFromScratchButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#runFromScratchClicked" prefHeight="27.0" prefWidth="135.0" text="Run From Scratch" textAlignment="CENTER">
-      <GridPane.margin>
-         <Insets />
-      </GridPane.margin></Button>
-   <Button fx:id="RunIncremental" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#runIncrementalClicked" prefHeight="28.0" prefWidth="135.0" text="Run Incremental" textAlignment="CENTER" GridPane.columnIndex="1" />
-    <Button fx:id="cancelButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#cancelClicked" prefHeight="27.0" prefWidth="114.0" text="Cancel" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="9" />
-    <CheckBox fx:id="checkBoxRandom" mnemonicParsing="false" text="Random process time" GridPane.rowIndex="5" />
-    <ToggleButton fx:id="compilerTask" mnemonicParsing="false" onAction="#compilerTaskPressed" text="Compiler Task" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-    <ChoiceBox fx:id="ComboTargetsToRun" layoutX="178.0" layoutY="55.0" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-    <Button fx:id="pathToCompilation" disable="true" mnemonicParsing="false" onAction="#onClickedPathToCompilation" text="path to compilation products" GridPane.rowIndex="8" />
-    <TextField fx:id="taskName" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-    <Label text="Tasks Name" GridPane.rowIndex="1" />
-   <Button fx:id="pathToWorkingDir" alignment="CENTER" contentDisplay="CENTER" disable="true" mnemonicParsing="false" onAction="#onClickedPathToWorkingDIr" text="path to working directory" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="8">
-      <GridPane.margin>
-         <Insets />
-      </GridPane.margin>
-   </Button>
-   <Button fx:id="chooseTargets" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#chooseTargetsClicked" prefHeight="27.0" prefWidth="115.0" text="Choose Targets" textAlignment="CENTER" GridPane.rowIndex="9" />
+    <Label text="Targets to run on" GridPane.rowIndex="2"/>
+    <ToggleButton fx:id="SimulationTask" mnemonicParsing="false" onAction="#simulationTaskPressed" selected="true"
+                  text="Simulation Task" GridPane.rowIndex="3"/>
+    <TextField fx:id="processTimeText" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+    <TextField fx:id="successProbabilityText" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+    <TextField fx:id="warningProbabilityText" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+    <Label text="Process time (ms)" GridPane.rowIndex="4"/>
+    <Label layoutX="89.0" layoutY="135.0" text="Success probability" GridPane.rowIndex="6"/>
+    <Label layoutX="89.0" layoutY="165.0" text="Warning probability" GridPane.rowIndex="7"/>
+    <Button fx:id="RunFromScratchButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false"
+            onAction="#runFromScratchClicked" prefHeight="27.0" prefWidth="135.0" text="Run From Scratch"
+            textAlignment="CENTER">
+        <GridPane.margin>
+            <Insets/>
+        </GridPane.margin>
+    </Button>
+    <Button fx:id="RunIncremental" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false"
+            onAction="#runIncrementalClicked" prefHeight="28.0" prefWidth="135.0" text="Run Incremental"
+            textAlignment="CENTER" GridPane.columnIndex="1"/>
+    <Button fx:id="cancelButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false"
+            onAction="#cancelClicked" prefHeight="27.0" prefWidth="114.0" text="Cancel" textAlignment="CENTER"
+            GridPane.columnIndex="1" GridPane.rowIndex="9"/>
+    <CheckBox fx:id="checkBoxRandom" mnemonicParsing="false" text="Random process time" GridPane.rowIndex="5"/>
+    <ToggleButton fx:id="compilerTask" mnemonicParsing="false" onAction="#compilerTaskPressed" text="Compiler Task"
+                  GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+    <ChoiceBox fx:id="ComboTargetsToRun" layoutX="178.0" layoutY="55.0" prefWidth="150.0" GridPane.columnIndex="1"
+               GridPane.rowIndex="2"/>
+    <Button fx:id="pathToCompilation" disable="true" mnemonicParsing="false" onAction="#onClickedPathToCompilation"
+            text="path to compilation products" GridPane.rowIndex="8"/>
+    <TextField fx:id="taskName" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+    <Label text="Tasks Name" GridPane.rowIndex="1"/>
+    <Button fx:id="pathToWorkingDir" alignment="CENTER" contentDisplay="CENTER" disable="true" mnemonicParsing="false"
+            onAction="#onClickedPathToWorkingDIr" text="path to working directory" textAlignment="CENTER"
+            GridPane.columnIndex="1" GridPane.rowIndex="8">
+        <GridPane.margin>
+            <Insets/>
+        </GridPane.margin>
+    </Button>
+    <Button fx:id="chooseTargets" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false"
+            onAction="#chooseTargetsClicked" prefHeight="27.0" prefWidth="115.0" text="Choose Targets"
+            textAlignment="CENTER" GridPane.rowIndex="9"/>
 </GridPane>

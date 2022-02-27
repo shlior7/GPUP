@@ -13,20 +13,74 @@ import types.TaskType;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FileHandler {
-//    private Document document;
+    //    private Document document;
 //    private Element targetsElement;
+    public String logLibraryPath = "c:\\gpup-working-dir";
+    public String logLibraryPathMac = "myTasks";
+    private final Map<String, String> taskLibrariesPath = new HashMap<>();
 
     public FileHandler() {
+        try {
+            File file = new File(logLibraryPathMac);
+            boolean b = file.mkdirs();
+            System.out.println(b);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    public synchronized void clearLogFile(String taskName, String targetName) throws IOException {
+        String filePath = taskLibrariesPath.getOrDefault(taskName, logLibraryPathMac) + "/" + targetName + ".log";
+        new File(filePath);
+        FileWriter fw = new FileWriter(filePath, false);
+        fw.write("");
+        fw.close();
+    }
+
+    public void createLogLibrary(String taskName) {
+        if (taskLibrariesPath.containsKey(taskName))
+            return;
+        String currentTime = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss").format(LocalDateTime.now());
+        String path = Paths.get(logLibraryPathMac, (taskName + " - " + currentTime)).toString();
+        new File(path).mkdirs();
+        taskLibrariesPath.put(taskName, path);
+    }
+
+    public void log(String Data, String taskName, String targetName) throws IOException {
+        String filePath = taskLibrariesPath.getOrDefault(taskName, logLibraryPathMac) + "/" + targetName + ".log";
+        new File(filePath).createNewFile();
+        FileWriter fw = new FileWriter(filePath, true);
+        fw.write(Data + "\n");
+//        BufferedWriter bw = new BufferedWriter(fw);
+//        PrintWriter out = new PrintWriter(bw);
+//        out.println(Data + "\n");
+        fw.close();
+    }
+
+    public List<String> getLogs(String taskName, String targetName) throws IOException {
+        String filePath = taskLibrariesPath.getOrDefault(taskName, logLibraryPathMac) + "/" + targetName + ".log";
+        new File(filePath).createNewFile();
+
+        List<String> fileLog = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line = br.readLine();
+            while (line != null) {
+                fileLog.add(line);
+                line = br.readLine();
+            }
+        }
+        return fileLog;
     }
 
     public TargetGraph loadGPUPXMLFile(InputStream file) throws Exception {

@@ -49,17 +49,17 @@ public class Compilation extends Task {
         Instant before = Instant.now();
         targetToRunOn.setStatus(Status.IN_PROCESS);
         targetToRunOn.setStartedTime(before);
-        outputText.accept("before running on " + targetToRunOn.name + " in " + workingDir + "/" + javaFilesPath);
+        outputText("before running on " + targetToRunOn.name + " in " + workingDir + "/" + javaFilesPath);
         try {
             ProcessBuilder processBuilder = new ProcessBuilder("javac", "-d", outFolder, "-cp", outFolder, workingDir + "/" + javaFilesPath);
             Process process = processBuilder.start();
-            outputText.accept("running the command `" + processBuilder.command().toString() + "`");
+            outputText("running the command `" + processBuilder.command().toString() + "`");
             exitCode = process.waitFor();
 
             final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
             StringJoiner sj = new StringJoiner(System.getProperty("line.separator"));
             reader.lines().iterator().forEachRemaining(sj::add);
-            outputText.accept(sj.toString());
+            outputText(sj.toString());
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

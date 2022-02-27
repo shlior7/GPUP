@@ -48,8 +48,9 @@ public class UserManager {
     }
 
     public synchronized IUser getUser(String userName) {
-        return userNameToUser.getOrDefault(userName,null);
+        return userNameToUser.getOrDefault(userName, null);
     }
+    
     public boolean isUserAdmin(String userName) {
         return userNameToUser.get(userName) instanceof Admin;
     }

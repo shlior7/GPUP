@@ -65,6 +65,12 @@ public class TaskUploadServlet extends HttpServlet {
                     JsonObject taskJson = GSON_INSTANCE.fromJson(taskString, JsonObject.class);
                     Task task = Utils.getTaskFromJson(taskJson);
 
+                    boolean exists = ServletUtils.getEngine(getServletContext()).getTaskManager().doesTaskExists(task.getTaskName());
+                    if (exists) {
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "task already exists");
+                        return;
+                    }
+
                     String targetString = json.get("targets").getAsString().replaceAll("\\s", "");
                     Set<Target> targets = Arrays.stream(GSON_INSTANCE.fromJson(targetString, Target[].class)).collect(Collectors.toSet());
 

@@ -2,13 +2,14 @@ package types;
 
 import TargetGraph.Target;
 
+import java.io.IOException;
 import java.util.function.Consumer;
 
 public abstract class Task implements Runnable {
     protected int creditPerTarget;
     protected String taskName;
     protected Target targetToRunOn;
-    protected Consumer<String> outputText;
+    protected TriConsumer<String, String, String> outputText;
     protected Consumer<Target> onFinished;
     protected String classType;
     protected String className;
@@ -33,8 +34,12 @@ public abstract class Task implements Runnable {
         return classType;
     }
 
-    public void setOutputText(Consumer<String> outputText) {
+    public void setOutputText(TriConsumer<String, String, String> outputText) {
         this.outputText = outputText;
+    }
+
+    public void outputText(String data) {
+        outputText.accept(taskName, targetToRunOn.name, data);
     }
 
     public String getClassName() {
@@ -55,5 +60,9 @@ public abstract class Task implements Runnable {
 
     public void setFuncOnFinished(Consumer<Target> onFuncFinished) {
         this.onFinished = onFuncFinished;
+    }
+
+    public void setTaskName(String taskName) {
+        this.taskName = taskName;
     }
 }
