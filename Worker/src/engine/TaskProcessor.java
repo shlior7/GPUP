@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static utils.Constants.GSON_INSTANCE;
-import static utils.Constants.UPDATE_TARGET_LOGS_URL;
 import static utils.Utils.setAddRemoveFromTable;
 import static utils.Utils.setAndAddToTable;
 
@@ -115,7 +114,6 @@ public class TaskProcessor {
     }
 
     public synchronized void pushTarget(String taskName, Target target) {
-        System.out.println("pushing to task " + taskName + " the target " + target);
         setTextOutput(taskName, target.getName(), "got the target " + target + " from server, task: " + taskName);
         targetsToTaskName.put(target, taskName);
 
@@ -130,8 +128,6 @@ public class TaskProcessor {
         if (running)
             return;
 
-        System.out.println("STARTED!!!!");
-        System.out.println(availableThreads.get());
         running = true;
         this.threadExecutor = Executors.newFixedThreadPool(numThread);
         Thread runningThread = new Thread(() -> {
@@ -150,8 +146,6 @@ public class TaskProcessor {
                 }
             }
 
-            System.out.println("FINISHED!!!!");
-
             running = false;
             pause.set(false);
         }, "TargetProcessor");
@@ -162,7 +156,6 @@ public class TaskProcessor {
     public synchronized void runTaskOnTarget(Target target) {
         setTextOutput(targetsToTaskName.getOrDefault(target, ""), target.getName(), "running task on target: " + target.name);
 
-        System.out.println("running task on target: " + target.name);
         threadExecutor.execute(initTask(target));
     }
 
@@ -216,11 +209,8 @@ public class TaskProcessor {
     }
 
     public void OnFinish(Target target) {
-        System.out.println("finished " + target.getName());
         availableThreads.increment();
-        System.out.println(availableThreads.get() + "\n");
 
-//        String taskName = targetsToTaskName.get(target);
         target.setStatus(Status.FINISHED);
         String taskName = targetsToTaskName.get(target);
         Task finishedTask = tasksHistory.get(taskName);
@@ -235,7 +225,6 @@ public class TaskProcessor {
                     Utils.tuple(Constants.TARGETNAME, target.getName()),
                     Utils.tuple(Constants.TASKNAME, finishedTask.getTaskName()),
                     Utils.tuple(Constants.RESULT, target.getResult().toString()));
-            System.out.println(url);
             Platform.runLater(() -> {
                 HttpClientUtil.runAsync(url, new SimpleCallBack());
             });
@@ -261,7 +250,6 @@ public class TaskProcessor {
 
     public synchronized void getMoreTargets() {
         if (prev != availableThreads.get()) {
-            System.out.println("available " + availableThreads.get());
             prev = availableThreads.get();
         }
 
@@ -273,7 +261,6 @@ public class TaskProcessor {
 
         List<String> tasks = runningTasks.values().stream().map(Task::getTaskName).collect(Collectors.toList());
 
-        System.out.println(" when asking " + availableThreads.get() + " ," + runningTasks.keySet());
         HttpClientUtil.runAsyncBody(url, GSON_INSTANCE.toJson(tasks), new SimpleCallBack((targetsMapJson) -> {
             try {
                 Map<String, Target[]> targets = GSON_INSTANCE.fromJson(targetsMapJson, new TypeToken<Map<String, Target[]>>() {
@@ -293,14 +280,12 @@ public class TaskProcessor {
         setTargetsTable();
         String url = HttpClientUtil.createUrl(
                 Constants.UPDATE_PROGRESS_POST_URL);
-        System.out.println(url);
 
         HttpClientUtil.runAsyncBody(url, GSON_INSTANCE.toJson(signedTasksTargets), new SimpleCallBack());
 
         setTargetsTable();
         url = HttpClientUtil.createUrl(
                 Constants.UPDATE_TARGET_LOGS_URL);
-        System.out.println(url);
         HttpClientUtil.runAsyncBody(url, GSON_INSTANCE.toJson(tasksTargetsLogs), new SimpleCallBack());
     }
 
@@ -309,9 +294,7 @@ public class TaskProcessor {
         if (targetsToTaskName.isEmpty())
             return;
 
-        System.out.println("set target table\n targetsToTaskName " + targetsToTaskName);
         List<TargetInfo> targets = targetsToTaskName.keySet().stream().map(t -> new TargetInfo(tasksHistory.get(targetsToTaskName.get(t)), t)).collect(Collectors.toList());
-        System.out.println("targets " + targets);
 
         setAndAddToTable(targets,
                 targetsTable,
@@ -344,13 +327,9 @@ public class TaskProcessor {
                 , Utils.tuple(Constants.SIGNTO, String.valueOf(signTo))
                 , Utils.tuple(Constants.TASKNAME, taskName));
 
-        System.out.println("finalUrl " + finalUrl);
-
         HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((taskJson) -> {
-            System.out.println(taskJson);
             if (signTo) {
                 JsonObject json = GSON_INSTANCE.fromJson(taskJson, JsonObject.class);
-                System.out.println("taskJson = " + taskJson);
                 Task task = Utils.getTaskFromJson(json);
                 task.setCreditPerTarget(json.get("creditPerTarget").getAsInt());
                 pushTask(task);

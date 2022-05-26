@@ -173,10 +173,6 @@ public class GraphPanel<V> extends Pane {
             });
         });
 
-//        for (graphfx.Vertex<V> vertex : vertexNodes.keySet()) {
-//            graphfx.GraphVertexNode<V> v = vertexNodes.get(vertex);
-//            addVertex(v);
-//        }
     }
 
     private GraphEdgeLine<V> createEdge(GraphVertexNode<V> graphVertexInbound, GraphVertexNode<V> graphVertexOutbound) {

@@ -2,8 +2,7 @@ package app.dashboard;
 
 import TargetGraph.TargetGraph;
 import TargetGraph.GraphParams;
-import app.components.TaskControllerAdmin;
-import app.components.taskSettingsManager;
+import app.components.TaskController;
 import graphApp.GraphPane;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -15,8 +14,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -48,6 +49,11 @@ public class Dashboard extends Stage implements Initializable {
     Timer taskTimer;
     Timer userTimer;
 
+
+    @FXML
+    public Tab graphTab;
+    @FXML
+    public TabPane tabPane;
     @FXML
     public TableView<UserInfo> UsersTable;
     @FXML
@@ -74,6 +80,9 @@ public class Dashboard extends Stage implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+    }
+
+    public void init() {
     }
 
     public void initTimers() {
@@ -107,10 +116,8 @@ public class Dashboard extends Stage implements Initializable {
                 .newBuilder()
                 .build()
                 .toString();
-        System.out.println("finalUrl " + finalUrl);
 
         HttpClientUtil.runAsyncBody(finalUrl, RequestBody.create(MediaType.parse("text/xml"), file), new SimpleCallBack((message) -> {
-            System.out.println(message);
             getGraphs();
         }));
     }
@@ -121,7 +128,6 @@ public class Dashboard extends Stage implements Initializable {
                 .newBuilder()
                 .build()
                 .toString();
-        System.out.println("finalUrl " + finalUrl);
 
         HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((graphJson) -> {
             GraphInfo[] graphs = GSON_INSTANCE.fromJson(graphJson, GraphInfo[].class);
@@ -142,11 +148,9 @@ public class Dashboard extends Stage implements Initializable {
                 .newBuilder()
                 .build()
                 .toString();
-        System.out.println("finalUrl " + finalUrl);
 
         HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((graphJson) -> {
             UserInfo[] users = GSON_INSTANCE.fromJson(graphJson, UserInfo[].class);
-            System.out.println(Arrays.toString(users));
             if (users != null) setUserTable(users);
         }));
     }
@@ -161,15 +165,19 @@ public class Dashboard extends Stage implements Initializable {
 
     private void createGraphListener() {
         graphComboBox.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
+            GraphPane oldGraphPane = graphPanes.getOrDefault(oldValue, null);
             GraphPane graphPane = graphPanes.getOrDefault(newValue, null);
             try {
+                if (oldGraphPane != null) {
+                    oldGraphPane.pauseUpdates();
+                }
                 if (graphPane == null) {
                     getGraph(newValue, (graphJson) -> {
                         try {
                             TargetGraph graph = new TargetGraph(GSON_INSTANCE.fromJson(graphJson, GraphParams.class));
                             GraphPane gPane = new GraphPane(graph);
-                            TaskControllerAdmin taskController = new TaskControllerAdmin(gPane);
-                            gPane.sideController.addTaskControllerAction(taskController);
+                            TaskController taskController = new TaskController(gPane);
+                            gPane.sideController.addSideAction(taskController, 0);
                             AnchorPane.setTopAnchor(gPane, 0.0);
                             AnchorPane.setLeftAnchor(gPane, 0.0);
                             AnchorPane.setRightAnchor(gPane, 0.0);
@@ -203,7 +211,6 @@ public class Dashboard extends Stage implements Initializable {
                 .addQueryParameter(Constants.GRAPHNAME, graphName)
                 .build()
                 .toString();
-        System.out.println("finalUrl " + finalUrl);
 
         HttpClientUtil.runAsync(finalUrl, new SimpleCallBack(callBack));
     }
@@ -214,12 +221,9 @@ public class Dashboard extends Stage implements Initializable {
                 .newBuilder()
                 .build()
                 .toString();
-        System.out.println("finalUrl " + finalUrl);
 
         HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((tasksJson) -> {
-            System.out.println(tasksJson);
             TaskInfo[] tasks = GSON_INSTANCE.fromJson(tasksJson, TaskInfo[].class);
-            System.out.println(Arrays.toString(tasks));
             if (tasks != null) setTaskTable(tasks);
         }));
     }
@@ -235,7 +239,8 @@ public class Dashboard extends Stage implements Initializable {
         getTasks();
     }
 
-    public void open(ActionEvent actionEvent) {
-
+    public void graphClick(MouseEvent mouseEvent) {
+        graphComboBox.getSelectionModel().select(graphTable.getSelectionModel().getSelectedItem().getGraphName());
+        tabPane.getSelectionModel().select(graphTab);
     }
 }

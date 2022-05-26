@@ -47,12 +47,9 @@ public class Constants {
     public static final String TASK_RESUME_URL = FULL_SERVER_PATH + "/task/resume";
 
     public final static Gson GSON_INSTANCE = FxGson.coreBuilder().disableHtmlEscaping().create();
-//    public final static Gson GSON_INSTANCE = new Gson();
 
     // Server resources locations
     public static final String SYMBOL = "symbol";
-    public static final String CHAT_PARAMETER = "userstring";
-    public static final String CHAT_VERSION_PARAMETER = "chatversion";
 
     public static final int INT_PARAMETER_ERROR = Integer.MIN_VALUE;
 

@@ -41,7 +41,6 @@ public class AllTasksListServlet extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             Collection<TaskRunner> allTasks = ServletUtils.getEngine(getServletContext()).getTaskManager().getAllTasks();
             String json = GSON_INSTANCE.toJson(generateJSONFromTaskCollection(allTasks, worker));
-            System.out.println("all tasks response = " + json);
             out.println(json);
             out.flush();
         } catch (Exception e) {

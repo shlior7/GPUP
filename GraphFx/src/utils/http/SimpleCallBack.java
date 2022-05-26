@@ -60,7 +60,6 @@ public class SimpleCallBack implements Callback {
                     );
                 } else {
                     Platform.runLater(() -> {
-                        System.out.println("OK " + responseBody);
                         if (onSuccess != null) onSuccess.accept(responseBody);
                     });
                 }

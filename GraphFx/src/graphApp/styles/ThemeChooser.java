@@ -30,13 +30,6 @@ public class ThemeChooser {
 
         }
         return "";
-//        File f = new File("./DesktopUI/src/app/styles/" + theme + ".css");
-//        try {
-//            return f.toURI().toURL().toExternalForm();
-//        } catch (MalformedURLException e) {
-//            e.printStackTrace();
-//        }
-//        return "";
     }
 
     public ComboBox<String> getThemeChooser() {

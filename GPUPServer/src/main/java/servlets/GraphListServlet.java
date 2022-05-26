@@ -33,11 +33,9 @@ public class GraphListServlet extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             Collection<TargetGraph> allGraphs = ServletUtils.getEngine(getServletContext()).getAllGraphs();
             String json = GSON_INSTANCE.toJson(generateGraphInfoCollection(allGraphs));
-            System.out.println("graph json" + json);
             out.println(json);
             out.flush();
         } catch (Exception e) {
-            System.out.println(Arrays.toString(e.getStackTrace()));
             e.printStackTrace();
         }
     }

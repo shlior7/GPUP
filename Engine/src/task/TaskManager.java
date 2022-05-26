@@ -55,7 +55,6 @@ public class TaskManager {
     public void updateTask(String taskName, Target[] targets) {
         TaskRunner taskRunner = getTask(taskName);
         taskRunner.getGraph().updateAllTarget(targets);
-//        taskRunner.addTaskLog(taskOutputs);
     }
 
     public TaskRunner getTask(String taskName) {
@@ -77,24 +76,19 @@ public class TaskManager {
         AtomicInteger finalAmount = new AtomicInteger(amount);
 
         double div = finalAmount.doubleValue() / (double) tasksOfWorker.size();
-        System.out.println("div " + div);
-        System.out.println("tasks left " + tasksOfWorker.size());
         while (!tasksOfWorker.isEmpty() && div != 0) {
             TaskRunner taskRunner = tasksOfWorker.pop();
             int tasksToAsk = div < 1 ? 1 : (int) div;
             targetsToSend.putIfAbsent(taskRunner.getTask().getTaskName(), new ArrayList<>());
 
             List<Target> tasksToAdd = taskRunner.getTargetsForWorker(worker, tasksToAsk);
-            System.out.println("tasksToAdd " + tasksToAdd);
             if (!tasksToAdd.isEmpty()) {
                 targetsToSend.get(taskRunner.getTask().getTaskName()).addAll(tasksToAdd);
                 finalAmount.set(finalAmount.get() - tasksToAdd.size());
                 div = finalAmount.doubleValue() / (double) tasksOfWorker.size();
             }
         }
-        System.out.println("2 targetsToSend = " + targetsToSend);
 
-        System.out.println("worker = " + worker + ", amount = " + amount + " targets " + targetsToSend);
         return targetsToSend;
     }
 

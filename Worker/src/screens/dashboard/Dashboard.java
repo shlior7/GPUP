@@ -25,7 +25,6 @@ import java.util.*;
 
 import static utils.Constants.GSON_INSTANCE;
 import static utils.Utils.setAddRemoveFromTable;
-import static utils.Utils.setAndAddToTable;
 
 
 public class Dashboard extends Stage implements Initializable {
@@ -97,19 +96,8 @@ public class Dashboard extends Stage implements Initializable {
     }
 
     public void setCellFactories() {
-//        registerColumn.setCellValueFactory(features -> {
-//            System.out.println("features " + features.getValue());
-//            return new SimpleBooleanProperty(features.getValue() != null);
-//        });
-//        registerColumn.setCellFactory(personBooleanTableColumn -> new SignUpCell(taskTable, taskProcessor));
-
-        registerColumn.setCellValueFactory((param) -> {
-//            TableView<TaskInfo> tblView = param.getTableView();
-//            TaskInfo rowData = param.getValue();
-            return param.getValue().registeredProperty();
-        });
+        registerColumn.setCellValueFactory((param) -> param.getValue().registeredProperty());
         registerColumn.setCellFactory(CheckBoxTableCell.forTableColumn(registerColumn));
-//        registerColumn.setCellFactory(CheckBoxTableCell.forTableColumn((i) -> taskTable.getItems().get(i).registeredProperty()));
 
         pausedColumn.setCellValueFactory(features -> new SimpleBooleanProperty(features.getValue() != null));
         pausedColumn.setCellFactory(personBooleanTableColumn -> new PauseButtonCell(myTasksTable, taskProcessor));
@@ -168,10 +156,7 @@ public class Dashboard extends Stage implements Initializable {
 
         HttpClientUtil.runAsync(url, new SimpleCallBack((tasksJson) -> {
             try {
-                System.out.println("tasksJson " + tasksJson);
                 TaskInfo[] tasks = GSON_INSTANCE.newBuilder().excludeFieldsWithModifiers(Modifier.PRIVATE).create().fromJson(tasksJson, TaskInfo[].class);
-
-                System.out.println(Arrays.toString(tasks));
 
                 List<TaskInfo> myTasks = new ArrayList<>();
                 for (TaskInfo task : tasks) {
@@ -183,13 +168,11 @@ public class Dashboard extends Stage implements Initializable {
                     }
 
                     task.registeredProperty().addListener((observable, oldValue, newValue) -> {
-                        System.out.println(oldValue + " -> " + newValue);
                         if (oldValue != newValue) {
                             if (newValue && task.getTaskStatus().equals(TaskStatus.FINISHED.toString())) {
                                 task.setRegistered(false);
                                 return;
                             }
-                            System.out.println("sign task = " + task.getTaskName() + " " + task.getRegistered() + " " + task.getTaskStatus());
                             taskProcessor.signToTasks(task.getTaskName(), newValue);
                         }
                     });

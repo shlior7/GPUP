@@ -30,12 +30,10 @@ public class TaskPauseServlet extends HttpServlet {
             if (admin != null) {
                 String taskName = request.getParameter(TASKNAME);
 
-                System.out.println("task " + taskName + " pause");
                 ServletUtils.getEngine(getServletContext()).getTaskManager().pauseTask(taskName);
                 out.println(taskName + " is paused");
             } else {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-                out.println("Request is not from a admin");
             }
             out.flush();
         } catch (Exception e) {

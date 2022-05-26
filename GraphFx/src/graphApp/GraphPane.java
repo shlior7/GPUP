@@ -60,4 +60,8 @@ public class GraphPane extends BorderPane {
     public void onVertexClicked(Target target) {
         choosingController.onClicked(target);
     }
+
+    public void pauseUpdates() {
+
+    }
 }

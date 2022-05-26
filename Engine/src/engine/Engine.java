@@ -29,18 +29,6 @@ public class Engine implements IEngine {
         userManager = new UserManager();
         fileHandler = new FileHandler();
         userManager.addAdmin("admin");
-        try {
-            File file = new File("/Users/liorsht/IdeaProjects/GPUP/ex2-big.xml");
-            loadXmlFile(file, userManager.getAdmin("admin"));
-
-//            File file2 = new File("/Users/liorsht/IdeaProjects/GPUP/ex3-small.xml");
-//            loadXmlFile(file2, userManager.getAdmin("admin"));
-
-//            addTask(new Simulation("small_task"), "small", userManager.getAdmin("admin"));
-            addTask(new Simulation("big_task"), "big", userManager.getAdmin("admin"), true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public boolean toggleTaskRunning(String TaskName) throws Exception {
@@ -75,8 +63,6 @@ public class Engine implements IEngine {
     public synchronized void postLogs(String taskName, String targetName, String data) throws IOException {
         fileHandler.log(data, taskName, targetName);
 
-//        List<String> logged = Arrays.asList(logs.getOrDefault(taskName, new HashMap<>()).getOrDefault(targetName, new String[0]));
-//        logged.add(data);
         String[] logged = addToData(logs.getOrDefault(taskName, new HashMap<>()).getOrDefault(targetName, new String[1]), data);
         logs.getOrDefault(taskName, new HashMap<>()).put(targetName, logged);
     }
@@ -158,7 +144,6 @@ public class Engine implements IEngine {
         TargetGraph targetGraph = fileHandler.loadGPUPXMLFile(path);
         targetGraph.setCreatedBy(createdBy);
         allGraphs.put(targetGraph.getGraphsName(), targetGraph);
-        System.out.println(allGraphs.get(targetGraph.getGraphsName()).getGraphsName());
     }
 
     @Override
@@ -167,7 +152,6 @@ public class Engine implements IEngine {
         if (targetGraph == null)
             throw new Exception("graph wasn't found");
 
-        System.out.println("task = " + task.getTaskName() + ", graphName = " + targetGraph.getStatsInfoString(targetGraph.getStatusesStatisticsString()) + "\n createdBy = " + createdBy.getName() + ", fromScratch = " + fromScratch);
         fileHandler.createLogLibrary(task.getTaskName());
         if (fromScratch)
             targetGraph.getCurrentTargets().forEach(t -> t.init(targetGraph.createTargetInGraphInfo(t)));

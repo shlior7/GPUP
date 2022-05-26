@@ -32,7 +32,6 @@ public class TaskDoneServlet extends HttpServlet {
                 String targetName = request.getParameter(TARGETNAME);
                 Result result = Result.valueOf(request.getParameter(RESULT));
 
-                System.out.println("target " + targetName + " in task " + taskName + " is Done");
                 int res = ServletUtils.getEngine(getServletContext()).getTaskManager().onFinishTaskOnTarget(taskName, targetName, result);
                 response.setStatus(res);
             } else {

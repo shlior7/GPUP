@@ -1,0 +1,254 @@
+{
+	"info": {
+		"_postman_id": "dd88b537-a047-4038-9587-fb4d21c2cc91",
+		"name": "Worker GPUP",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "login worker",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/app/login?username=&role=Worker&threads=",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"app",
+						"login"
+					],
+					"query": [
+						{
+							"key": "username",
+							"value": ""
+						},
+						{
+							"key": "role",
+							"value": "Worker"
+						},
+						{
+							"key": "threads",
+							"value": ""
+						}
+					]
+				},
+				"description": "You need to put in user name and threads between 1 to 5."
+			},
+			"response": [
+				{
+					"name": "login worker",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/app/login?username=dor&role=Worker&threads=3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"app",
+								"login"
+							],
+							"query": [
+								{
+									"key": "username",
+									"value": "dor"
+								},
+								{
+									"key": "role",
+									"value": "Worker"
+								},
+								{
+									"key": "threads",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"_postman_previewlanguage": "",
+					"header": [
+						{}
+					],
+					"cookie": [
+						{
+							"expires": "Invalid Date"
+						}
+					],
+					"body": ""
+				}
+			]
+		},
+		{
+			"name": "get all users",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/app/users/all",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"app",
+						"users",
+						"all"
+					]
+				},
+				"description": "If you send this request you will get the list of users in the system and all their roles"
+			},
+			"response": []
+		},
+		{
+			"name": "get all tasks",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/app/task/all",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"app",
+						"task",
+						"all"
+					]
+				},
+				"description": "get all tasks in the system"
+			},
+			"response": []
+		},
+		{
+			"name": "sign to task",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/app/task/sign?signUp=1&taskName=",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"app",
+						"task",
+						"sign"
+					],
+					"query": [
+						{
+							"key": "signUp",
+							"value": "1"
+						},
+						{
+							"key": "taskName",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get targets",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/app/task/target/get?targets",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"app",
+						"task",
+						"target",
+						"get"
+					],
+					"query": [
+						{
+							"key": "targets",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "unsign to task",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/app/task/sign?signup=0&taskName",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"app",
+						"task",
+						"sign"
+					],
+					"query": [
+						{
+							"key": "signup",
+							"value": "0"
+						},
+						{
+							"key": "taskName",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update target when finished",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/app/task/target/done?targetName&taskName",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"app",
+						"task",
+						"target",
+						"done"
+					],
+					"query": [
+						{
+							"key": "targetName",
+							"value": null
+						},
+						{
+							"key": "taskName",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

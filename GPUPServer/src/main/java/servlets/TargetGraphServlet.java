@@ -38,7 +38,6 @@ public class TargetGraphServlet extends HttpServlet {
             out.println(json);
             out.flush();
         } catch (Exception e) {
-            System.out.println(Arrays.toString(e.getStackTrace()));
             e.printStackTrace();
         }
     }

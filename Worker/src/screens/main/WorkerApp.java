@@ -57,9 +57,6 @@ public class WorkerApp extends Application {
 
 
     public void register(ActionEvent actionEvent) throws IOException {
-        System.out.println(name_worker.getText());
-        System.out.println(num_threads.getText());
-
         if (checkValidRegistration()) {
             Worker user = new Worker(name_worker.getText(), Integer.parseInt(num_threads.getText()));
             Dashboard controller = Dashboard.createDashboard(user);
@@ -71,7 +68,6 @@ public class WorkerApp extends Application {
                     .addQueryParameter(Constants.THREADS, String.valueOf(user.getThreads()))
                     .build()
                     .toString();
-            System.out.println("finalUrl " + finalUrl);
             HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((s) -> controller.show()));
         }
     }

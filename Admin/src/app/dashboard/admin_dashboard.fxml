@@ -20,7 +20,8 @@
 <?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.control.ComboBox?>
-<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="839.0"
+<TabPane fx:id="tabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+         prefHeight="839.0"
          prefWidth="1594.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8.0.171"
          xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.dashboard.Dashboard">
     <Tab text="Dashboard" onSelectionChanged="#OnDashboardTabSelectionChanged">
@@ -158,7 +159,7 @@
                     </font>
                 </Label>
                 <TableView fx:id="graphTable" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1"
-                           GridPane.rowIndex="3">
+                           GridPane.rowIndex="3" onMouseClicked="#graphClick">
                     <columns>
                         <TableColumn maxWidth="1.7976931348623157E308" minWidth="-1.0"
                                      prefWidth="108.0" text="Graph name">
@@ -207,7 +208,7 @@
             </GridPane>
         </AnchorPane>
     </Tab>
-    <Tab text="Graphs">
+    <Tab text="Graphs" fx:id="graphTab">
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
             <BorderPane prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0"
                         AnchorPane.leftAnchor="0.0"
@@ -219,14 +220,6 @@
                     <AnchorPane fx:id="graphsRoot"/>
                 </center>
             </BorderPane>
-        </AnchorPane>
-    </Tab>
-    <Tab text="Task">
-        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0"/>
-    </Tab>
-    <Tab text="Actions on graph">
-        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-            <Button text="sad" onAction="#open"/>
         </AnchorPane>
     </Tab>
 </TabPane>

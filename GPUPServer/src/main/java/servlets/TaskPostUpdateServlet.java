@@ -36,17 +36,9 @@ public class TaskPostUpdateServlet extends HttpServlet {
             Worker worker = userManager.getWorker(usernameFromSession);
             if (worker != null) {
                 String requestData = request.getReader().lines().collect(Collectors.joining());
-                
+
                 Map<String, Target[]> targetsToTaskName = GSON_INSTANCE.fromJson(requestData, new TypeToken<Map<String, Target[]>>() {
                 }.getType());
-                System.out.println("post targetsToTaskName " + targetsToTaskName);
-//                JsonObject json = GSON_INSTANCE.fromJson(requestData, JsonObject.class);
-//
-//                Target[] targets = GSON_INSTANCE.fromJson(json.get(TARGETS), Target[].class);
-//                String[] taskOutput = GSON_INSTANCE.fromJson(json.get(TASKOUTPUT), String[].class);
-
-//                Task task = GSON_INSTANCE.fromJson(requestData, (Class<? extends Task>) Class.forName(json.get("type").getAsString()));
-
 
                 ServletUtils.getEngine(getServletContext()).getTaskManager().updateTasks(targetsToTaskName);
 

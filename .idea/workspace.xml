@@ -9,51 +9,65 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5ec3d5d0-8517-48d0-b595-9bc78986c321" name="Changes" comment="admin from scratch and incremental&#10;needs more checking">
-      <change afterPath="$PROJECT_DIR$/Admin/src/app/components/taskSettingsManager.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskNameValidateServlet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskPauseServlet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskPostLogServlet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskResumeServlet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskStopServlet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SharedEngine/src/types/LogLine.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SharedEngine/src/types/TriConsumer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SharedEngine/src/types/TriConsumerE.java" afterDir="false" />
+    <list default="true" id="5ec3d5d0-8517-48d0-b595-9bc78986c321" name="Changes" comment="no chat">
+      <change afterPath="$PROJECT_DIR$/Admin/src/META-INF/MANIFEST.MF" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Admin/src/app/components/TaskController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Admin/src/app/components/map.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Worker GPUP.postman_collection.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/artifacts/GPUPServer_war_exploded.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/artifacts/GPUPServer_war_exploded.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Admin/src/app/components/TaskControllerAdmin.java" beforeDir="false" afterPath="$PROJECT_DIR$/Admin/src/app/components/TaskControllerAdmin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Admin/src/app/components/TaskSettings.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Admin/src/app/components/taskSettings.fxml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Admin/src/app/components/TaskControllerAdmin.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Admin/src/app/components/taskSettingsManager.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Admin/src/app/dashboard/Dashboard.java" beforeDir="false" afterPath="$PROJECT_DIR$/Admin/src/app/dashboard/Dashboard.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Admin/src/app/dashboard/admin_dashboard.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/Admin/src/app/dashboard/admin_dashboard.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Admin/src/app/main/AdminApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/Admin/src/app/main/AdminApp.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Engine/src/chat/ChatManager.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Engine/src/chat/SingleChatEntry.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Engine/src/engine/Engine.java" beforeDir="false" afterPath="$PROJECT_DIR$/Engine/src/engine/Engine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Engine/src/engine/IEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/Engine/src/engine/IEngine.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Engine/src/managers/UserManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/Engine/src/managers/UserManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Engine/src/task/TaskManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/Engine/src/task/TaskManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Engine/src/task/TaskRunner.java" beforeDir="false" afterPath="$PROJECT_DIR$/Engine/src/task/TaskRunner.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Engine/src/utils/FileHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/Engine/src/utils/FileHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/data/UserManager.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/LoginServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/LoginServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/AllTasksListServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/AllTasksListServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/GraphListServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/GraphListServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/SignToTaskServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/SignToTaskServlet.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TargetGraphServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TargetGraphServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskDoneServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskDoneServlet.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskGetUpdateServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskGetUpdateServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskPauseServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskPauseServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskPostLogServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskPostLogServlet.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskPostUpdateServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskPostUpdateServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskResumeServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskResumeServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskStopServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskStopServlet.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskUploadServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskUploadServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GPUPServer/src/main/java/utils/ServletUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/GPUPServer/src/main/java/utils/ServletUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GPUPServer/web/WEB-INF/gson-2.8.9.jar/META-INF/MANIFEST.MF" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/GPUPServer/web/WEB-INF/gson-2.8.9.jar/META-INF/maven/com.google.code.gson/gson/pom.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/GPUPServer/web/WEB-INF/gson-2.8.9.jar/META-INF/maven/com.google.code.gson/gson/pom.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/GraphFx/src/graphApp/GraphPane.java" beforeDir="false" afterPath="$PROJECT_DIR$/GraphFx/src/graphApp/GraphPane.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GraphFx/src/graphApp/actions/FindCircuit.java" beforeDir="false" afterPath="$PROJECT_DIR$/GraphFx/src/graphApp/actions/FindCircuit.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GraphFx/src/graphApp/actions/task/RunTask.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/GraphFx/src/graphApp/actions/task/TaskController.java" beforeDir="false" afterPath="$PROJECT_DIR$/GraphFx/src/graphApp/actions/task/TaskController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/GraphFx/src/graphApp/components/ActionButton.java" beforeDir="false" afterPath="$PROJECT_DIR$/GraphFx/src/graphApp/components/ActionButton.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/GraphFx/src/utils/http/HttpClientUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/GraphFx/src/utils/http/HttpClientUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GraphFx/src/graphApp/controllers/SideController.java" beforeDir="false" afterPath="$PROJECT_DIR$/GraphFx/src/graphApp/controllers/SideController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GraphFx/src/graphApp/styles/ThemeChooser.java" beforeDir="false" afterPath="$PROJECT_DIR$/GraphFx/src/graphApp/styles/ThemeChooser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GraphFx/src/graphfx/GraphPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/GraphFx/src/graphfx/GraphPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GraphFx/src/utils/ObservableAtomicInteger.java" beforeDir="false" afterPath="$PROJECT_DIR$/GraphFx/src/utils/ObservableAtomicInteger.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GraphFx/src/utils/http/SimpleCallBack.java" beforeDir="false" afterPath="$PROJECT_DIR$/GraphFx/src/utils/http/SimpleCallBack.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SharedEngine/src/TargetGraph/Target.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/TargetGraph/Target.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GraphFx/src/utils/http/SimpleCookieManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/GraphFx/src/utils/http/SimpleCookieManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SharedEngine/src/TargetGraph/GraphParams.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/TargetGraph/GraphParams.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/SharedEngine/src/TargetGraph/TargetGraph.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/TargetGraph/TargetGraph.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SharedEngine/src/types/Compilation.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/types/Compilation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SharedEngine/src/types/GraphInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/types/GraphInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SharedEngine/src/types/GraphInfoWorker.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/SharedEngine/src/types/Simulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/types/Simulation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SharedEngine/src/types/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/types/Task.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SharedEngine/src/types/TaskInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/types/TaskInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SharedEngine/src/types/TaskData.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/types/TaskData.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/SharedEngine/src/utils/Constants.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/utils/Constants.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SharedEngine/src/utils/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/SharedEngine/src/utils/Utils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Worker/src/META-INF/MANIFEST.MF" beforeDir="false" afterPath="$PROJECT_DIR$/Worker/src/META-INF/MANIFEST.MF" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Worker/src/engine/TaskProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/Worker/src/engine/TaskProcessor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Worker/src/screens/dashboard/Dashboard.java" beforeDir="false" afterPath="$PROJECT_DIR$/Worker/src/screens/dashboard/Dashboard.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Worker/src/utils/SignUpCell.java" beforeDir="false" afterPath="$PROJECT_DIR$/Worker/src/utils/SignUpCell.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Worker/src/screens/main/WorkerApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/Worker/src/screens/main/WorkerApp.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Worker/src/utils/CheckBoxTableCellFactory.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Worker/src/utils/ProgressBarCell.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Worker/src/utils/SignUpCell.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme.docx" beforeDir="false" afterPath="$PROJECT_DIR$/readme.docx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -126,9 +140,9 @@
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.last.edited" value="Artifacts" />
     <property name="project.structure.proportion" value="0.15" />
-    <property name="project.structure.side.proportion" value="0.4643678" />
+    <property name="project.structure.side.proportion" value="0.28934968" />
     <property name="settings.editor.selected.configurable" value="actions.on.save" />
   </component>
   <component name="RecentsManager">
@@ -137,6 +151,7 @@
       <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/.idea" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
@@ -146,7 +161,7 @@
       <recent name="utils" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.WorkerApp">
+  <component name="RunManager" selected="Application.AdminApp">
     <configuration name="AdminApp" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="app.main.AdminApp" />
       <module name="Admin" />
@@ -283,6 +298,9 @@
       <workItem from="1645640064355" duration="1895000" />
       <workItem from="1645657024369" duration="11907000" />
       <workItem from="1645697986382" duration="91877000" />
+      <workItem from="1646430610546" duration="4185000" />
+      <workItem from="1646680573241" duration="3000" />
+      <workItem from="1646933931945" duration="3430000" />
     </task>
     <task id="LOCAL-00001" summary="tasks runner and processor">
       <created>1645556682838</created>
@@ -381,13 +399,8 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/Worker/src/engine/TaskProcessor.java</url>
-          <line>98</line>
+          <line>97</line>
           <option name="timeStamp" value="39" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/Admin/src/app/components/taskSettingsManager.java</url>
-          <line>16</line>
-          <option name="timeStamp" value="54" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/Admin/src/app/components/TaskSettings.java</url>
@@ -401,7 +414,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/GPUPServer/src/main/java/servlets/TaskPostLogServlet.java</url>
-          <line>43</line>
+          <line>35</line>
           <option name="timeStamp" value="63" />
         </line-breakpoint>
       </breakpoints>

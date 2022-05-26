@@ -40,8 +40,6 @@ public class AdminApp extends Application {
 
 
     public void register(ActionEvent actionEvent) throws IOException {
-        System.out.println(name_worker.getText());
-
         Dashboard controller = Dashboard.createDashboard();
         Admin user = new Admin(name_worker.getText());
         String finalUrl = HttpUrl
@@ -51,7 +49,6 @@ public class AdminApp extends Application {
                 .addQueryParameter(Constants.ROLE, user.getRole())
                 .build()
                 .toString();
-        System.out.println("finalUrl " + finalUrl);
         HttpClientUtil.runAsync(finalUrl, new SimpleCallBack((s) -> controller.show()));
     }
 

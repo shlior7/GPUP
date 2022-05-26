@@ -79,7 +79,6 @@ public class ObservableAtomicInteger implements ObservableIntegerValue {
     public synchronized void increment() {
         int num = integer.incrementAndGet();
         Platform.runLater(() -> {
-            System.out.println("inc");
             observable.set(num);
         });
     }
@@ -87,7 +86,6 @@ public class ObservableAtomicInteger implements ObservableIntegerValue {
     public synchronized void decrement() {
         int num = integer.decrementAndGet();
         Platform.runLater(() -> {
-            System.out.println("dec");
             observable.set(num);
         });
     }

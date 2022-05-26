@@ -28,7 +28,6 @@ public class TaskStopServlet extends HttpServlet {
             if (admin != null) {
                 String taskName = request.getParameter(TASKNAME);
 
-                System.out.println("task " + taskName + " stop");
                 ServletUtils.getEngine(getServletContext()).getTaskManager().stopTask(taskName);
                 out.println(taskName + " is stopped");
             } else {

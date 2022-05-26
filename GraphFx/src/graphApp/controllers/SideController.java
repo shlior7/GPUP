@@ -35,7 +35,6 @@ public class SideController extends VBox {
     public SideController(GraphPane graphPane) {
         this.graphPane = graphPane;
         settings = new StackPane();
-//        this.actionList = Stream.of(new FindPath(graphPane), new FindCircuit(graphPane), new WhatIf(graphPane)).collect(Collectors.toList());
         this.actionList = new ArrayList<>();
         this.setSpacing(20);
         this.setPrefWidth(200);
@@ -51,11 +50,11 @@ public class SideController extends VBox {
         sideAction.setOnOpenSettings(this::onOpenSettings);
     }
 
-    public void addTaskControllerAction(TaskController taskController) {
-        actionList.add(taskController);
-        this.getChildren().add(0, taskController.getActionButton());
-        settings.getChildren().add(taskController.getSettings());
-        taskController.setOnOpenSettings(this::onOpenSettings);
+    public void addSideAction(SideAction sideAction, int index) {
+        actionList.add(sideAction);
+        this.getChildren().add(index, sideAction.getActionButton());
+        settings.getChildren().add(sideAction.getSettings());
+        sideAction.setOnOpenSettings(this::onOpenSettings);
     }
 
     public void createBottomSettings() {
@@ -75,7 +74,6 @@ public class SideController extends VBox {
         VBox wrapper = new VBox(infoIcon);
         VBox.setVgrow(wrapper, Priority.ALWAYS);
         wrapper.setAlignment(Pos.BOTTOM_CENTER);
-//        this.getChildren().add(wrapper);
         setHover(infoIcon);
         return infoIcon;
     }
@@ -85,7 +83,6 @@ public class SideController extends VBox {
         VBox wrapper = new VBox(themeChooser.getThemeChooser());
         wrapper.setAlignment(Pos.BOTTOM_CENTER);
         return wrapper;
-//        this.getChildren().add(wrapper);
     }
 
     private void setHover(ImageView info) {
@@ -126,14 +123,8 @@ public class SideController extends VBox {
         });
     }
 
-    ///TODO
-    ////1.create Servlet For Task Info
-    ////2.create Servlet For Task Reset
     public void reset(ActionEvent actionEvent) {
-//        if (graphStage.engine.isTaskRunning())
-//            return;
         graphPane.graphView.reset();
-//        graphStage.engine.reset();
         graphPane.choosingController.setChoosingState(false);
         graphPane.choosingController.clear(null);
         actionList.forEach((SideAction::reset));

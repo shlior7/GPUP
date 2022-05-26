@@ -96,7 +96,6 @@ public class TaskRunner {
         queue.addAll(targetsToWait);
         synchronized (this) {
             setTaskOutput("sending the targets " + targetsToSend + "to the worker " + worker.getName());
-            System.out.println("sending the targets " + targetsToSend + "to the worker " + worker.getName());
         }
         taskData.setWorkersTargets(worker, targetsToSend);
         taskData.getWorkerListMap().put(worker, targetsToSend);
@@ -113,12 +112,9 @@ public class TaskRunner {
         target.setResult(result);
         String name = target.name;
         updateProgress();
-//        logData.accept(taskData.getTask().getTaskName(), target.name, "finished task " + name + " with the result " + target.getResult() + " time it took to process " + target.getProcessTime().toMillis());
-//        System.out.println("finished task " + name + " with the result " + target.getResult() + " time it took to process " + target.getProcessTime().toMillis());
 
         if (target.getResult() == Result.Failure) {
             taskData.getTargetGraph().setParentsStatuses(name, Status.SKIPPED, taskData.getTargetsDoneInteger());
-//            taskData.getTargetGraph().whoAreAllYourDaddies(name).forEach(t -> System.out.println(t.getName() + " was set to skipped"));
             taskData.getTargetGraph().whoAreAllYourDaddies(name).forEach(t -> {
                 try {
                     logData.accept(taskData.getTask().getTaskName(), t.getName(), t.getName() + " was set to skipped");
@@ -130,14 +126,12 @@ public class TaskRunner {
         }
 
         if (!taskData.getTargetGraph().whoAreYourDirectDaddies(target.name).isEmpty()) {
-            System.out.println("adding " + taskData.getTargetGraph().whoAreYourDirectDaddies(target.name) + " to waiting queue");
             logData.accept(taskData.getTask().getTaskName(), target.name, "adding " + taskData.getTargetGraph().whoAreYourDirectDaddies(target.name) + " to waiting queue");
             queue.addAll(taskData.getTargetGraph().whoAreYourDirectDaddies(target.name));
         }
 
         if (taskData.getTargetsDone() == taskData.getTargetGraph().size()) {
             taskData.setStatus(TaskStatus.FINISHED);
-            System.out.println("finished task!!! " + taskData.getTask().getTaskName());
             running = false;
             taskData.setWorkerListMap(new HashMap<>());
         }

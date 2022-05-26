@@ -40,8 +40,6 @@ public class SignToTaskServlet extends HttpServlet {
                     String taskName = request.getParameter(TASKNAME);
                     boolean signTo = Boolean.parseBoolean(request.getParameter(SIGNTO));
                     Task task = ServletUtils.getEngine(getServletContext()).getTaskManager().signUserToTask(worker, taskName, signTo);
-                    System.out.println("signed " + worker.getName() + " to " + taskName);
-                    System.out.println("proof " + ServletUtils.getEngine(getServletContext()).getTaskManager().getTask(taskName).isWorkerRegisteredToThisTask(worker));
                     if (signTo)
                         out.println(GSON_INSTANCE.toJson(task));
 

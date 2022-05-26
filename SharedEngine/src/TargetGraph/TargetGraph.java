@@ -377,12 +377,9 @@ public class TargetGraph implements Graph<Target> {
         Set<Target> parents = whoAreAllYourDaddies(target.name);
         Set<Target> babies = whoAreAllYourBabies(target.name);
 
-
-        String res = "\nType: " + getIfNotInGraph(getType(target.name)) +
+        return "\nType: " + getIfNotInGraph(getType(target.name)) +
                 "\nDepends on: " + babies.size() + (babies.size() == 0 ? "" : " - " + whoAreAllYourBabies(target.name)) +
                 "\nRequired For: " + parents.size() + (parents.size() == 0 ? "" : " - " + whoAreAllYourDaddies(target.name));
-
-        return res;
     }
 
     public void createTargetsGraphInfo(Set<Target> targetsToSet) {
@@ -529,6 +526,5 @@ public class TargetGraph implements Graph<Target> {
         for (Target t : targets) {
             updateTarget(t);
         }
-        System.out.println("targets = " + getCurrentTargets().stream().map(Target::getStringInfos).collect(Collectors.toList()));
     }
 }

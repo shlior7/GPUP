@@ -28,9 +28,7 @@ public class TaskResumeServlet extends HttpServlet {
             if (admin != null) {
                 String taskName = request.getParameter(TASKNAME);
 
-                System.out.println("task " + taskName + " pause");
                 ServletUtils.getEngine(getServletContext()).getTaskManager().resumeTask(taskName);
-                out.println(taskName + " is resumed");
             } else {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                 out.println("Request is not from a admin");

@@ -1,7 +1,6 @@
 package utils;
 
 import managers.UserManager;
-import chat.ChatManager;
 import engine.Engine;
 import engine.IEngine;
 
@@ -36,15 +35,6 @@ public class ServletUtils {
 
     public static UserManager getUserManager(ServletContext servletContext) {
         return getEngine(servletContext).getUserManager();
-    }
-
-    public static ChatManager getChatManager(ServletContext servletContext) {
-        synchronized (chatManagerLock) {
-            if (servletContext.getAttribute(CHAT_MANAGER_ATTRIBUTE_NAME) == null) {
-                servletContext.setAttribute(CHAT_MANAGER_ATTRIBUTE_NAME, new ChatManager());
-            }
-        }
-        return (ChatManager) servletContext.getAttribute(CHAT_MANAGER_ATTRIBUTE_NAME);
     }
 
     public static int getIntParameter(HttpServletRequest request, String name) {

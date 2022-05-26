@@ -24,24 +24,20 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FileHandler {
-    //    private Document document;
-//    private Element targetsElement;
     public String logLibraryPath = "c:\\gpup-working-dir";
-    public String logLibraryPathMac = "myTasks";
     private final Map<String, String> taskLibrariesPath = new HashMap<>();
 
     public FileHandler() {
         try {
-            File file = new File(logLibraryPathMac);
+            File file = new File(logLibraryPath);
             boolean b = file.mkdirs();
-            System.out.println(b);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public synchronized void clearLogFile(String taskName, String targetName) throws IOException {
-        String filePath = taskLibrariesPath.getOrDefault(taskName, logLibraryPathMac) + "/" + targetName + ".log";
+        String filePath = taskLibrariesPath.getOrDefault(taskName, logLibraryPath) + "/" + targetName + ".log";
         new File(filePath);
         FileWriter fw = new FileWriter(filePath, false);
         fw.write("");
@@ -52,35 +48,17 @@ public class FileHandler {
         if (taskLibrariesPath.containsKey(taskName))
             return;
         String currentTime = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss").format(LocalDateTime.now());
-        String path = Paths.get(logLibraryPathMac, (taskName + " - " + currentTime)).toString();
+        String path = Paths.get(logLibraryPath, (taskName + " - " + currentTime)).toString();
         new File(path).mkdirs();
         taskLibrariesPath.put(taskName, path);
     }
 
     public void log(String Data, String taskName, String targetName) throws IOException {
-        String filePath = taskLibrariesPath.getOrDefault(taskName, logLibraryPathMac) + "/" + targetName + ".log";
+        String filePath = taskLibrariesPath.getOrDefault(taskName, logLibraryPath) + "/" + targetName + ".log";
         new File(filePath).createNewFile();
         FileWriter fw = new FileWriter(filePath, true);
         fw.write(Data + "\n");
-//        BufferedWriter bw = new BufferedWriter(fw);
-//        PrintWriter out = new PrintWriter(bw);
-//        out.println(Data + "\n");
         fw.close();
-    }
-
-    public List<String> getLogs(String taskName, String targetName) throws IOException {
-        String filePath = taskLibrariesPath.getOrDefault(taskName, logLibraryPathMac) + "/" + targetName + ".log";
-        new File(filePath).createNewFile();
-
-        List<String> fileLog = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            String line = br.readLine();
-            while (line != null) {
-                fileLog.add(line);
-                line = br.readLine();
-            }
-        }
-        return fileLog;
     }
 
     public TargetGraph loadGPUPXMLFile(InputStream file) throws Exception {
@@ -211,31 +189,4 @@ public class FileHandler {
             put("targets", allTargets);
         }};
     }
-
-//    public void saveToXML(TargetGraph targetGraph, String xmlFilePath) throws TransformerException {
-//        nodeListToElements(targetsElement.getChildNodes()).forEach(targetNode ->
-//        {
-//            String targetName = targetNode.getAttributes().getNamedItem("name").getTextContent();
-//            Optional<Target> OptionalTarget = targetGraph.getTarget(targetName);
-//            if (OptionalTarget.isPresent()) {
-//                Target target = OptionalTarget.get();
-//                if (target.getResult() != Result.NULL) {
-//                    Node resultNode = targetNode.getElementsByTagName("Result").item(0);
-//                    if (resultNode != null) {
-//                        resultNode.setTextContent(target.getResult().toString());
-//                    } else {
-//                        Element result = document.createElement("Result");
-//                        result.appendChild(document.createTextNode(target.getResult().toString()));
-//                        targetNode.appendChild(result);
-//                    }
-//                }
-//            }
-//        });
-//
-//        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-//        Transformer transformer = transformerFactory.newTransformer();
-//        DOMSource domSource = new DOMSource(document);
-//        StreamResult streamResult = new StreamResult(new File(xmlFilePath + ".xml"));
-//        transformer.transform(domSource, streamResult);
-//    }
 }

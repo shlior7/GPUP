@@ -23,10 +23,6 @@ public class UserManager {
         userNameToUser.put(username, new Worker(username, threads));
     }
 
-//    public synchronized void removeUser(String username) {
-//        usersSet.remove(username);
-//    }
-
     public synchronized Map<String, IUser> getUsers() {
         return Collections.unmodifiableMap(userNameToUser);
     }
@@ -50,7 +46,7 @@ public class UserManager {
     public synchronized IUser getUser(String userName) {
         return userNameToUser.getOrDefault(userName, null);
     }
-    
+
     public boolean isUserAdmin(String userName) {
         return userNameToUser.get(userName) instanceof Admin;
     }

@@ -57,7 +57,6 @@ public class TaskUploadServlet extends HttpServlet {
                     String graphName = request.getParameter(GRAPHNAME);
                     boolean fromScratch = Boolean.parseBoolean(request.getParameter(FROM_SCRATCH));
                     String requestData = request.getReader().lines().collect(Collectors.joining());
-//                    System.out.println("requestData = " + requestData);
 
                     JsonObject json = GSON_INSTANCE.fromJson(requestData, JsonObject.class);
                     String taskString = json.get("task").getAsString().replaceAll("\\s", "");
